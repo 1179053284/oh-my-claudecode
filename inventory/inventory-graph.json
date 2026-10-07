@@ -5,15 +5,15 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "44c21fc4cc56e1a52dd2576180337408236f3f10",
-    "sourceSha256": "4822cfeb47f264c31a77e5b60b04e3342314ae62a0e0e41560a2bd28018d9c62",
+    "head": "d9ce0aa92c667d8a097a0998a2a683bb6333c47b",
+    "sourceSha256": "56c5218b09a0e65b62056b95486c6eb31d72fa2620ea6c6a379960f83d559804",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "44c21fc4cc56e1a52dd2576180337408236f3f10",
-  "sourceSha256": "4822cfeb47f264c31a77e5b60b04e3342314ae62a0e0e41560a2bd28018d9c62",
+  "head": "d9ce0aa92c667d8a097a0998a2a683bb6333c47b",
+  "sourceSha256": "56c5218b09a0e65b62056b95486c6eb31d72fa2620ea6c6a379960f83d559804",
   "counts": {
     "public": {
       "skills": 48,
@@ -45554,6 +45554,11 @@
         "path": "tests/integration/git-guardrails-hook.test.ts"
       },
       {
+        "id": "tests/integration/issue-4266-jev-temp-cleanup.test.ts",
+        "kind": "other",
+        "path": "tests/integration/issue-4266-jev-temp-cleanup.test.ts"
+      },
+      {
         "id": "tests/integration/jev-active-mode-repro.test.ts",
         "kind": "other",
         "path": "tests/integration/jev-active-mode-repro.test.ts"
@@ -87181,6 +87186,36 @@
         "kind": "imports"
       },
       {
+        "from": "tests/integration/issue-4266-jev-temp-cleanup.test.ts",
+        "to": "external:node:child_process",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/issue-4266-jev-temp-cleanup.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/issue-4266-jev-temp-cleanup.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/issue-4266-jev-temp-cleanup.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/issue-4266-jev-temp-cleanup.test.ts",
+        "to": "external:node:url",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/issue-4266-jev-temp-cleanup.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
         "from": "tests/integration/jev-active-mode-repro.test.ts",
         "to": "external:node:child_process",
         "kind": "imports"
@@ -87987,12 +88022,12 @@
       }
     ],
     "stats": {
-      "nodeCount": 7728,
-      "edgeCount": 8448,
-      "importEdgeCount": 7003,
+      "nodeCount": 7729,
+      "edgeCount": 8454,
+      "importEdgeCount": 7009,
       "registerEdgeCount": 69
     }
   },
-  "inventorySha256": "691dd70f25c397fc73c7210dd25b688310cd04150350ab2023616d9943bba855",
-  "manifestSha256": "b779c758475b04b93194277e571a6811ec3d2baafaca019861c1407906be69dc"
+  "inventorySha256": "4517dca5d2705471fab9ade23eccdfb4e1731a01f7e8c7f5c2d011e8452d73ad",
+  "manifestSha256": "0e721ab0fade9fe3cae626a9e9575087e1b7d17d7ad6156e7f0489e87944be4d"
 }
