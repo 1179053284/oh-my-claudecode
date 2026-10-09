@@ -6,7 +6,14 @@
 // share one contract. Covers only the high-confidence finding classes; the
 // heuristic classes (glossary terms unused in code, standards never
 // referenced) stay prose-layer in the skill text and are never emitted here.
-// Current classes: missing surfaces, a missing/invalid `documentLanguage`
+//
+// Surfaces follow an existence-as-declaration semantic: a surface's checks run
+// only when that surface already exists in the yard (adoption = the surface is
+// present), and an absent surface is "not adopted", not "missing". There is no
+// declaration syntax, so the former shipyard.surface.missing.* finding class
+// no longer exists.
+//
+// Current classes: a missing/invalid `documentLanguage`
 // tag, dead paths in `CLAUDE.md`, project-skill triggers present, and intent
 // statuses within the documented vocabulary.
 //
@@ -26,26 +33,12 @@ const toPosix = (value) => value.replace(/\\/g, '/');
 const SEVERITY = { high: 'high', medium: 'medium', low: 'low', info: 'info' };
 const TAG_PATTERN = /^[a-z]{2,3}(?:-[A-Z][a-z]{3})?(?:-(?:[A-Z]{2}|[0-9]{3}))?$/;
 
-const SURFACES = [
-  'CLAUDE.md',
-  'CONTEXT.md',
-  'docs/adr/',
-  'docs/standards/',
-  'docs/business/',
-  'design-system/',
-  '.omc/skills/',
-  '.mcp.json',
-  'scripts/',
-];
-
 function finding(id, title, severity, confidence, actionable, evidence, advice) {
   return { id, title, severity, confidence, actionable, evidence, advice };
 }
 
-// The glossary slot is bilingual during the expand phase: GLOSSARY.md is the
-// authority path, legacy CONTEXT.md satisfies the same surface. The surface
-// finding keeps its historical CONTEXT-md id slug so consumers keyed by id
-// stay stable across the rename.
+// During the glossary rename's expand phase, GLOSSARY.md is authoritative and
+// a recognizable legacy CONTEXT.md glossary remains a read-only fallback.
 //
 // A CONTEXT.md only counts as a legacy glossary when it carries a drydock
 // glossary signature: YAML frontmatter with a `documentLanguage` key, or a
@@ -75,32 +68,6 @@ function isLegacyGlossary(root) {
 function glossaryPath(root) {
   if (existsSync(join(root, 'GLOSSARY.md'))) return join(root, 'GLOSSARY.md');
   return isLegacyGlossary(root) ? join(root, 'CONTEXT.md') : null;
-}
-
-function hasGlossary(root) {
-  return glossaryPath(root) !== null;
-}
-
-function checkSurfaces(root) {
-  const findings = [];
-  for (const surface of SURFACES) {
-    if (surface === 'CONTEXT.md' ? hasGlossary(root) : existsSync(join(root, surface))) continue;
-    const isDir = surface.endsWith('/');
-    // Fresh yards get pointed at the new name; the finding id slug above stays legacy for consumer stability.
-    const displayName = surface === 'CONTEXT.md' ? 'GLOSSARY.md' : surface;
-    findings.push(
-      finding(
-        `shipyard.surface.missing.${surface.replace(/[^a-z0-9]+/gi, '-')}`,
-        `Missing surface: ${displayName}`,
-        SEVERITY.high,
-        'high',
-        true,
-        [displayName],
-        isDir ? `Create the ${displayName} directory (see the drydock skill for the seed).` : `Create ${displayName} (see the drydock skill for the seed).`,
-      ),
-    );
-  }
-  return findings;
 }
 
 function checkDuplicateGlossaryAuthority(root) {
@@ -334,7 +301,6 @@ function checkIntentStatuses(root) {
 export async function auditYard(root) {
   return [
     ...checkDuplicateGlossaryAuthority(root),
-    ...checkSurfaces(root),
     ...checkDocumentLanguage(root),
     ...checkClaudeMdDeadPaths(root),
     ...(await checkProjectSkillTriggers(root)),
