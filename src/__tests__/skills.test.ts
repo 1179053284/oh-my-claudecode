@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'fs';
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { createBuiltinSkills, getBuiltinSkill, listBuiltinSkillNames, clearSkillsCache, renderBundledSkillBody } from '../features/builtin-skills/skills.js';
@@ -437,6 +437,29 @@ describe('Builtin Skills', () => {
 
     it('preserves non-OMC hooks when fixing legacy settings hooks (issue #4277)', () => {
       const raw = readFileSync(join(originalCwd, 'skills', 'omc-doctor', 'SKILL.md'), 'utf-8');
+      const fingerprintIndex: {
+        schemaVersion: number;
+        provenance: { algorithm: string; tagCount: number };
+        payloads: Array<{
+          path: string;
+          fingerprints: Array<{ sha256: string; tags: string[] }>;
+          workingTree?: { sha256: string; state: string };
+        }>;
+        additionalCommits: Array<{ path: string; commit: string; sha256: string }>;
+      } = JSON.parse(
+        readFileSync(join(originalCwd, 'skills', 'omc-doctor', 'node-hook-fingerprints.json'), 'utf-8'),
+      );
+      const collectNodeHookPaths = (directory: string, relativeDirectory = 'templates/hooks'): string[] =>
+        readdirSync(directory, { withFileTypes: true, encoding: 'utf8' }).flatMap((entry) => {
+          const relativePath = `${relativeDirectory}/${entry.name}`;
+          if (entry.isDirectory()) return collectNodeHookPaths(join(directory, entry.name), relativePath);
+          return entry.isFile() && entry.name.endsWith('.mjs') ? [relativePath] : [];
+        });
+      const expectedNodeHookPaths = collectNodeHookPaths(join(originalCwd, 'templates', 'hooks')).sort();
+      const indexedHashes = fingerprintIndex.payloads.flatMap(({ fingerprints, workingTree }) => [
+        ...fingerprints.map(({ sha256 }) => sha256),
+        ...(workingTree ? [workingTree.sha256] : []),
+      ]).concat(fingerprintIndex.additionalCommits.map(({ sha256 }) => sha256));
       expect(raw).toContain('ask for explicit confirmation of that scoped change');
       expect(raw).toContain('verify the target is a regular non-symlink file');
       expect(raw).toContain('Create a timestamped backup beside the original with exclusive, no-follow semantics');
@@ -470,13 +493,17 @@ describe('Builtin Skills', () => {
       expect(raw).toContain('Include every applicable project-local file in the proposal, including main-checkout, Windows side-by-side, and legacy starting-directory files when present');
       expect(raw).toContain('every applicable project-local `.claude/settings.local.json` path resolved above (main-checkout, Windows side-by-side, and legacy starting-directory paths where applicable)');
       expect(raw).toContain('The first scope that explicitly mentions any supported OMC ID decides; unmentioned scopes are transparent');
-      expect(raw).toContain('The supported IDs are `oh-my-claudecode`, `oh-my-claudecode@omc`, and `oh-my-claudecode@oh-my-claudecode`');
+      expect(raw).toContain('The supported marketplace IDs are `oh-my-claudecode`, `oh-my-claudecode@omc`, and `oh-my-claudecode@oh-my-claudecode`');
+      expect(raw).toContain('also consider `oh-my-claudecode@inline` only after the active root\'s `.claude-plugin/plugin.json` has `"name": "oh-my-claudecode"`');
+      expect(raw).toContain('Treat that inline plugin as active for the session unless its manifest sets `"defaultEnabled": false` or an applicable settings source disables it; an explicit applicable `true` overrides the manifest default');
       expect(raw).toContain('Within each scope, `enabledPlugins` is canonical, and legacy `plugins` is consulted only if `enabledPlugins` does not mention any supported OMC ID');
       expect(raw).toContain('a canonical `false` overrides a stale legacy `true`, and a higher-precedence `false` overrides any lower-precedence `true`');
       expect(raw).toContain('If applicable local sources conflict and the effective value cannot be determined, supported IDs in the winning field conflict, a relevant file is unreadable or malformed, or no effective enabled result can be established, treat plugin activity as inconclusive and do not auto-remove');
-      expect(raw).toContain('An active `CLAUDE_PLUGIN_ROOT` can locate the plugin root but does not override a false or inconclusive settings result');
+      expect(raw).toContain('`CLAUDE_PLUGIN_ROOT` is only a locator, not proof that a plugin is enabled; an explicit effective `false` always blocks automatic removal');
       expect(raw).toContain('| Legacy Hooks (settings.json) | OK/WARN/CRITICAL | ... |');
-      expect(raw).toContain('The resolved active plugin root must have `hooks/hooks.json` declaring a hook for the same event');
+      expect(raw).toContain('Inspect every hook source for the active root read-only');
+      expect(raw).toContain('the optional `.claude-plugin/plugin.json` `hooks` field accepts a path, an inline hooks object, or an array mixing paths and inline objects');
+      expect(raw).toContain('A malformed, unreadable, or unresolved declared source makes event ownership inconclusive');
       expect(raw).toContain('A cached plugin version is insufficient');
       expect(raw).toContain('compare its bytes or SHA-256 with the shipped OMC payload for that exact filename');
       expect(raw).toContain('A matching name or path alone does not prove ownership');
@@ -488,10 +515,31 @@ describe('Builtin Skills', () => {
       expect(raw).toContain('persistent-mode.sh`: `c131c6846573f0f69b6e39aed1e6db8f05279131a8976f604c1511a46f564ce5`');
       expect(raw).toContain('session-start.sh`: `d87571c326c43cc43b6948aca661a9616faa6943cfe1d1131f482bd30f638134`');
       expect(raw).toContain('stop-continuation.sh`: `f74deb67479c7861b0966bc959ffd3917152b8872ac83d9243a03c7cb707b51f`');
-      expect(raw).toContain('any validated, retained versioned OMC package under `${CLAUDE_CONFIG_DIR:-~/.claude}/plugins/cache/omc/oh-my-claudecode/<version>/`');
-      expect(raw).toContain('keyword-detector.mjs` payload fingerprints (SHA-256) include `22d612620f54f360797e42fe608bf7f98155b92a3b0bba187fd89e216395d65a`');
+      expect(raw).toContain('any validated retained package under `${CLAUDE_CONFIG_DIR:-~/.claude}/plugins/cache/omc/oh-my-claudecode/<version>/`');
+      expect(raw).toContain('the adjacent `node-hook-fingerprints.json` index');
+      expect(raw).toContain('exact stable release-tag provenance for every shipped Node module under `templates/hooks/**/*.mjs`, including hook helpers');
+      expect(raw).toContain('search by payload path and inspect only that block rather than loading the entire index');
+      expect(raw).toContain('Preserve these additional trusted historical `keyword-detector.mjs` fingerprints');
+      expect(raw).toContain('`22d612620f54f360797e42fe608bf7f98155b92a3b0bba187fd89e216395d65a` (`fb125b37`)');
       expect(raw).toContain('`180fc09840baa8ada1661bcc5a13821c9ca802f43ac52cb4e517ca2cba75838a` (`387956a4`)');
       expect(raw).toContain('`71a01806c1b0e29d8e553797de3900b7172654091980ae644d74e5e9291b8af2` (`0b46a595`)');
+      expect(fingerprintIndex.schemaVersion).toBe(1);
+      expect(fingerprintIndex.provenance.algorithm).toBe('SHA-256');
+      expect(fingerprintIndex.provenance.tagCount).toBeGreaterThan(0);
+      expect(fingerprintIndex.payloads.map(({ path }) => path)).toEqual(expectedNodeHookPaths);
+      expect(indexedHashes.length).toBeGreaterThan(0);
+      expect(indexedHashes.every((sha256) => /^[a-f0-9]{64}$/.test(sha256))).toBe(true);
+      expect(
+        fingerprintIndex.payloads.every((payload) =>
+          payload.fingerprints.every(({ tags }) => tags.length > 0),
+        ),
+      ).toBe(true);
+      expect(fingerprintIndex.additionalCommits.map(({ sha256 }) => sha256)).toEqual(
+        expect.arrayContaining([
+          '9df91d943d348dbabaaf8f517448192d32648bf64fa78edcc43b8e6bf38e6dd1',
+          'ea1dc28c226f168127156bd0d7ffe9c4cb57dc24316f24f13503e9feb6da6b37',
+        ]),
+      );
       expect(raw).toContain('No tracked OMC payload fingerprint is available for `silent-auto-update.sh` or historical `.js`/`.cjs` variants');
       expect(raw).toContain('If the plugin is inactive, does not provide that event, no payload or fingerprint exists');
       expect(raw).toContain('Never run an unconditional `rm -f` based on basename');
@@ -513,10 +561,14 @@ describe('Builtin Skills', () => {
       expect(raw).toContain('Skill frontmatter hooks remain active for the rest of the session after invocation; subagent frontmatter hooks remain active while that subagent runs');
       expect(raw).toContain('If active skill/subagent sources cannot be conclusively enumerated or read, leave the script in place');
       expect(raw).toContain('If an active hook references the script, keep it until that skill or subagent is no longer active, then repeat the reference check');
+      expect(raw).toContain('Claude Code retains the current session\'s hook snapshot after a settings file is edited');
+      expect(raw).toContain('keep its script in place until the user restarts Claude Code; never delete a target in the same session that removed its settings hook');
+      expect(raw).toContain('In a later session, repeat the complete reference scan and final checks below before deleting the script');
       expect(raw).toContain('Also enumerate every enabled or loaded plugin root, including marketplace plugins and local/inline plugins supplied through `--plugin-dir`, `--plugin-url`, or `CLAUDE_CODE_PLUGIN_DIRS`');
       expect(raw).toContain('`${CLAUDE_CONFIG_DIR:-~/.claude}/plugins/installed_plugins.json` and its recorded install paths');
-      expect(raw).toContain('Read each plugin\'s `hooks/hooks.json` read-only and inspect every command handler for references to the candidate script');
-      expect(raw).toContain('If any enabled/loaded plugin root or manifest cannot be conclusively enumerated, resolved, or read, leave the script in place; if a manifest references it, leave the script in place');
+      expect(raw).toContain('Read each plugin\'s `.claude-plugin/plugin.json` and `hooks/hooks.json` read-only');
+      expect(raw).toContain('Parse the manifest\'s optional `hooks` field as a `.json` path, an inline hooks object, or an array mixing paths and inline objects');
+      expect(raw).toContain('If any enabled/loaded plugin root, manifest, or declared hook source cannot be conclusively enumerated, resolved, or read, leave the script in place; if any source references it, leave the script in place');
       expect(raw).toContain('The canonical event and equivalent-handler requirements from Step 2 also gate script deletion; an unrelated plugin handler under the same event cannot justify deleting a standalone payload');
       expect(raw).toContain('The settings scan alone does not establish that no references remain; the active skill/subagent and enabled-plugin manifest scans above must also be complete and clean before deleting the target');
       expect(raw).toContain('If any applicable project-local path, main checkout root, managed source, or command-line source cannot be resolved or inspected, if any source references the script, the user declined the relevant settings change, a file could not be updated, no shipped payload exists, or verification is inconclusive, leave the corresponding script in place');
