@@ -137,6 +137,67 @@ describe('daemon bootstrap', () => {
     expect(daemonScript).not.toContain('\\features\\rate-limit-wait\\daemon.js');
   });
 
+  it('preserves quota recovery state when starting the detached daemon', () => {
+    const unref = vi.fn();
+    mockSpawn.mockReturnValue({ pid: 4244, unref } as any);
+
+    const config: DaemonConfig = {
+      stateFilePath: join(testDir, 'state.json'),
+      pidFilePath: join(testDir, 'daemon.pid'),
+      logFilePath: join(testDir, 'daemon.log'),
+    };
+    mkdirSync(testDir, { recursive: true });
+    writeFileSync(config.stateFilePath!, JSON.stringify({
+      isRunning: false,
+      pid: null,
+      startedAt: new Date('2026-01-01T00:00:00.000Z'),
+      lastPollAt: null,
+      rateLimitStatus: {
+        fiveHourLimited: true,
+        weeklyLimited: false,
+        monthlyLimited: false,
+        isLimited: true,
+        fiveHourResetsAt: null,
+        weeklyResetsAt: null,
+        monthlyResetsAt: null,
+        nextResetAt: null,
+        timeUntilResetMs: null,
+        lastCheckedAt: new Date('2026-01-01T00:00:00.000Z'),
+      },
+      lastConfirmedLimited: true,
+      blockedPanes: [{
+        id: '%test',
+        session: 'test',
+        windowIndex: 0,
+        windowName: 'test',
+        paneIndex: 0,
+        isActive: false,
+        analysis: { hasClaudeCode: true, hasRateLimitMessage: true, isBlocked: true, confidence: 1 },
+        firstDetectedAt: new Date('2026-01-01T00:00:00.000Z'),
+        resumeAttempted: false,
+      }],
+      resumedPaneIds: [],
+      totalResumeAttempts: 0,
+      successfulResumes: 0,
+      errorCount: 0,
+    }));
+
+    const result = startDaemon(config);
+
+    expect(result.success).toBe(true);
+    expect(result.state).toMatchObject({
+      isRunning: true,
+      pid: 4244,
+      lastConfirmedLimited: true,
+      rateLimitStatus: { isLimited: true },
+      blockedPanes: [expect.objectContaining({ id: '%test' })],
+    });
+    const persistedState = JSON.parse(readFileSync(config.stateFilePath!, 'utf-8'));
+    expect(persistedState.lastConfirmedLimited).toBe(true);
+    expect(persistedState.blockedPanes).toMatchObject([{ id: '%test' }]);
+    expect(unref).toHaveBeenCalledOnce();
+  });
+
   it('returns already running when config pid file points to a live process', () => {
     const config: DaemonConfig = {
       stateFilePath: join(testDir, 'state.json'),

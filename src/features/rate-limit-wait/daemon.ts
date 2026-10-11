@@ -350,7 +350,7 @@ async function pollLoop(config: Required<DaemonConfig>): Promise<void> {
   state.pid = process.pid;
   let lastConfirmedLimited = typeof state.lastConfirmedLimited === 'boolean'
     ? state.lastConfirmedLimited
-    : !!state.rateLimitStatus?.isLimited && !isRateLimitStatusDegraded(state.rateLimitStatus);
+    : !!state.rateLimitStatus?.isLimited;
 
   // Register cleanup handlers so PID/state files are cleaned up on exit
   registerDaemonCleanup(config);
@@ -375,7 +375,11 @@ async function pollLoop(config: Required<DaemonConfig>): Promise<void> {
       );
 
       state.rateLimitStatus = rateLimitStatus;
-      if (rateLimitStatus && !isRateLimitStatusDegraded(rateLimitStatus)) {
+      if (rateLimitStatus?.isLimited) {
+        // Stale cached exhaustion can still carry a previously confirmed limit;
+        // a stale all-clear cannot confirm recovery.
+        lastConfirmedLimited = true;
+      } else if (rateLimitStatus && !isRateLimitStatusDegraded(rateLimitStatus)) {
         lastConfirmedLimited = rateLimitStatus.isLimited;
       }
       state.lastConfirmedLimited = lastConfirmedLimited;
@@ -519,8 +523,10 @@ export function startDaemon(config?: DaemonConfig): DaemonResponse {
     if (pid) {
       writePidFile(pid, cfg);
 
-      const state = createInitialState();
+      const state = readDaemonState(cfg) || createInitialState();
+      state.isRunning = true;
       state.pid = pid;
+      state.startedAt = new Date();
       writeDaemonState(state, cfg);
 
       return {

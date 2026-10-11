@@ -108,6 +108,19 @@ describe('confirmed quota transitions in the actual daemon polling loop', () => 
     await next(status(false));
     expect(boundary.resume).toHaveBeenCalledExactlyOnceWith('%test');
   });
+  it('recovers through an initially stale limited sample', async () => {
+    seed(null, false);
+    await start(status(true, true));
+    expect(boundary.resume).not.toHaveBeenCalled();
+    expect(observed().lastConfirmedLimited).toBe(true);
+    await next(status(false));
+    expect(boundary.resume).toHaveBeenCalledExactlyOnceWith('%test');
+  });
+  it('recovers legacy persisted stale limited status without the new flag', async () => {
+    seed(status(true, true));
+    await start(status(false));
+    expect(boundary.resume).toHaveBeenCalledExactlyOnceWith('%test');
+  });
   it('does not trust a nonboolean flag when the last observation is unconfirmed', async () => {
     seed(status(false, true), 'true');
     await start(null);
