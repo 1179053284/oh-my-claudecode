@@ -578,34 +578,41 @@ describe('getUsage routing', () => {
     expect(cacheContent).not.toContain('stored-refresh-b');
   });
 
-  it('does not trust a persisted profile identity after the credential token changes', () => {
+  it('keeps a legacy OAuth profile stable across token promotion via .claude.json', () => {
     const credentialsPath = '/tmp/test-claude/.credentials.json';
-    const oldTokenHash = createHash('sha256').update('legacy-refresh-a').digest('hex');
+    const claudeJsonPath = '/tmp/.claude.json';
     let credentialsContent = JSON.stringify({
       claudeAiOauth: {
-        accessToken: 'legacy-access-a',
-        refreshToken: 'legacy-refresh-a',
-        omcUsageProfileId: oldTokenHash,
-        omcUsageProfileTokenHash: oldTokenHash,
+        accessToken: 'runtime-access-a',
+        refreshToken: 'runtime-refresh-a',
       },
+    });
+    let claudeJsonContent = JSON.stringify({
+      oauthAccount: { accountUuid: 'same-stable-account' },
     });
 
     process.env.CLAUDE_CONFIG_DIR = '/tmp/test-claude';
-    vi.mocked(fs.existsSync).mockImplementation(path => String(path) === credentialsPath);
-    vi.mocked(fs.readFileSync).mockImplementation(path =>
-      String(path) === credentialsPath ? credentialsContent : '{}',
+    vi.mocked(fs.existsSync).mockImplementation(path =>
+      String(path) === credentialsPath || String(path) === claudeJsonPath,
     );
+    vi.mocked(fs.readFileSync).mockImplementation(path => {
+      if (String(path) === credentialsPath) return credentialsContent;
+      if (String(path) === claudeJsonPath) return claudeJsonContent;
+      return '{}';
+    });
 
     const originalIdentity = getUsageCredentialIdentity(false, true);
     credentialsContent = JSON.stringify({
       claudeAiOauth: {
-        accessToken: 'legacy-access-b',
-        refreshToken: 'legacy-refresh-b',
-        omcUsageProfileId: oldTokenHash,
-        omcUsageProfileTokenHash: oldTokenHash,
+        accessToken: 'runtime-access-b',
+        refreshToken: 'runtime-refresh-b',
       },
     });
+    expect(getUsageCredentialIdentity(false, true)).toBe(originalIdentity);
 
+    claudeJsonContent = JSON.stringify({
+      oauthAccount: { accountUuid: 'different-stable-account' },
+    });
     expect(getUsageCredentialIdentity(false, true)).not.toBe(originalIdentity);
   });
 
@@ -2212,12 +2219,6 @@ describe('writeBackCredentials — Keychain vs file refresh', () => {
     const inner = written.claudeAiOauth ?? written;
     expect(inner.accessToken).toBe('new-access-token');
     expect(inner.refreshToken).toBe('new-refresh-token');
-    expect(inner.omcUsageProfileId).toBe(
-      createHash('sha256').update('valid-refresh-token').digest('hex'),
-    );
-    expect(inner.omcUsageProfileTokenHash).toBe(
-      createHash('sha256').update('new-refresh-token').digest('hex'),
-    );
 
     // File credential store should NOT have been written
     const fileWriteCall = vi.mocked(fs.writeFileSync).mock.calls.find(
@@ -2232,6 +2233,10 @@ describe('writeBackCredentials — Keychain vs file refresh', () => {
     const mockedExistsSync = vi.mocked(fs.existsSync);
     const mockedReadFileSync = vi.mocked(fs.readFileSync);
     const httpsModule = await import('https') as unknown as { default: { request: ReturnType<typeof vi.fn> } };
+    const claudeJsonPath = '/tmp/.claude.json';
+    const claudeJsonContent = JSON.stringify({
+      oauthAccount: { accountUuid: 'refresh-test-account' },
+    });
     let credentialsContent = JSON.stringify({
       claudeAiOauth: {
         accessToken: 'expired-file-token',
@@ -2243,8 +2248,11 @@ describe('writeBackCredentials — Keychain vs file refresh', () => {
     // Keychain has no entry — only file credentials
     execFileMock.mockImplementation(() => { throw new Error('mock: no keychain'); });
 
-    mockedExistsSync.mockImplementation((path) => String(path).endsWith('.credentials.json'));
+    mockedExistsSync.mockImplementation((path) =>
+      String(path) === claudeJsonPath || String(path).endsWith('.credentials.json'),
+    );
     mockedReadFileSync.mockImplementation((path) => {
+      if (String(path) === claudeJsonPath) return claudeJsonContent;
       if (String(path).endsWith('.credentials.json')) {
         return credentialsContent;
       }
@@ -2301,12 +2309,6 @@ describe('writeBackCredentials — Keychain vs file refresh', () => {
     const written = JSON.parse(String(fileWriteCall![1]));
     expect(written.claudeAiOauth.accessToken).toBe('new-file-access-token');
     expect(written.claudeAiOauth.refreshToken).toBe('new-file-refresh-token');
-    expect(written.claudeAiOauth.omcUsageProfileId).toBe(
-      createHash('sha256').update('file-refresh-token').digest('hex'),
-    );
-    expect(written.claudeAiOauth.omcUsageProfileTokenHash).toBe(
-      createHash('sha256').update('new-file-refresh-token').digest('hex'),
-    );
     credentialsContent = JSON.stringify(written);
     expect(getUsageCredentialIdentity(false, true)).toBe(originalProfileIdentity);
 

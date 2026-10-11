@@ -621,6 +621,25 @@ describe('tmux-detector', () => {
       expect(revalidateBlockedPanes([trackedPane])).toEqual([]);
     });
 
+    it('rejects confirmation wording when it is part of a conversation line', () => {
+      makeTmuxAvailable();
+      const resumedConversation = [
+        'Claude Code',
+        "You've reached your usage limit for the 5-hour period.",
+        'What would you like to do?',
+        '[1] Wait and continue automatically when limit resets',
+        '>',
+        'Press Enter to confirm the migration',
+        '[OMC#4.15.1L] | Model: Opus 4.8 | 5h:100% wk:14% | thinking | session:80m | ctx:14%',
+        '⏵⏵ auto mode on (shift+tab to cycle) · ← for agents',
+      ].join('\n');
+      vi.mocked(tmuxExec)
+        .mockReturnValueOnce(paneList)
+        .mockReturnValueOnce(resumedConversation);
+
+      expect(revalidateBlockedPanes([trackedPane])).toEqual([]);
+    });
+
     it('ignores live OMC HUD footer lines when checking the prompt', () => {
       makeTmuxAvailable();
       const livePromptWithHud = [

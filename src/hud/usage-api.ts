@@ -55,8 +55,6 @@ const TOKEN_REFRESH_URL_PATH = '/v1/oauth/token';
  * This is the production value; can be overridden via CLAUDE_CODE_OAUTH_CLIENT_ID env var.
  */
 const DEFAULT_OAUTH_CLIENT_ID = '9d1c250a-e61b-44d9-88ed-5944d1962f5e';
-const OMC_USAGE_PROFILE_ID_FIELD = 'omcUsageProfileId';
-const OMC_USAGE_PROFILE_TOKEN_HASH_FIELD = 'omcUsageProfileTokenHash';
 
 interface RateLimitBackoff {
   timestamp: number;
@@ -570,6 +568,24 @@ function getOAuthAccountProfileIdentity(credentials: Record<string, unknown>): s
     }
     return undefined;
   };
+  // OMC's launch reconciliation keeps this stable account UUID alongside
+  // refreshed credentials that may not contain account metadata themselves.
+  let claudeJsonAccount: Record<string, unknown> = {};
+  try {
+    const claudeJsonPath = join(dirname(getClaudeConfigDir()), '.claude.json');
+    if (existsSync(claudeJsonPath)) {
+      const parsed = JSON.parse(readFileSync(claudeJsonPath, 'utf-8')) as Record<string, unknown>;
+      const accountMetadata = parsed.oauthAccount;
+      if (
+        typeof accountMetadata === 'object' && accountMetadata !== null &&
+        !Array.isArray(accountMetadata)
+      ) {
+        claudeJsonAccount = accountMetadata as Record<string, unknown>;
+      }
+    }
+  } catch {
+    // Account metadata is optional; credentials may still provide an identity.
+  }
   const accountId = firstString(
     credentials.accountUuid,
     credentials.accountUUID,
@@ -582,12 +598,16 @@ function getOAuthAccountProfileIdentity(credentials: Record<string, unknown>): s
     account.accountId,
     account.userId,
     account.userID,
+    claudeJsonAccount.accountUuid,
+    claudeJsonAccount.accountUUID,
   );
   const emailAddress = firstString(
     credentials.emailAddress,
     credentials.email,
     account.emailAddress,
     account.email,
+    claudeJsonAccount.emailAddress,
+    claudeJsonAccount.email,
   );
   if (accountId || emailAddress) {
     const organizationId = firstString(
@@ -595,24 +615,14 @@ function getOAuthAccountProfileIdentity(credentials: Record<string, unknown>): s
       credentials.organizationUUID,
       account.organizationUuid,
       account.organizationUUID,
+      claudeJsonAccount.organizationUuid,
+      claudeJsonAccount.organizationUUID,
     );
     return hashCredentialIdentity(JSON.stringify([
       accountId ?? null,
       emailAddress ?? null,
       organizationId ?? null,
     ]));
-  }
-
-  // Legacy credential records may lack account metadata. Carry an opaque ID
-  // across token rotation, but bind it to the stored token to detect account swaps.
-  const storedProfileIdentity = firstString(credentials[OMC_USAGE_PROFILE_ID_FIELD]);
-  const storedTokenHash = firstString(credentials[OMC_USAGE_PROFILE_TOKEN_HASH_FIELD]);
-  const tokenMaterial = firstString(credentials.refreshToken, credentials.accessToken);
-  if (
-    storedProfileIdentity && /^[a-f\d]{64}$/i.test(storedProfileIdentity) &&
-    tokenMaterial && storedTokenHash === hashCredentialIdentity(tokenMaterial)
-  ) {
-    return storedProfileIdentity;
   }
   return undefined;
 }
@@ -1389,12 +1399,6 @@ function updateStoredOAuthCredentialFields(record: Record<string, unknown>, cred
   record.accessToken = creds.accessToken;
   if (creds.expiresAt != null) record.expiresAt = creds.expiresAt;
   if (creds.refreshToken) record.refreshToken = creds.refreshToken;
-  if (creds.profileIdentity) {
-    record[OMC_USAGE_PROFILE_ID_FIELD] = creds.profileIdentity;
-    record[OMC_USAGE_PROFILE_TOKEN_HASH_FIELD] = hashCredentialIdentity(
-      creds.refreshToken ?? creds.accessToken,
-    );
-  }
 }
 
 /**
@@ -1402,7 +1406,7 @@ function updateStoredOAuthCredentialFields(record: Record<string, unknown>, cred
  * When the credentials originated from Keychain, writes back to Keychain.
  * When they originated from file, updates ~/.claude/.credentials.json.
  * Environment-provided credentials are process-owned and are never persisted.
- * Updates OAuth tokens and their OMC profile marker, preserving other data.
+ * Updates only the OAuth token fields, preserving other data.
  */
 function writeBackCredentials(creds: OAuthCredentials): void {
   if (creds.source === 'keychain') {

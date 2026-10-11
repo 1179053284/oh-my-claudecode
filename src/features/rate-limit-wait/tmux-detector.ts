@@ -175,7 +175,7 @@ const LIVE_RESUME_OPTION_PATTERN =
 const LIVE_SELECTED_RESUME_OPTION_PATTERN =
   /^\s*❯\s*(?:\[1\]|1[.)]?)\s+(?:continue|resume|retry|try again|stop and wait|wait and continue automatically)\b/i;
 const LIVE_CONFIRMATION_PROMPT_PATTERN =
-  /^\s*(?:enter to confirm|enter choice:|press enter|select an option|continue\?)/i;
+  /^\s*(?:enter to confirm(?:\s*·\s*esc to cancel)?|enter choice:)\s*$/i;
 const LIVE_WAIT_AND_CONTINUE_PROMPT_PATTERN =
   /what would you like to do\?[\s\S]*^\s*\[1\]\s+wait and continue automatically\b[\s\S]*^\s*>\s*$/im;
 
