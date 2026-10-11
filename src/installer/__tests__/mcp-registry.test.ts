@@ -818,7 +818,7 @@ describe('unified MCP registry sync', () => {
     expect(status.codexMismatched).toEqual([]);
   });
 
-  it('ignores omitted Codex MCP types and key order while reporting real differences (issue #4294)', () => {
+  it('ignores inferable omitted Codex MCP types and key order while reporting real differences (issue #4294)', () => {
     const registry = {
       context7: {
         command: '/tools/context7-mcp.sh',
@@ -828,7 +828,8 @@ describe('unified MCP registry sync', () => {
       deepwiki: { url: 'https://mcp.deepwiki.com/mcp', type: 'http' },
       changed: { command: 'python', args: ['server.py'], type: 'stdio' },
       typeMismatch: { url: 'https://mcp.example.com', type: 'http' },
-      typeComment: { url: 'https://mcp.example.com/comment', type: 'sse' },
+      typeComment: { url: 'https://mcp.example.com/comment', type: 'http' },
+      sseOmitted: { url: 'https://mcp.example.com/sse', type: 'sse' },
       unparsedType: { command: 'node', type: 'stdio' },
       quotedTypeMismatch: { url: 'https://mcp.example.com/quoted', type: 'http' },
     };
@@ -853,7 +854,10 @@ describe('unified MCP registry sync', () => {
       '',
       '[mcp_servers.typeComment]',
       'url = "https://mcp.example.com/comment"',
-      'type = "sse" # transport',
+      'type = "http" # transport',
+      '',
+      '[mcp_servers.sseOmitted]',
+      'url = "https://mcp.example.com/sse"',
       '',
       '[mcp_servers.unparsedType]',
       'command = "node"',
@@ -868,7 +872,7 @@ describe('unified MCP registry sync', () => {
     const status = inspectUnifiedMcpRegistrySync();
 
     expect(status.codexMissing).toEqual([]);
-    expect(status.codexMismatched).toEqual(['changed', 'quotedTypeMismatch', 'typeMismatch', 'unparsedType']);
+    expect(status.codexMismatched).toEqual(['changed', 'quotedTypeMismatch', 'sseOmitted', 'typeMismatch', 'unparsedType']);
     expect(status.claudeMissing).toEqual([]);
     expect(status.claudeMismatched).toEqual([]);
   });

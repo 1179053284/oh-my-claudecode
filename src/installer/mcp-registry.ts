@@ -310,6 +310,18 @@ function codexEntriesEqual(
 
   const comparableRegistryEntry = { ...registryEntry };
   if (!typeFieldPresent) {
+    const inferredType = codexEntry.command && !codexEntry.url
+      ? 'stdio'
+      : codexEntry.url && !codexEntry.command
+        ? 'http'
+        : undefined;
+    if (
+      registryEntry.type !== undefined
+      && registryEntry.type !== inferredType
+      && !(inferredType === 'http' && registryEntry.type === 'streamable-http')
+    ) {
+      return false;
+    }
     delete comparableRegistryEntry.type;
   }
   return isDeepStrictEqual(codexEntry, comparableRegistryEntry);
