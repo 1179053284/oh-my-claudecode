@@ -10,6 +10,7 @@
  * Storage: append-only JSONL at .omc/logs/team-usage-{team}.jsonl
  */
 
+import { z } from 'zod';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { getOmcRoot } from '../lib/worktree-paths.js';
@@ -92,20 +93,18 @@ export function measureCharCounts(
   return { promptChars, responseChars };
 }
 
-function isTaskUsageRecord(value: unknown): value is TaskUsageRecord {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
-  const record = value as Record<string, unknown>;
-  for (const field of ['taskId', 'workerName', 'model', 'startedAt', 'completedAt']) {
-    if (typeof record[field] !== 'string' || !record[field].trim()) return false;
-  }
-  if (record.provider !== 'codex' && record.provider !== 'gemini') return false;
-  for (const field of ['wallClockMs', 'promptChars', 'responseChars']) {
-    const count = record[field];
-    if (typeof count !== 'number' || !Number.isFinite(count) || count < 0) return false;
-    if (field !== 'wallClockMs' && !Number.isInteger(count)) return false;
-  }
-  return true;
-}
+const nonemptyString = z.string().refine(value => value.trim().length > 0);
+const taskUsageRecordSchema: z.ZodType<TaskUsageRecord> = z.object({
+  taskId: nonemptyString,
+  workerName: nonemptyString,
+  provider: z.enum(['codex', 'gemini']),
+  model: nonemptyString,
+  startedAt: nonemptyString,
+  completedAt: nonemptyString,
+  wallClockMs: z.number().finite().nonnegative().max(Number.MAX_SAFE_INTEGER),
+  promptChars: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+  responseChars: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+});
 
 /**
  * Read all usage records from the JSONL log.
@@ -120,8 +119,8 @@ function readUsageRecords(workingDirectory: string, teamName: string): TaskUsage
   const records: TaskUsageRecord[] = [];
   for (const line of lines) {
     try {
-      const record: unknown = JSON.parse(line);
-      if (isTaskUsageRecord(record)) records.push(record);
+      const record = taskUsageRecordSchema.safeParse(JSON.parse(line));
+      if (record.success) records.push(record.data);
     } catch { /* skip malformed */ }
   }
 
@@ -140,9 +139,18 @@ export function generateUsageReport(
 
   // Aggregate per worker
   const workerMap = new Map<string, WorkerUsageSummary>();
+  let totalWallClockMs = 0;
 
   for (const r of records) {
     const existing = workerMap.get(r.workerName);
+    const nextWallClockMs = (existing?.totalWallClockMs ?? 0) + r.wallClockMs;
+    const nextPromptChars = (existing?.totalPromptChars ?? 0) + r.promptChars;
+    const nextResponseChars = (existing?.totalResponseChars ?? 0) + r.responseChars;
+    const nextTotalWallClockMs = totalWallClockMs + r.wallClockMs;
+    // Skip the whole record if adding it would corrupt totals; retain later valid siblings.
+    if (!Number.isFinite(nextWallClockMs) || !Number.isFinite(nextTotalWallClockMs)
+      || !Number.isSafeInteger(nextPromptChars) || !Number.isSafeInteger(nextResponseChars)) continue;
+    totalWallClockMs = nextTotalWallClockMs;
     if (existing) {
       existing.taskCount++;
       existing.totalWallClockMs += r.wallClockMs;
@@ -165,7 +173,7 @@ export function generateUsageReport(
 
   return {
     teamName,
-    totalWallClockMs: workers.reduce((sum, w) => sum + w.totalWallClockMs, 0),
+    totalWallClockMs,
     taskCount: workers.reduce((sum, w) => sum + w.taskCount, 0),
     workers,
   };

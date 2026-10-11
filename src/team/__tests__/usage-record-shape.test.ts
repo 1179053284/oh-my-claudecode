@@ -50,6 +50,32 @@ describe('usage JSONL record recovery', () => {
     });
     expect(readFileSync(log)).toEqual(bytes);
   });
+  it('skips finite but unsafe counters and overflow-prone durations without poisoning valid siblings', () => {
+    recordTaskUsage(root, 'large', valid);
+    const log = join(getOmcRoot(root), 'logs', 'team-usage-large.jsonl');
+    for (const field of ['wallClockMs', 'promptChars', 'responseChars']) {
+      const record = { ...valid, [field]: 1e308 };
+      appendFileSync(log, JSON.stringify(record) + '\n' + JSON.stringify(record) + '\n');
+    }
+    recordTaskUsage(root, 'large', { ...valid, taskId: 'task-2' });
+    const bytes = readFileSync(log);
+    const report = generateUsageReport(root, 'large');
+    expect(report.taskCount).toBe(2);
+    expect(report.totalWallClockMs).toBe(2001);
+    expect(report.workers[0].totalPromptChars).toBe(6);
+    expect(report.workers[0].totalResponseChars).toBe(14);
+    expect(readFileSync(log)).toEqual(bytes);
+  });
+  it('skips an addition that would lose safe counter precision while retaining later valid workers', () => {
+    recordTaskUsage(root, 'sum', { ...valid, promptChars: Number.MAX_SAFE_INTEGER, responseChars: 0 });
+    recordTaskUsage(root, 'sum', { ...valid, promptChars: 1, responseChars: 0 });
+    recordTaskUsage(root, 'sum', { ...valid, workerName: 'worker-2' });
+    const report = generateUsageReport(root, 'sum');
+    expect(report.taskCount).toBe(2);
+    expect(report.workers[0].totalPromptChars).toBe(Number.MAX_SAFE_INTEGER);
+    expect(report.workers[1].totalPromptChars).toBe(3);
+    expect(report.totalWallClockMs).toBe(2001);
+  });
   it('returns an empty report when every syntactically valid record is invalid', () => {
     recordTaskUsage(root, 'empty', valid);
     const log = join(getOmcRoot(root), 'logs', 'team-usage-empty.jsonl');
