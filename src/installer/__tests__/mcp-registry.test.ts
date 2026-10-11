@@ -834,6 +834,7 @@ describe('unified MCP registry sync', () => {
       quotedTypeMismatch: { url: 'https://mcp.example.com/quoted', type: 'http' },
       httpAlias: { url: 'https://mcp.example.com/http-alias', type: 'http' },
       streamableAlias: { url: 'https://mcp.example.com/streamable-alias', type: 'streamable-http' },
+      unicodeTypeMismatch: { url: 'https://mcp.example.com/unicode', type: 'http' },
     };
 
     writeFileSync(getUnifiedMcpRegistryPath(), JSON.stringify(registry, null, 2));
@@ -877,12 +878,16 @@ describe('unified MCP registry sync', () => {
       'url = "https://mcp.example.com/streamable-alias"',
       'type = "http"',
       '',
+      '[mcp_servers.unicodeTypeMismatch]',
+      'url = "https://mcp.example.com/unicode"',
+      '"\\U00000074ype" = "sse"',
+      '',
     ].join('\n'));
 
     const status = inspectUnifiedMcpRegistrySync();
 
     expect(status.codexMissing).toEqual([]);
-    expect(status.codexMismatched).toEqual(['changed', 'quotedTypeMismatch', 'sseOmitted', 'typeMismatch', 'unparsedType']);
+    expect(status.codexMismatched).toEqual(['changed', 'quotedTypeMismatch', 'sseOmitted', 'typeMismatch', 'unicodeTypeMismatch', 'unparsedType']);
     expect(status.claudeMissing).toEqual([]);
     expect(status.claudeMismatched).toEqual([]);
   });

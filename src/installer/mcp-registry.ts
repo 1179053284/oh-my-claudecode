@@ -412,10 +412,16 @@ function escapeTomlString(value: string): string {
 
 function unescapeTomlString(value: string): string {
   // Handle escape sequences in a single pass to avoid round-trip bugs:
-  // - \uXXXX (unicode escape)
+  // - \uXXXX and \UXXXXXXXX (Unicode escapes)
   // - \" (quote), \\ (backslash), \n (newline), \r (carriage return), \t (tab), \b (backspace), \f (form feed)
   // Single pass prevents issues like C:\\users\\u0041dir being incorrectly decoded.
-  return value.replace(/\\(u[0-9a-fA-F]{4}|["\\nrtbf])/g, (_, escaped: string) => {
+  return value.replace(/\\(U[0-9a-fA-F]{8}|u[0-9a-fA-F]{4}|["\\nrtbf])/g, (_, escaped: string) => {
+    if (escaped[0] === 'U') {
+      const codePoint = parseInt(escaped.slice(1), 16);
+      return codePoint <= 0x10ffff && !(codePoint >= 0xd800 && codePoint <= 0xdfff)
+        ? String.fromCodePoint(codePoint)
+        : `\\${escaped}`;
+    }
     if (escaped[0] === 'u') {
       // \uXXXX: decode unicode escape
       return String.fromCharCode(parseInt(escaped.slice(1), 16));
