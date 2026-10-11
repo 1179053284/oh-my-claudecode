@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync, unlinkSync, mkdirSync, writeFileSync, renameSync } from 'fs';
+import { existsSync, readdirSync, lstatSync, readFileSync, unlinkSync, mkdirSync, writeFileSync, renameSync } from 'fs';
 import { join, resolve } from 'path';
 import { createHash, randomUUID } from 'crypto';
 import { spawnSync } from 'child_process';
@@ -96,12 +96,18 @@ export function readOccupiedPluginRoots(configDir, options = {}) {
   const records = []; let unavailable = false;
   for (const name of names) {
     const path = join(dir, name);
+    let regularFile;
+    try { regularFile = lstatSync(path).isFile(); }
+    catch (error) {
+      if (error?.code !== 'ENOENT') unavailable = true;
+      continue;
+    }
+    if (!regularFile) continue;
     let record;
     let content;
     try { content = readFileSync(path, 'utf8'); }
     catch (error) {
-      // A directory cannot be a record; other read errors may hide a live session.
-      if (error?.code !== 'ENOENT' && error?.code !== 'EISDIR') unavailable = true;
+      if (error?.code !== 'ENOENT') unavailable = true;
       continue;
     }
     try { record = JSON.parse(content); } catch { try { unlinkSync(path); } catch { /* best effort */ } continue; }

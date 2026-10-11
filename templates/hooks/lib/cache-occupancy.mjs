@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync, unlinkSync, mkdirSync, writeFileSync, renameSync } from 'fs';
+import { existsSync, readdirSync, lstatSync, readFileSync, unlinkSync, mkdirSync, writeFileSync, renameSync } from 'fs';
 import { join, resolve } from 'path';
 import { createHash, randomUUID } from 'crypto';
 import { spawnSync } from 'child_process';
@@ -55,10 +55,16 @@ export function readOccupiedPluginRoots(configDir, options = {}) {
   try { names = readdirSync(dir).filter(name => typeof name === 'string' && NAME.test(name)); } catch (error) { return { roots: new Set(), unavailable: error?.code !== 'ENOENT', identities: new Map() }; }
   const roots = new Set(); const records = []; let unavailable = false;
   for (const name of names) { const path = join(dir, name); let record; let content;
+    let regularFile;
+    try { regularFile = lstatSync(path).isFile(); }
+    catch (error) {
+      if (error?.code !== 'ENOENT') unavailable = true;
+      continue;
+    }
+    if (!regularFile) continue;
     try { content = readFileSync(path, 'utf8'); }
     catch (error) {
-      // A directory cannot be a record; other read errors may hide a live session.
-      if (error?.code !== 'ENOENT' && error?.code !== 'EISDIR') unavailable = true;
+      if (error?.code !== 'ENOENT') unavailable = true;
       continue;
     }
     try { record = JSON.parse(content); } catch { try { unlinkSync(path); } catch { /* best effort */ } continue; } const age = Date.now() - Date.parse(record?.updatedAt); if (record?.version !== 1 || !Number.isSafeInteger(record?.pid) || !record?.processStartIdentity || !record?.pluginRoot || !Number.isFinite(Date.parse(record?.updatedAt)) || age < -300000 || !alive(record.pid)) { try { unlinkSync(path); } catch {} continue; } records.push({ path, record }); }

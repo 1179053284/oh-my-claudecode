@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, unlinkSync } from 'fs';
+import { readdirSync, lstatSync, readFileSync, unlinkSync } from 'fs';
 import { mkdir, writeFile, rename, rm } from 'fs/promises';
 import { createHash, randomUUID } from 'crypto';
 import { execFileSync } from 'node:child_process';
@@ -147,13 +147,19 @@ export function readOccupiedPluginRoots(configDir = getClaudeConfigDir(), option
   const now = Date.now();
   for (const name of names) {
     const path = join(directory, name);
+    let regularFile: boolean;
+    try { regularFile = lstatSync(path).isFile(); }
+    catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') unavailable = true;
+      continue;
+    }
+    if (!regularFile) continue;
     let record: unknown;
     let content: string;
     try { content = readFileSync(path, 'utf8'); }
     catch (error) {
-      // A directory cannot be a record; other read errors may hide a live session.
       const code = (error as NodeJS.ErrnoException).code;
-      if (code !== 'ENOENT' && code !== 'EISDIR') unavailable = true;
+      if (code !== 'ENOENT') unavailable = true;
       continue;
     }
     try { record = JSON.parse(content); } catch { try { unlinkSync(path); } catch { /* best effort */ } continue; }

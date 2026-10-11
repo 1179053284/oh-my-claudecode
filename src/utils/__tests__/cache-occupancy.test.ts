@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
-import { mkdtempSync, mkdirSync, writeFileSync, readdirSync, rmSync, existsSync, utimesSync } from 'fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readdirSync, rmSync, existsSync, lstatSync, symlinkSync, utimesSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { purgeStalePluginCacheVersions } from '../paths.js';
@@ -47,19 +47,32 @@ describe('cache occupancy registry', () => {
     ['typescript', null],
     ['script', '../../../scripts/lib/cache-occupancy.mjs'],
     ['template', '../../../templates/hooks/lib/cache-occupancy.mjs'],
-  ])('ignores directory entries in the occupancy registry for %s', async (_name, path) => {
+  ])('ignores non-file entries in the occupancy registry for %s', async (_name, path) => {
     const read = path ? (await import(path)).readOccupiedPluginRoots : readOccupiedPluginRoots;
     const registry = join(dir, '.omc', 'cache-occupancy');
     mkdirSync(registry, { recursive: true });
     const entryPath = join(registry, `${'a'.repeat(64)}.json`);
     mkdirSync(entryPath);
-    readFailures.set(entryPath, 'EISDIR');
 
     const result = read(dir);
 
     expect(result.unavailable).toBe(false);
     expect(result.roots.size).toBe(0);
     expect(existsSync(entryPath)).toBe(true);
+  });
+
+  it.skipIf(process.platform === 'win32')('ignores self-referential symlinks in all occupancy readers', async () => {
+    const registry = join(dir, '.omc', 'cache-occupancy');
+    mkdirSync(registry, { recursive: true });
+    const entryPath = join(registry, `${'b'.repeat(64)}.json`);
+    symlinkSync(entryPath, entryPath);
+    for (const path of [null, '../../../scripts/lib/cache-occupancy.mjs', '../../../templates/hooks/lib/cache-occupancy.mjs']) {
+      const read = path ? (await import(path)).readOccupiedPluginRoots : readOccupiedPluginRoots;
+      const result = read(dir);
+      expect(result.unavailable).toBe(false);
+      expect(result.roots.size).toBe(0);
+    }
+    expect(lstatSync(entryPath).isSymbolicLink()).toBe(true);
   });
 
   it.each(['EACCES', 'EIO'])('preserves a live pinned cache version when its record reports %s', async code => {
