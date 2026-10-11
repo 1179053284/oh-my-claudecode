@@ -668,6 +668,38 @@ describe('getUsage routing', () => {
     expect(getUsageCredentialIdentity(false, true)).not.toBe(runtimeIdentity);
   });
 
+  it('treats unreadable active account metadata as an inconclusive profile', () => {
+    const configDir = '/tmp/test-base/.omc-launch';
+    const credentialsPath = `${configDir}/.credentials.json`;
+    const runtimeClaudeJsonPath = `${configDir}/.claude.json`;
+    const adjacentClaudeJsonPath = '/tmp/test-base/.claude.json';
+    const credentialsContent = JSON.stringify({
+      claudeAiOauth: {
+        accessToken: 'managed-access-token',
+        refreshToken: 'managed-refresh-token',
+        omcUsageProfileId: 'previous-profile',
+        omcUsageProfileTokenHash: createHash('sha256')
+          .update('managed-refresh-token')
+          .digest('hex'),
+      },
+    });
+
+    process.env.CLAUDE_CONFIG_DIR = configDir;
+    vi.mocked(fs.existsSync).mockImplementation(path =>
+      [credentialsPath, runtimeClaudeJsonPath, adjacentClaudeJsonPath].includes(String(path)),
+    );
+    vi.mocked(fs.readFileSync).mockImplementation(path => {
+      if (String(path) === credentialsPath) return credentialsContent;
+      if (String(path) === runtimeClaudeJsonPath) throw new Error('mock: transient metadata read failure');
+      if (String(path) === adjacentClaudeJsonPath) {
+        return JSON.stringify({ oauthAccount: { accountUuid: 'different-account' } });
+      }
+      return '{}';
+    });
+
+    expect(getUsageCredentialIdentity(false, true)).toBeNull();
+  });
+
   it('normalizes the email fallback when no stable account UUID is available', () => {
     const credentialsPath = '/tmp/test-claude/.credentials.json';
     let credentialsContent = JSON.stringify({
@@ -800,6 +832,86 @@ describe('getUsage routing', () => {
     expect(second.rateLimits?.weeklyPercent).toBe(50);
     expect(vi.mocked(childProcess.execFileSync)).not.toHaveBeenCalled();
     expect(httpsModule.default.request).not.toHaveBeenCalled();
+  });
+
+  it('skips Keychain on a warm OAuth cache hit in a fresh process', async () => {
+    const configDir = '/tmp/test-claude';
+    const cachePath = `${configDir}/plugins/oh-my-claudecode/.usage-cache-anthropic.json`;
+    const claudeJsonPath = `${configDir}/.claude.json`;
+    const cachedCredentials = JSON.stringify({
+      claudeAiOauth: {
+        accessToken: 'warm-keychain-access',
+        refreshToken: 'warm-keychain-refresh',
+        expiresAt: Date.now() + 60 * 60 * 1000,
+        oauthAccount: { uuid: 'warm-keychain-account' },
+      },
+    });
+    let claudeJsonContent = JSON.stringify({
+      oauthAccount: { accountUuid: 'warm-keychain-account' },
+    });
+
+    process.env.CLAUDE_CONFIG_DIR = configDir;
+    vi.mocked(fs.existsSync).mockImplementation(path => String(path) === claudeJsonPath);
+    vi.mocked(fs.readFileSync).mockImplementation(path =>
+      String(path) === claudeJsonPath ? claudeJsonContent : '{}',
+    );
+    vi.mocked(childProcess.execFileSync).mockImplementation((_file, args) => {
+      const argsArray = args as string[];
+      if (argsArray.includes('find-generic-password') && argsArray.includes('-a')) {
+        return cachedCredentials;
+      }
+      throw new Error('mock: no service-only Keychain entry');
+    });
+
+    const credentialIdentity = getUsageCredentialIdentity(false, true);
+    const cacheContent = JSON.stringify({
+      timestamp: Date.now(),
+      lastSuccessAt: Date.now(),
+      source: 'anthropic',
+      credentialIdentity,
+      data: { fiveHourPercent: 25, weeklyPercent: 50 },
+    });
+    vi.mocked(fs.existsSync).mockImplementation(path =>
+      String(path) === cachePath || String(path) === claudeJsonPath,
+    );
+    vi.mocked(fs.readFileSync).mockImplementation(path => {
+      if (String(path) === cachePath) return cacheContent;
+      if (String(path) === claudeJsonPath) return claudeJsonContent;
+      return '{}';
+    });
+
+    vi.resetModules();
+    const freshFs = await import('fs');
+    const freshChildProcess = await import('child_process');
+    const freshHttps = await import('https') as unknown as { default: { request: ReturnType<typeof vi.fn> } };
+    vi.mocked(freshFs.existsSync).mockImplementation(path =>
+      String(path) === cachePath || String(path) === claudeJsonPath,
+    );
+    vi.mocked(freshFs.readFileSync).mockImplementation(path => {
+      if (String(path) === cachePath) return cacheContent;
+      if (String(path) === claudeJsonPath) return claudeJsonContent;
+      return '{}';
+    });
+    vi.mocked(freshChildProcess.execFileSync).mockClear();
+    vi.mocked(freshChildProcess.execFileSync).mockImplementation(() => {
+      throw new Error('warm cache hit should not read Keychain');
+    });
+
+    const { getUsage: freshGetUsage } = await import('../../hud/usage-api.js');
+    const result = await freshGetUsage();
+
+    expect(result.rateLimits?.fiveHourPercent).toBe(25);
+    expect(result.rateLimits?.weeklyPercent).toBe(50);
+    expect(vi.mocked(freshChildProcess.execFileSync)).not.toHaveBeenCalled();
+    expect(freshHttps.default.request).not.toHaveBeenCalled();
+
+    claudeJsonContent = JSON.stringify({
+      oauthAccount: { accountUuid: 'different-keychain-account' },
+    });
+    const switchedAccountResult = await freshGetUsage();
+    expect(switchedAccountResult.rateLimits?.fiveHourPercent).toBeUndefined();
+    expect(switchedAccountResult.error).toBe('no_credentials');
+    expect(vi.mocked(freshChildProcess.execFileSync)).toHaveBeenCalled();
   });
 
   it('uses the raw ~-prefixed CLAUDE_CONFIG_DIR value for Keychain service lookup', async () => {

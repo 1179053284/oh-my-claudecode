@@ -94,6 +94,8 @@ interface OAuthCredentials {
   refreshToken?: string;
   /** Hash of stable account metadata or a persisted legacy credential identity. */
   profileIdentity?: string;
+  /** True when account metadata could not be read, so profile scoping is inconclusive. */
+  profileIdentityUnavailable?: boolean;
   /** Where the credentials were read from, needed for write-back */
   source?: 'keychain' | 'file' | 'env';
   /** Keychain account name used when reading (null = service-only lookup) */
@@ -559,7 +561,7 @@ function hashCredentialIdentity(identity: string): string {
   return createHash('sha256').update(identity).digest('hex');
 }
 
-function getOAuthAccountProfileIdentity(credentials: Record<string, unknown>): string | undefined {
+function getOAuthAccountProfileIdentity(credentials: Record<string, unknown>): string | null {
   const nestedAccount = credentials.oauthAccount;
   const account = typeof nestedAccount === 'object' && nestedAccount !== null && !Array.isArray(nestedAccount)
     ? nestedAccount as Record<string, unknown>
@@ -570,6 +572,17 @@ function getOAuthAccountProfileIdentity(credentials: Record<string, unknown>): s
     }
     return undefined;
   };
+  const credentialUuid = firstString(
+    credentials.accountUuid,
+    credentials.accountUUID,
+    account.accountUuid,
+    account.accountUUID,
+    account.uuid,
+  );
+  if (credentialUuid) {
+    return hashCredentialIdentity(JSON.stringify(['oauth-account-uuid', credentialUuid.toLowerCase()]));
+  }
+
   // Managed OMC launches copy account metadata into the active config directory;
   // the standard Claude layout keeps it beside that directory instead.
   let claudeJsonAccount: Record<string, unknown> = {};
@@ -579,39 +592,40 @@ function getOAuthAccountProfileIdentity(credentials: Record<string, unknown>): s
     join(dirname(configDir), '.claude.json'),
   ]);
   for (const claudeJsonPath of claudeJsonPaths) {
+    let parsed: unknown;
     try {
       if (!existsSync(claudeJsonPath)) continue;
-      const parsed = JSON.parse(readFileSync(claudeJsonPath, 'utf-8')) as Record<string, unknown>;
-      const accountMetadata = parsed.oauthAccount;
-      if (
-        typeof accountMetadata === 'object' && accountMetadata !== null &&
-        !Array.isArray(accountMetadata)
-      ) {
-        const candidate = accountMetadata as Record<string, unknown>;
-        if (firstString(
-          candidate.accountUuid,
-          candidate.accountUUID,
-          candidate.uuid,
-          candidate.accountId,
-          candidate.userId,
-          candidate.userID,
-          candidate.emailAddress,
-          candidate.email,
-        )) {
-          claudeJsonAccount = candidate;
-          break;
-        }
-      }
+      parsed = JSON.parse(readFileSync(claudeJsonPath, 'utf-8'));
     } catch {
-      // Account metadata is optional; try the other supported config location.
+      // Do not substitute a different account identity when an existing file is unreadable.
+      return null;
+    }
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return null;
+    const accountMetadata = (parsed as Record<string, unknown>).oauthAccount;
+    if (accountMetadata == null) continue;
+    if (
+      typeof accountMetadata === 'object' &&
+      !Array.isArray(accountMetadata)
+    ) {
+      const candidate = accountMetadata as Record<string, unknown>;
+      if (firstString(
+        candidate.accountUuid,
+        candidate.accountUUID,
+        candidate.uuid,
+        candidate.accountId,
+        candidate.userId,
+        candidate.userID,
+        candidate.emailAddress,
+        candidate.email,
+      )) {
+        claudeJsonAccount = candidate;
+        break;
+      }
+    } else {
+      return null;
     }
   }
   const accountUuid = firstString(
-    credentials.accountUuid,
-    credentials.accountUUID,
-    account.accountUuid,
-    account.accountUUID,
-    account.uuid,
     claudeJsonAccount.accountUuid,
     claudeJsonAccount.accountUUID,
     claudeJsonAccount.uuid,
@@ -654,7 +668,7 @@ function getOAuthAccountProfileIdentity(credentials: Record<string, unknown>): s
   if (emailAddress) {
     return hashCredentialIdentity(JSON.stringify(['oauth-email', emailAddress.toLowerCase()]));
   }
-  return tokenHash;
+  return tokenHash ?? null;
 }
 
 function isCacheForCredential(cache: UsageCache | null, credentialIdentity?: string): boolean {
@@ -809,12 +823,14 @@ function readKeychainCredential(serviceName: string, account?: string): OAuthCre
     const creds = parsed.claudeAiOauth || parsed;
 
     if (!creds.accessToken) return null;
+    const profileIdentity = getOAuthAccountProfileIdentity(creds);
 
     return {
       accessToken: creds.accessToken,
       expiresAt: creds.expiresAt,
       refreshToken: creds.refreshToken,
-      profileIdentity: getOAuthAccountProfileIdentity(creds),
+      profileIdentity: profileIdentity ?? undefined,
+      profileIdentityUnavailable: profileIdentity === null,
       source: 'keychain' as const,
       keychainAccount: account ?? null,
       subscriptionType: creds.subscriptionType,
@@ -876,11 +892,13 @@ function readFileCredentials(): OAuthCredentials | null {
     const creds = parsed.claudeAiOauth || parsed;
 
     if (creds.accessToken) {
+      const profileIdentity = getOAuthAccountProfileIdentity(creds);
       return {
         accessToken: creds.accessToken,
         expiresAt: creds.expiresAt,
         refreshToken: creds.refreshToken,
-        profileIdentity: getOAuthAccountProfileIdentity(creds),
+        profileIdentity: profileIdentity ?? undefined,
+        profileIdentityUnavailable: profileIdentity === null,
         source: 'file' as const,
         subscriptionType: creds.subscriptionType,
         rateLimitTier: creds.rateLimitTier,
@@ -975,13 +993,15 @@ function resolveUsageProfile(
         ? authToken
         : undefined;
   const credentialIdentity = credentials
-    ? hashCredentialIdentity(JSON.stringify([
+    ? credentials.profileIdentityUnavailable
+      ? undefined
+      : hashCredentialIdentity(JSON.stringify([
       currentSource,
       baseUrl ?? null,
       credentials.profileIdentity ?? hashCredentialIdentity(
         credentials.refreshToken ?? credentials.accessToken,
       ),
-    ]))
+      ]))
     : providerCredential
       ? hashCredentialIdentity(JSON.stringify([currentSource, baseUrl ?? null, providerCredential]))
       : undefined;
@@ -2302,6 +2322,45 @@ async function fetchAndCacheUsage<T>(opts: {
   return { rateLimits: usage };
 }
 
+/** Validate a fresh Anthropic cache by stable config metadata before a Keychain read. */
+function getWarmAnthropicUsageCache(
+  pollIntervalMs: number,
+  rateLimitIdentity: string,
+): UsageResult | undefined {
+  const baseUrl = process.env.ANTHROPIC_BASE_URL;
+  if (
+    process.env.CLAUDE_CODE_OAUTH_TOKEN?.trim() ||
+    process.env.ANTHROPIC_AUTH_TOKEN?.trim() ||
+    process.env.MINIMAX_API_KEY?.trim() ||
+    process.env.KIMI_API_KEY?.trim() ||
+    process.env.ANTHROPIC_API_KEY?.trim() ||
+    (baseUrl != null && (isMinimaxHost(baseUrl) || isKimiHost(baseUrl) || isZaiHost(baseUrl)))
+  ) {
+    return undefined;
+  }
+
+  const profileIdentity = getOAuthAccountProfileIdentity({});
+  if (!profileIdentity) return undefined;
+
+  const credentialIdentity = hashCredentialIdentity(JSON.stringify([
+    'anthropic',
+    baseUrl ?? null,
+    profileIdentity,
+  ]));
+  migrateLegacyCache('anthropic');
+  const cache = readCache('anthropic');
+  if (
+    !cache?.data ||
+    cache.source !== 'anthropic' ||
+    !isCacheForCredential(cache, credentialIdentity) ||
+    !isCacheValid(cache, pollIntervalMs, rateLimitIdentity)
+  ) {
+    return undefined;
+  }
+
+  return getCachedUsageResult(cache, rateLimitIdentity);
+}
+
 /**
  * Get usage data (with caching)
  *
@@ -2318,13 +2377,17 @@ async function fetchAndCacheUsage<T>(opts: {
  *   and the header is left off rather than guessed.
  */
 export async function getUsage(opts?: { clientVersion?: string }): Promise<UsageResult> {
+  const pollIntervalMs = getUsagePollIntervalMs();
+  const anthropicRateLimitIdentity = buildUserAgent(opts?.clientVersion) ?? 'anonymous';
+  const warmCachedUsage = getWarmAnthropicUsageCache(pollIntervalMs, anthropicRateLimitIdentity);
+  if (warmCachedUsage) return warmCachedUsage;
+
   let profile = resolveUsageProfile();
   const { currentSource, authToken, minimaxApiKey, kimiApiKey } = profile;
   let credentials = profile.credentials;
   let credentialIdentity = profile.credentialIdentity;
-  const pollIntervalMs = getUsagePollIntervalMs();
   const rateLimitIdentity = currentSource === 'anthropic'
-    ? buildUserAgent(opts?.clientVersion) ?? 'anonymous'
+    ? anthropicRateLimitIdentity
     : undefined;
 
   // Migrate legacy single-file cache to provider-specific file (one-shot, best-effort)
