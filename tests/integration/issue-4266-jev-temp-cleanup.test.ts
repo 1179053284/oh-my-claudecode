@@ -278,7 +278,7 @@ describe("issue #4266: Jev temp directory cleanup", () => {
       const result = runActiveRecord(tempRoot, homeRoot);
 
       expect(result.status).toBe(0);
-      expect(JSON.parse(result.stdout).result).toBeUndefined();
+      expect(JSON.parse(result.stdout).result.mode).toBe("degraded");
       expect(existsSync(staleDir)).toBe(true);
       expect(existsSync(currentLock)).toBe(false);
       expect(existsSync(previousLock)).toBe(true);

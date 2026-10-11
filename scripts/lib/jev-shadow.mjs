@@ -287,15 +287,16 @@ export function recordJevShadow({ point, state, questions, heuristic }) {
   try {
     if (shouldRunSweep(markerPath)) {
       removeExpiredSweepLocks(markerPath);
-      if (hasActivePreviousSweepLock(markerPath)) return undefined;
-      const lock = acquireSweepLock(markerPath);
-      if (lock) {
-        try {
-          if (shouldRunSweep(markerPath) && updateSweepMarker(markerPath)) {
-            sweepStaleTempDirs(24 * 60 * 60 * 1000); // Clean dirs older than 24h
+      if (!hasActivePreviousSweepLock(markerPath)) {
+        const lock = acquireSweepLock(markerPath);
+        if (lock) {
+          try {
+            if (shouldRunSweep(markerPath) && updateSweepMarker(markerPath)) {
+              sweepStaleTempDirs(24 * 60 * 60 * 1000); // Clean dirs older than 24h
+            }
+          } finally {
+            releaseSweepLock(lock);
           }
-        } finally {
-          releaseSweepLock(lock);
         }
       }
     }
