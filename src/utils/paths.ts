@@ -6,7 +6,7 @@
  * (which work universally) and handle platform-specific directory conventions.
  */
 
-import { join, dirname } from 'path';
+import { join, dirname, basename } from 'path';
 import { existsSync, readFileSync, readdirSync, statSync, lstatSync, realpathSync, unlinkSync, rmSync, renameSync, symlinkSync, type Stats } from 'fs';
 import { homedir } from 'os';
 import { getClaudeConfigDir } from './config-dir.js';
@@ -495,6 +495,20 @@ function hasAncestorWithIdentity(path: string, identity: Stats): boolean {
   }
 }
 
+function firstChildBelowDirectoryIdentity(path: string, directoryIdentity: Stats): string | undefined {
+  let currentPath = stripTrailing(path);
+  while (true) {
+    const parentPath = dirname(currentPath);
+    if (parentPath === currentPath) return undefined;
+    try {
+      if (sameFileSystemIdentity(statSync(parentPath), directoryIdentity)) return basename(currentPath);
+    } catch {
+      // The registered version can be missing while its namespace still exists.
+    }
+    currentPath = parentPath;
+  }
+}
+
 function hasResolvableGenericPluginSymlinks(directory: string, ancestors: Stats[] = []): boolean {
   const directoryStats = statSync(directory);
   if (ancestors.some(identity => sameFileSystemIdentity(directoryStats, identity))) return false;
@@ -503,7 +517,8 @@ function hasResolvableGenericPluginSymlinks(directory: string, ancestors: Stats[
     const entryPath = join(directory, entry.name);
     if (entry.isSymbolicLink()) {
       const entryStats = statSync(entryPath);
-      if (entryStats.isDirectory() && branch.some(identity => sameFileSystemIdentity(entryStats, identity))) {
+      if (entryStats.isDirectory() && (branch.some(identity => sameFileSystemIdentity(entryStats, identity)) ||
+          !hasResolvableGenericPluginSymlinks(entryPath, branch))) {
         return false;
       }
     } else if (entry.isDirectory() && !hasResolvableGenericPluginSymlinks(entryPath, branch)) {
@@ -611,6 +626,25 @@ export function purgeStalePluginCacheVersions(options?: { skipGracePeriod?: bool
           .map(d => d.name);
       } catch { continue; }
 
+      const pluginDirNorm = comparisonPath(pluginDir);
+      const lexicalActiveVersionDirsHere = activePathIdentities
+        .filter(ap => ap.startsWith(pluginDirNorm + '/'))
+        .map(ap => join(pluginDir, ap.slice(pluginDirNorm.length + 1).split('/')[0]));
+      const filesystemActiveVersionDirsHere: string[] = [];
+      try {
+        const pluginDirStats = statSync(pluginDir);
+        for (const activePath of activePathsArray) {
+          const versionName = firstChildBelowDirectoryIdentity(activePath, pluginDirStats);
+          if (versionName) filesystemActiveVersionDirsHere.push(join(pluginDir, versionName));
+        }
+      } catch {
+        // Lexical matches remain available if the namespace disappears mid-scan.
+      }
+      const activeVersionDirsHere = dedupePaths([
+        ...lexicalActiveVersionDirsHere,
+        ...filesystemActiveVersionDirsHere,
+      ]);
+
       // Reconcile interrupted relinks BEFORE walking normal versions.  Entries
       // arrive in filesystem order, so a squatter at `4.15.6` could otherwise be
       // relinked first — and that relink clears `4.15.6.omc-stale-<pid>`, the
@@ -678,7 +712,8 @@ export function purgeStalePluginCacheVersions(options?: { skipGracePeriod?: bool
 
         // Check if this version or any of its subdirectories are referenced
         const isActive = activePathIdentities.includes(normalised) ||
-          activePathIdentities.some(ap => ap.startsWith(normalised + '/'));
+          activePathIdentities.some(ap => ap.startsWith(normalised + '/')) ||
+          activeVersionDirsHere.some(activeDir => comparisonPath(activeDir) === normalised);
 
         if (isActive) continue;
 
@@ -694,13 +729,6 @@ export function purgeStalePluginCacheVersions(options?: { skipGracePeriod?: bool
         // When an active version exists in the same plugin namespace, replace the
         // stale directory with a symlink rather than deleting it.  This keeps any
         // running session whose CLAUDE_PLUGIN_ROOT still points to this path working.
-        const pluginDirNorm = comparisonPath(pluginDir);
-        const activeVersionDirsHere = dedupePaths(
-          activePathIdentities
-            .filter(ap => ap.startsWith(pluginDirNorm + '/'))
-            .map(ap => join(pluginDir, ap.slice(pluginDirNorm.length + 1).split('/')[0])),
-        );
-
         if (activeVersionDirsHere.length > 0) {
           const target = [...activeVersionDirsHere].sort((a, b) =>
             compareSemverDesc(

@@ -253,6 +253,56 @@ describe('purgeStalePluginCacheVersions', () => {
     }
   });
 
+  it('matches an active namespace with a case-aliased parent by filesystem identity', () => {
+    const cacheDir = '/mock/.claude/plugins/cache';
+    const marketDir = join(cacheDir, 'omc');
+    const pluginDir = join(marketDir, 'Oh-My-ClaudeCode');
+    const aliasedPluginDir = join(marketDir, 'oh-my-claudecode');
+    const registeredActive = join(aliasedPluginDir, '4.15.10');
+    const active = join(pluginDir, '4.15.10');
+    const stale = join(pluginDir, '4.15.6');
+    const namespaceStats = { ...staleStats(), dev: 1, ino: 101 } as ReturnType<typeof statSync>;
+    const activeStats = { ...staleStats(), dev: 1, ino: 102 } as ReturnType<typeof statSync>;
+    const staleVersionStats = { ...staleStats(), dev: 1, ino: 103 } as ReturnType<typeof statSync>;
+    const originalPlatform = process.platform;
+    Object.defineProperty(process, 'platform', { value: 'darwin', configurable: true });
+    try {
+      mockedExistsSync.mockImplementation((p) => {
+        const ps = String(p);
+        return ps.includes('installed_plugins.json') || ps === cacheDir || ps === registeredActive ||
+          ps === active || ps === stale;
+      });
+      mockedReadFileSync.mockReturnValue(JSON.stringify({
+        version: 2,
+        plugins: { 'oh-my-claudecode@omc': [{ installPath: registeredActive }] },
+      }));
+      mockedStatSync.mockImplementation((p) => {
+        const ps = String(p);
+        if (ps === pluginDir || ps === aliasedPluginDir) return namespaceStats;
+        if (ps === registeredActive || ps === active) return activeStats;
+        if (ps === stale) return staleVersionStats;
+        return staleStats();
+      });
+      mockedReaddirSync.mockImplementation((p, _opts?) => {
+        const ps = String(p);
+        if (ps === cacheDir) return [dirent('omc')] as any;
+        if (ps === marketDir) return [dirent('Oh-My-ClaudeCode')] as any;
+        if (ps === pluginDir) return [dirent('4.15.6'), dirent('4.15.10')] as any;
+        return [] as any;
+      });
+
+      const result = purgeStalePluginCacheVersions();
+
+      expect(result.symlinked).toBe(0);
+      expect(result.removed).toBe(0);
+      expect(result.errors).toHaveLength(1);
+      expect(mockedRmSync).not.toHaveBeenCalledWith(stale, { recursive: true, force: true });
+      expect(mockedRenameSync).not.toHaveBeenCalledWith(stale, expect.any(String));
+    } finally {
+      Object.defineProperty(process, 'platform', { value: originalPlatform, configurable: true });
+    }
+  });
+
   it('does nothing when all cache versions are active', () => {
     const cacheDir = '/mock/.claude/plugins/cache';
     const active = join(cacheDir, 'omc/oh-my-claudecode/4.3.0');

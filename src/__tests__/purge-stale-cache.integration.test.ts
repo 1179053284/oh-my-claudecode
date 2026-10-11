@@ -190,6 +190,29 @@ describe('purgeStalePluginCacheVersions on a real filesystem', () => {
     });
   }
 
+  it('matches a case-aliased parent namespace on case-insensitive macOS', ({ skip }) => {
+    if (process.platform !== 'darwin') skip();
+    const marketplaceDir = join(configDir, 'plugins', 'cache', 'omc');
+    rmSync(pluginDir, { recursive: true, force: true });
+    pluginDir = join(marketplaceDir, 'Oh-My-ClaudeCode');
+    mkdirSync(pluginDir, { recursive: true });
+    const stale = writeVersion(STALE);
+    mkdirSync(join(pluginDir, ACTIVE));
+    const aliasedActive = join(marketplaceDir, 'oh-my-claudecode', ACTIVE);
+    if (!existsSync(aliasedActive)) skip();
+    makeStale(stale);
+    installedPlugins(aliasedActive);
+
+    const result = purgeStalePluginCacheVersions();
+
+    expect(result.symlinked).toBe(0);
+    expect(result.removed).toBe(0);
+    expect(result.errors).toHaveLength(1);
+    expect(lstatSync(stale).isDirectory()).toBe(true);
+    expect(hookResolves(STALE)).toBe(true);
+    expect(readdirSync(pluginDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
+  });
+
   it.each(['root', 'descendant'])('preserves a stale root when the registered target redirects through its %s', (targetShape) => {
     const stale = writeVersion(STALE);
     let redirectTarget = stale;
@@ -327,6 +350,38 @@ describe('purgeStalePluginCacheVersions on a real filesystem', () => {
     expect(lstatSync(stale).isDirectory()).toBe(true);
     expect(existsSync(join(stale, 'commands', 'old-command.js'))).toBe(true);
     expect(readlinkSync(activeCommands)).toBe(staleCommands);
+    expect(readdirSync(genericDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
+  });
+
+  it('restores generic payload when a directory symlink contains a stale-version link', () => {
+    const genericDir = join(configDir, 'plugins', 'cache', 'official', 'hookify');
+    const active = join(genericDir, ACTIVE);
+    const stale = join(genericDir, STALE);
+    const externalPayload = join(configDir, 'external-generic-payload');
+    const staleData = join(stale, 'data');
+    const externalChild = join(externalPayload, 'child');
+    const activePayload = join(active, 'payload');
+    mkdirSync(active, { recursive: true });
+    writeFileSync(join(active, 'README.md'), 'active generic payload');
+    mkdirSync(stale, { recursive: true });
+    writeFileSync(staleData, 'only old data');
+    mkdirSync(externalPayload, { recursive: true });
+    symlinkSync(staleData, externalChild, 'file');
+    symlinkSync(externalPayload, activePayload, 'dir');
+    writeFileSync(join(stale, 'README.md'), 'old generic payload');
+    makeStale(stale);
+    writeFileSync(join(configDir, 'plugins', 'installed_plugins.json'), JSON.stringify({
+      version: 2, plugins: { 'hookify@official': [{ installPath: active }] },
+    }));
+
+    const result = purgeStalePluginCacheVersions();
+
+    expect(result.symlinked).toBe(0);
+    expect(result.errors).toHaveLength(1);
+    expect(lstatSync(stale).isDirectory()).toBe(true);
+    expect(existsSync(staleData)).toBe(true);
+    expect(readlinkSync(activePayload)).toBe(externalPayload);
+    expect(readlinkSync(externalChild)).toBe(staleData);
     expect(readdirSync(genericDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
   });
 
