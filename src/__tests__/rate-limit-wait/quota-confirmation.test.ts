@@ -25,6 +25,10 @@ function status(limited: boolean, degraded = false): RateLimitStatus {
   };
 }
 
+function staleNetworkStatus(limited: boolean): RateLimitStatus {
+  return { ...status(limited), apiErrorReason: 'network', usingStaleData: true };
+}
+
 describe('confirmed quota transitions in the actual daemon polling loop', () => {
   let root: string;
   let config: Required<DaemonConfig>;
@@ -105,6 +109,15 @@ describe('confirmed quota transitions in the actual daemon polling loop', () => 
     await start(status(false, true));
     expect(boundary.resume).not.toHaveBeenCalled();
     expect(observed().rateLimitStatus?.apiErrorReason).toBe('rate_limited');
+    await next(status(false));
+    expect(boundary.resume).toHaveBeenCalledExactlyOnceWith('%test');
+  });
+  it('does not resume on stale cached clear after a network failure', async () => {
+    seed(status(true));
+    await start(staleNetworkStatus(false));
+    expect(boundary.resume).not.toHaveBeenCalled();
+    expect(observed().lastConfirmedLimited).toBe(true);
+    expect(observed().rateLimitStatus?.usingStaleData).toBe(true);
     await next(status(false));
     expect(boundary.resume).toHaveBeenCalledExactlyOnceWith('%test');
   });
