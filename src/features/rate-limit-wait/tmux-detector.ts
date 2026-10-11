@@ -177,8 +177,11 @@ const LIVE_CONFIRMATION_PROMPT_PATTERN =
 const LIVE_MENU_OPTION_PATTERN = /^\s*(?:❯\s*)?(?:\[\d+\]|\d+[.)]?)\s+/;
 const LIVE_MENU_QUESTION_PATTERN = /^\s*what (?:would you like|do you want) to do\?\s*$/i;
 const LIVE_MENU_DIVIDER_PATTERN = /^\s*[-─━═]+\s*$/;
-const LIVE_WAIT_AND_CONTINUE_PROMPT_PATTERN =
-  /what would you like to do\?[\s\S]*^\s*\[1\]\s+wait and continue automatically\b[\s\S]*^\s*>\s*$/im;
+const LIVE_MENU_LABEL_PATTERN = /^\s*options:\s*$/i;
+
+function isLiveMenuContextSeparator(line: string): boolean {
+  return LIVE_MENU_DIVIDER_PATTERN.test(line) || LIVE_MENU_LABEL_PATTERN.test(line);
+}
 
 function hasLiveResumeMenuPrompt(lines: string[]): boolean {
   const lastLine = lines.at(-1) ?? '';
@@ -195,7 +198,7 @@ function hasLiveResumeMenuPrompt(lines: string[]): boolean {
   if (!LIVE_RESUME_OPTION_PATTERN.test(lines[firstOptionIndex] ?? '')) return false;
 
   let contextIndex = firstOptionIndex - 1;
-  while (contextIndex >= 0 && LIVE_MENU_DIVIDER_PATTERN.test(lines[contextIndex] ?? '')) {
+  while (contextIndex >= 0 && isLiveMenuContextSeparator(lines[contextIndex] ?? '')) {
     contextIndex--;
   }
   if (contextIndex >= 0 && RATE_LIMIT_PATTERNS.some((pattern) =>
@@ -206,7 +209,7 @@ function hasLiveResumeMenuPrompt(lines: string[]): boolean {
 
   if (contextIndex >= 0 && LIVE_MENU_QUESTION_PATTERN.test(lines[contextIndex] ?? '')) {
     contextIndex--;
-    while (contextIndex >= 0 && LIVE_MENU_DIVIDER_PATTERN.test(lines[contextIndex] ?? '')) {
+    while (contextIndex >= 0 && isLiveMenuContextSeparator(lines[contextIndex] ?? '')) {
       contextIndex--;
     }
     return contextIndex >= 0 && RATE_LIMIT_PATTERNS.some((pattern) =>
@@ -214,6 +217,44 @@ function hasLiveResumeMenuPrompt(lines: string[]): boolean {
     );
   }
 
+  return false;
+}
+
+function hasLiveWaitAndContinuePrompt(lines: string[]): boolean {
+  const promptIndex = lines.length - 1;
+  if ((lines[promptIndex] ?? '').trim() !== '>') return false;
+
+  let firstOptionIndex = promptIndex - 1;
+  while (firstOptionIndex >= 0 && LIVE_MENU_OPTION_PATTERN.test(lines[firstOptionIndex] ?? '')) {
+    firstOptionIndex--;
+  }
+  firstOptionIndex++;
+  if (
+    firstOptionIndex >= promptIndex ||
+    !LIVE_RESUME_OPTION_PATTERN.test(lines[firstOptionIndex] ?? '') ||
+    !lines.slice(firstOptionIndex, promptIndex).every((line) => LIVE_MENU_OPTION_PATTERN.test(line))
+  ) {
+    return false;
+  }
+
+  let questionIndex = firstOptionIndex - 1;
+  while (questionIndex >= 0 && isLiveMenuContextSeparator(lines[questionIndex] ?? '')) {
+    questionIndex--;
+  }
+  if (questionIndex < 0 || !LIVE_MENU_QUESTION_PATTERN.test(lines[questionIndex] ?? '')) {
+    return false;
+  }
+
+  let contextLinesChecked = 0;
+  for (let contextIndex = questionIndex - 1;
+    contextIndex >= 0 && contextLinesChecked < 3;
+    contextIndex--
+  ) {
+    const line = lines[contextIndex] ?? '';
+    if (isLiveMenuContextSeparator(line)) continue;
+    contextLinesChecked++;
+    if (RATE_LIMIT_PATTERNS.some((pattern) => pattern.test(line))) return true;
+  }
   return false;
 }
 
@@ -498,12 +539,10 @@ export function revalidateBlockedPanes(
       .filter((line) => line.trim() &&
         !OMC_HUD_STATUS_LINE_PATTERN.test(line) &&
         !OMC_HUD_MODE_LINE_PATTERN.test(line))
-      .slice(-5)
       .join('\n');
     const recentLineList = recentLines.split('\n');
-    const lastLine = recentLineList.at(-1) ?? '';
     const hasLivePrompt = hasLiveResumeMenuPrompt(recentLineList) ||
-      (lastLine.trim() === '>' && LIVE_WAIT_AND_CONTINUE_PROMPT_PATTERN.test(recentLines));
+      hasLiveWaitAndContinuePrompt(recentLineList);
     if (
       !analysis.isBlocked ||
       !LIVE_RESUME_OPTION_PATTERN.test(recentLines) ||

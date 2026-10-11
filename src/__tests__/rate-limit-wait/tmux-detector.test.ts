@@ -521,6 +521,7 @@ describe('tmux-detector', () => {
       'Weekly usage limit reached',
       "You've used your weekly allocation of tokens.",
       'Limit resets on Monday at 12:00 AM UTC.',
+      'Options:',
       '[1] Continue when limit resets',
       '[2] Exit',
       'Enter choice:',
@@ -613,6 +614,24 @@ describe('tmux-detector', () => {
         '❯ Please explain the test failure',
         '[OMC#4.15.1L] | Model: Opus 4.8 | 5h:100% wk:14% | thinking | session:80m | ctx:14%',
         '⏵⏵ auto mode on (shift+tab to cycle) · ← for agents',
+      ].join('\n');
+      vi.mocked(tmuxExec)
+        .mockReturnValueOnce(paneList)
+        .mockReturnValueOnce(resumedConversation);
+
+      expect(revalidateBlockedPanes([trackedPane])).toEqual([]);
+    });
+
+    it('rejects a new bare selector after a conversation following an old resume menu', () => {
+      makeTmuxAvailable();
+      const resumedConversation = [
+        'Claude Code',
+        "You've reached your usage limit for the 5-hour period.",
+        'What would you like to do?',
+        '[1] Wait and continue automatically when limit resets',
+        '>',
+        'I can help you run the tests.',
+        '>',
       ].join('\n');
       vi.mocked(tmuxExec)
         .mockReturnValueOnce(paneList)
