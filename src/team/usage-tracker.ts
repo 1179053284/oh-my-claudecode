@@ -98,7 +98,7 @@ const taskUsageRecordSchema: z.ZodType<TaskUsageRecord> = z.object({
   taskId: nonemptyString,
   workerName: nonemptyString,
   provider: z.enum(['codex', 'gemini']),
-  model: nonemptyString,
+  model: z.string(),
   startedAt: nonemptyString,
   completedAt: nonemptyString,
   wallClockMs: z.number().finite().nonnegative().max(Number.MAX_SAFE_INTEGER),
@@ -148,8 +148,10 @@ export function generateUsageReport(
     const nextPromptChars = (existing?.totalPromptChars ?? 0) + r.promptChars;
     const nextResponseChars = (existing?.totalResponseChars ?? 0) + r.responseChars;
     const nextTotalWallClockMs = totalWallClockMs + r.wallClockMs;
+    const appliedWorkerDurationMs = nextWallClockMs - currentWallClockMs;
+    const appliedTotalDurationMs = nextTotalWallClockMs - totalWallClockMs;
     const losesDurationPrecision = r.wallClockMs > 0
-      && (nextWallClockMs === currentWallClockMs || nextTotalWallClockMs === totalWallClockMs);
+      && (appliedWorkerDurationMs !== r.wallClockMs || appliedTotalDurationMs !== r.wallClockMs);
     // Skip the whole record if adding it would corrupt totals; retain later valid siblings.
     if (!Number.isFinite(nextWallClockMs) || !Number.isFinite(nextTotalWallClockMs)
       || nextWallClockMs > Number.MAX_SAFE_INTEGER || nextTotalWallClockMs > Number.MAX_SAFE_INTEGER

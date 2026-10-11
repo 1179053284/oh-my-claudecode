@@ -50,6 +50,13 @@ describe('usage JSONL record recovery', () => {
     });
     expect(readFileSync(log)).toEqual(bytes);
   });
+  it('retains records with an empty model for provider defaults', () => {
+    recordTaskUsage(root, 'default-model', { ...valid, model: '' });
+
+    const report = generateUsageReport(root, 'default-model');
+    expect(report.taskCount).toBe(1);
+    expect(report.workers[0].model).toBe('');
+  });
   it('skips finite but unsafe counters and overflow-prone durations without poisoning valid siblings', () => {
     recordTaskUsage(root, 'large', valid);
     const log = join(getOmcRoot(root), 'logs', 'team-usage-large.jsonl');
@@ -93,17 +100,19 @@ describe('usage JSONL record recovery', () => {
     expect(report.workers.map(worker => worker.workerName)).toEqual(['worker-1', 'worker-3']);
     expect(report.workers[1].totalPromptChars).toBe(2);
   });
-  it('skips a positive duration increment when floating-point precision rounds it away', () => {
+  it('skips a positive duration increment when floating-point precision changes it', () => {
     recordTaskUsage(root, 'rounded', {
       ...valid, workerName: 'worker-1', wallClockMs: Number.MAX_SAFE_INTEGER - 1, promptChars: 0, responseChars: 0,
     });
-    recordTaskUsage(root, 'rounded', { ...valid, taskId: 'lost', workerName: 'worker-2', wallClockMs: 0.25 });
+    recordTaskUsage(root, 'rounded', { ...valid, taskId: 'overstated', wallClockMs: 0.75 });
     recordTaskUsage(root, 'rounded', { ...valid, taskId: 'later', workerName: 'worker-3', wallClockMs: 1 });
 
     const report = generateUsageReport(root, 'rounded');
     expect(report.taskCount).toBe(2);
     expect(report.totalWallClockMs).toBe(Number.MAX_SAFE_INTEGER);
     expect(report.workers.map(worker => worker.workerName)).toEqual(['worker-1', 'worker-3']);
+    expect(report.workers[0].totalWallClockMs).toBe(Number.MAX_SAFE_INTEGER - 1);
+    expect(report.workers[1].totalWallClockMs).toBe(1);
   });
   it('returns an empty report when every syntactically valid record is invalid', () => {
     recordTaskUsage(root, 'empty', valid);
