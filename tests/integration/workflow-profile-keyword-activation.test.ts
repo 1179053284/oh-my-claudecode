@@ -93,6 +93,21 @@ describe.each(hooks)('keyword detector pasted-content filtering (%s)', hook => {
     );
   });
 
+  it('preserves an explicit cleanup request after a malformed closing-tag newline', async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'keyword-malformed-newline-'));
+    created.push(directory);
+
+    const output = await invoke(
+      hook,
+      directory,
+      '<pasted_content>reference</pasted_content\ndeslop this repo > report.txt',
+    );
+
+    expect(JSON.parse(output).hookSpecificOutput.additionalContext).toContain(
+      '[MAGIC KEYWORD: AI-SLOP-CLEANER]',
+    );
+  });
+
   it('bounds scanning across repeated malformed closing tags', { timeout: 5000 }, async () => {
     const directory = mkdtempSync(join(tmpdir(), 'keyword-malformed-paste-'));
     created.push(directory);

@@ -186,8 +186,8 @@ function sanitizeForKeywordDetection(text) {
   return stripPastedCommandPayloads(text)
     // 0. Strip HTML/markdown comments before tag stripping
     .replace(/<!--[\s\S]*?-->/g, '')
-    // 1. Strip XML-style tag blocks; closing-tag attributes stop at angle brackets or line breaks.
-    .replace(/<(\w[\w-]*)[\s>][\s\S]*?<\/\1(?:\s[^<>\r\n]*)?>/g, '')
+    // 1. Strip XML-style tag blocks; closing-tag attributes stay on one line and stop at adjacent tags.
+    .replace(/<(\w[\w-]*)[\s>][\s\S]*?<\/\1(?:[ \t][^<>\r\n]*)?>/g, '')
     // 2. Strip self-closing XML tags: <tag-name />, <tag-name attr="val" />
     .replace(/<\w[\w-]*(?:\s[^>]*)?\s*\/>/g, '')
     // 3. Strip URLs: http://... or https://... up to whitespace

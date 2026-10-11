@@ -373,8 +373,8 @@ export function sanitizeForKeywordDetection(text: string): string {
   let result = stripPastedCommandPayloads(text);
   // Remove HTML/markdown comments first so keywords inside comments cannot trigger modes
   result = result.replace(/<!--[\s\S]*?-->/g, '');
-  // Bound closing-tag attributes so malformed adjacent tags cannot trigger repeated scans.
-  result = result.replace(/<(\w[\w-]*)[\s>][\s\S]*?<\/\1(?:\s[^<>\r\n]*)?>/g, '');
+  // Keep optional closing-tag attributes on one line and stop at adjacent tags.
+  result = result.replace(/<(\w[\w-]*)[\s>][\s\S]*?<\/\1(?:[ \t][^<>\r\n]*)?>/g, '');
   // Remove self-closing XML tags
   result = result.replace(/<\w[\w-]*(?:\s[^>]*)?\s*\/>/g, '');
   // Remove URLs
