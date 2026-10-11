@@ -471,12 +471,39 @@ function isValidTomlLiteralContent(content: string, allowNewlines = false): bool
   return true;
 }
 
+function foldTomlMultilineBasicString(value: string): string {
+  let result = '';
+  for (let index = 0; index < value.length;) {
+    if (value[index] !== '\\') {
+      result += value[index++];
+      continue;
+    }
+
+    let backslashEnd = index;
+    while (value[backslashEnd] === '\\') backslashEnd++;
+    let whitespaceEnd = backslashEnd;
+    while (value[whitespaceEnd] === ' ' || value[whitespaceEnd] === '\t') whitespaceEnd++;
+
+    const backslashCount = backslashEnd - index;
+    if (backslashCount % 2 === 1 && value[whitespaceEnd] === '\n') {
+      result += '\\'.repeat(backslashCount - 1);
+      index = whitespaceEnd + 1;
+      while (value[index] === ' ' || value[index] === '\t' || value[index] === '\n') index++;
+      continue;
+    }
+
+    result += '\\'.repeat(backslashCount) + value.slice(backslashEnd, whitespaceEnd);
+    index = whitespaceEnd;
+  }
+  return result;
+}
+
 function parseTomlQuotedString(value: string): string | undefined {
   const trimmed = value.trim();
 
   const multilineBasicMatch = trimmed.match(/^"""([\s\S]*?)"""\s*(?:#.*)?$/);
   if (multilineBasicMatch) {
-    return unescapeTomlString(multilineBasicMatch[1].replace(/^\r?\n/, ''));
+    return unescapeTomlString(foldTomlMultilineBasicString(multilineBasicMatch[1].replace(/^\r?\n/, '')));
   }
 
   const multilineLiteralMatch = trimmed.match(/^'''([\s\S]*?)'''\s*(?:#.*)?$/);
