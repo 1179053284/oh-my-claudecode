@@ -5,15 +5,15 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "afe9f597377c7d78f4c1c6a605ffc507cd3338d0",
-    "sourceSha256": "f99106cd7f1c1a71f1c0734a5d86e47c016c1eaf6e1a8ac2fb8ac3ee215aa083",
+    "head": "df309b87416f6c67366beae56036a27df5dc8b3d",
+    "sourceSha256": "dd607a8d9e1c9919a1fd47c1afea3f050fed83f03cd6050b0e2af841293e41e1",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "afe9f597377c7d78f4c1c6a605ffc507cd3338d0",
-  "sourceSha256": "f99106cd7f1c1a71f1c0734a5d86e47c016c1eaf6e1a8ac2fb8ac3ee215aa083",
+  "head": "df309b87416f6c67366beae56036a27df5dc8b3d",
+  "sourceSha256": "dd607a8d9e1c9919a1fd47c1afea3f050fed83f03cd6050b0e2af841293e41e1",
   "counts": {
     "public": {
       "skills": 48,
@@ -87752,7 +87752,37 @@
       },
       {
         "from": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts",
+        "to": "external:node:child_process",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts",
+        "to": "external:node:url",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts",
         "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts",
+        "to": "src/team/team-owner-epoch.ts",
         "kind": "imports"
       },
       {
@@ -87953,11 +87983,11 @@
     ],
     "stats": {
       "nodeCount": 7728,
-      "edgeCount": 8441,
-      "importEdgeCount": 6996,
+      "edgeCount": 8447,
+      "importEdgeCount": 7002,
       "registerEdgeCount": 69
     }
   },
   "inventorySha256": "691dd70f25c397fc73c7210dd25b688310cd04150350ab2023616d9943bba855",
-  "manifestSha256": "409d0eb0ee17f591adef11fd4a97df638de2558af86b493d3a67e593f36c6142"
+  "manifestSha256": "6b93dc4e8395bb597fd3c5615573fd695ae46fe027ac618e4c352eb59f19f9ae"
 }
