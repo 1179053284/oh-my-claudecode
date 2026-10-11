@@ -5,15 +5,15 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "ebf2287badfb648c3fc3d1913b093f40888969b9",
-    "sourceSha256": "14d43a96c805bd22e6187df90760947877934069d28817ee1fb7a04724311ec1",
+    "head": "772d4e598b40c8e57166fe5aea861fea9b25ad63",
+    "sourceSha256": "d53b7b707cb46b42ebc2496c6630c829fe8dc5373e88497a2e65a72bde164616",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "ebf2287badfb648c3fc3d1913b093f40888969b9",
-  "sourceSha256": "14d43a96c805bd22e6187df90760947877934069d28817ee1fb7a04724311ec1",
+  "head": "772d4e598b40c8e57166fe5aea861fea9b25ad63",
+  "sourceSha256": "d53b7b707cb46b42ebc2496c6630c829fe8dc5373e88497a2e65a72bde164616",
   "counts": {
     "public": {
       "skills": 48,
@@ -37719,6 +37719,11 @@
         "id": "skills/omc-doctor/SKILL.md",
         "kind": "skill",
         "path": "skills/omc-doctor/SKILL.md"
+      },
+      {
+        "id": "skills/omc-doctor/node-hook-fingerprints.json",
+        "kind": "other",
+        "path": "skills/omc-doctor/node-hook-fingerprints.json"
       },
       {
         "id": "skills/omc-setup/SKILL.md",
@@ -88134,12 +88139,12 @@
       }
     ],
     "stats": {
-      "nodeCount": 7732,
+      "nodeCount": 7733,
       "edgeCount": 8473,
       "importEdgeCount": 7027,
       "registerEdgeCount": 69
     }
   },
-  "inventorySha256": "6a3025781f40302f9a52fdb9000cbfc1466f4acd2de6953152ceda628a184e82",
-  "manifestSha256": "20e297144a0a44dc434811817f0251b42d2e07127c77cc4449acfbc62b761f3a"
+  "inventorySha256": "ce806a74606e197fdfb181aa2d6018b865debd3b90a7c8270cc9603719a9a9e8",
+  "manifestSha256": "d577f102aa75c33bd2c95cbfee0fb102b5237c273f43e2c5eb61ed323beb453d"
 }
