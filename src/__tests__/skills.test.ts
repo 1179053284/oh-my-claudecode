@@ -504,12 +504,16 @@ describe('Builtin Skills', () => {
       expect(raw).toContain('If removing matched objects leaves a matcher group with no hooks, remove that now-empty group');
       expect(raw).toContain('remove an event key when no groups remain and remove the top-level `"hooks"` key when no events remain');
       expect(raw).toContain('For each affected profile-level, project-level, or project-local settings file');
-      expect(raw).toContain('Before deleting any script, inspect active session-scoped hook references in skill and subagent frontmatter as well as settings sources');
+      expect(raw).toContain('Before deleting any script, inspect active session-scoped hook references in skill and subagent frontmatter, enabled plugin manifests, and settings sources');
       expect(raw).toContain('Skill frontmatter hooks remain active for the rest of the session after invocation; subagent frontmatter hooks remain active while that subagent runs');
       expect(raw).toContain('If active skill/subagent sources cannot be conclusively enumerated or read, leave the script in place');
       expect(raw).toContain('If an active hook references the script, keep it until that skill or subagent is no longer active, then repeat the reference check');
+      expect(raw).toContain('Also enumerate every enabled or loaded plugin root, including marketplace plugins and local/inline plugins supplied through `--plugin-dir`, `--plugin-url`, or `CLAUDE_CODE_PLUGIN_DIRS`');
+      expect(raw).toContain('`${CLAUDE_CONFIG_DIR:-~/.claude}/plugins/installed_plugins.json` and its recorded install paths');
+      expect(raw).toContain('Read each plugin\'s `hooks/hooks.json` read-only and inspect every command handler for references to the candidate script');
+      expect(raw).toContain('If any enabled/loaded plugin root or manifest cannot be conclusively enumerated, resolved, or read, leave the script in place; if a manifest references it, leave the script in place');
       expect(raw).toContain('The canonical event and equivalent-handler requirements from Step 2 also gate script deletion; an unrelated plugin handler under the same event cannot justify deleting a standalone payload');
-      expect(raw).toContain('The settings scan alone does not establish that no references remain; the active skill/subagent scan above must also be complete and clean before deleting the target');
+      expect(raw).toContain('The settings scan alone does not establish that no references remain; the active skill/subagent and enabled-plugin manifest scans above must also be complete and clean before deleting the target');
       expect(raw).toContain('If any applicable project-local path, main checkout root, managed source, or command-line source cannot be resolved or inspected, if any source references the script, the user declined the relevant settings change, a file could not be updated, no shipped payload exists, or verification is inconclusive, leave the corresponding script in place');
       expect(raw).toContain('re-check `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json`, the primary working directory\'s `.claude/settings.json`, every applicable project-local `.claude/settings.local.json` path resolved above (main-checkout, Windows side-by-side, and legacy starting-directory paths where applicable)');
       expect(raw).toContain('Never edit managed settings or MDM/server policy');
