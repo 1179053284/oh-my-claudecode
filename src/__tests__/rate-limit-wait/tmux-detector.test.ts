@@ -656,6 +656,36 @@ describe('tmux-detector', () => {
       ]);
     });
 
+    it('ignores model-only OMC HUD rows when checking the prompt', () => {
+      makeTmuxAvailable();
+      const livePromptWithModelHud = [
+        livePrompt,
+        '[OMC#4.15.1L] | Model: Opus 4.8',
+      ].join('\n');
+      vi.mocked(tmuxExec)
+        .mockReturnValueOnce(paneList)
+        .mockReturnValueOnce(livePromptWithModelHud);
+
+      expect(revalidateBlockedPanes([trackedPane])).toMatchObject([
+        { id: '%0', session: 'main', windowName: 'dev' },
+      ]);
+    });
+
+    it('ignores the OMC HUD marker when model metadata is unavailable', () => {
+      makeTmuxAvailable();
+      const livePromptWithoutModelHud = [
+        livePrompt,
+        '[OMC#4.15.1L]',
+      ].join('\n');
+      vi.mocked(tmuxExec)
+        .mockReturnValueOnce(paneList)
+        .mockReturnValueOnce(livePromptWithoutModelHud);
+
+      expect(revalidateBlockedPanes([trackedPane])).toMatchObject([
+        { id: '%0', session: 'main', windowName: 'dev' },
+      ]);
+    });
+
     it('rejects old rate-limit text after the pane has resumed into a conversation', () => {
       makeTmuxAvailable();
       const activeConversation = [

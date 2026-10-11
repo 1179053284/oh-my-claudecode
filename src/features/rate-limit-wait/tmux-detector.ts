@@ -61,7 +61,7 @@ const CLAUDE_CODE_PATTERNS = [
 
 /** Anchored OMC HUD status line, not copied output embedded in logs/tests. */
 const OMC_HUD_STATUS_LINE_PATTERN =
-  /^\s*\[OMC#[^\]\s]*\]\s*\|.*\b(?:Model:|ctx:|session:|5h:|wk:|thinking)\b/i;
+  /^\s*\[OMC#[^\]\s]+\](?:\s*\|.*)?\s*$/i;
 
 /** OMC HUD mode/help line rendered in the captured UI footer. */
 const OMC_HUD_MODE_LINE_PATTERN = /^\s*⏵⏵\s+.*\(shift\+tab to cycle\)/i;

@@ -49,6 +49,8 @@ const MAX_STALE_DATA_MS = 15 * 60 * 1000; // 15 minutes — discard stale data a
 const TOKEN_REFRESH_URL_HOSTNAME = 'platform.claude.com';
 const USAGE_CACHE_LOCK_OPTS: FileLockOptions = { staleLockMs: API_TIMEOUT_MS + 5000 };
 const TOKEN_REFRESH_URL_PATH = '/v1/oauth/token';
+const OMC_USAGE_PROFILE_ID_FIELD = 'omcUsageProfileId';
+const OMC_USAGE_PROFILE_TOKEN_HASH_FIELD = 'omcUsageProfileTokenHash';
 
 /**
  * OAuth client_id for Claude Code (public client).
@@ -552,7 +554,7 @@ function clearRateLimitBackoff(
   return Object.keys(backoffs).length > 0 ? backoffs : undefined;
 }
 
-/** Hash credential material without persisting the credential itself. */
+/** Hash credential identity material before persisting it in caches or markers. */
 function hashCredentialIdentity(identity: string): string {
   return createHash('sha256').update(identity).digest('hex');
 }
@@ -586,21 +588,43 @@ function getOAuthAccountProfileIdentity(credentials: Record<string, unknown>): s
   } catch {
     // Account metadata is optional; credentials may still provide an identity.
   }
-  const accountId = firstString(
+  const accountUuid = firstString(
     credentials.accountUuid,
     credentials.accountUUID,
+    account.accountUuid,
+    account.accountUUID,
+    account.uuid,
+    claudeJsonAccount.accountUuid,
+    claudeJsonAccount.accountUUID,
+    claudeJsonAccount.uuid,
+  );
+  if (accountUuid) {
+    return hashCredentialIdentity(JSON.stringify(['oauth-account-uuid', accountUuid.toLowerCase()]));
+  }
+
+  const accountId = firstString(
     credentials.accountId,
     credentials.userId,
     credentials.userID,
-    account.uuid,
-    account.accountUuid,
-    account.accountUUID,
     account.accountId,
     account.userId,
     account.userID,
-    claudeJsonAccount.accountUuid,
-    claudeJsonAccount.accountUUID,
+    claudeJsonAccount.accountId,
+    claudeJsonAccount.userId,
+    claudeJsonAccount.userID,
   );
+  if (accountId) {
+    return hashCredentialIdentity(JSON.stringify(['oauth-account', accountId]));
+  }
+
+  const tokenMaterial = firstString(credentials.refreshToken, credentials.accessToken);
+  const tokenHash = tokenMaterial ? hashCredentialIdentity(tokenMaterial) : undefined;
+  const storedProfileIdentity = firstString(credentials[OMC_USAGE_PROFILE_ID_FIELD]);
+  const storedTokenHash = firstString(credentials[OMC_USAGE_PROFILE_TOKEN_HASH_FIELD]);
+  if (storedProfileIdentity && tokenHash && storedTokenHash === tokenHash) {
+    return storedProfileIdentity;
+  }
+
   const emailAddress = firstString(
     credentials.emailAddress,
     credentials.email,
@@ -609,22 +633,10 @@ function getOAuthAccountProfileIdentity(credentials: Record<string, unknown>): s
     claudeJsonAccount.emailAddress,
     claudeJsonAccount.email,
   );
-  if (accountId || emailAddress) {
-    const organizationId = firstString(
-      credentials.organizationUuid,
-      credentials.organizationUUID,
-      account.organizationUuid,
-      account.organizationUUID,
-      claudeJsonAccount.organizationUuid,
-      claudeJsonAccount.organizationUUID,
-    );
-    return hashCredentialIdentity(JSON.stringify([
-      accountId ?? null,
-      emailAddress ?? null,
-      organizationId ?? null,
-    ]));
+  if (emailAddress) {
+    return hashCredentialIdentity(JSON.stringify(['oauth-email', emailAddress.toLowerCase()]));
   }
-  return undefined;
+  return tokenHash;
 }
 
 function isCacheForCredential(cache: UsageCache | null, credentialIdentity?: string): boolean {
@@ -1399,6 +1411,14 @@ function updateStoredOAuthCredentialFields(record: Record<string, unknown>, cred
   record.accessToken = creds.accessToken;
   if (creds.expiresAt != null) record.expiresAt = creds.expiresAt;
   if (creds.refreshToken) record.refreshToken = creds.refreshToken;
+  if (creds.profileIdentity) {
+    // A successful refresh proves same-account continuity; rebind legacy identity
+    // to the new token so it survives a credential-store reread.
+    record[OMC_USAGE_PROFILE_ID_FIELD] = creds.profileIdentity;
+    record[OMC_USAGE_PROFILE_TOKEN_HASH_FIELD] = hashCredentialIdentity(
+      creds.refreshToken ?? creds.accessToken,
+    );
+  }
 }
 
 /**
@@ -1406,7 +1426,7 @@ function updateStoredOAuthCredentialFields(record: Record<string, unknown>, cred
  * When the credentials originated from Keychain, writes back to Keychain.
  * When they originated from file, updates ~/.claude/.credentials.json.
  * Environment-provided credentials are process-owned and are never persisted.
- * Updates only the OAuth token fields, preserving other data.
+ * The profile marker is bound to the refreshed token to preserve legacy identity.
  */
 function writeBackCredentials(creds: OAuthCredentials): void {
   if (creds.source === 'keychain') {
