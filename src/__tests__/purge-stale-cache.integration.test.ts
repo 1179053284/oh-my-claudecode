@@ -208,6 +208,29 @@ describe('purgeStalePluginCacheVersions on a real filesystem', () => {
     expect(readdirSync(genericDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
   });
 
+  it('preserves generic plugin payload when the active redirect points to its namespace', () => {
+    const genericDir = join(configDir, 'plugins', 'cache', 'official', 'hookify');
+    const active = join(genericDir, ACTIVE);
+    const stale = join(genericDir, STALE);
+    mkdirSync(genericDir, { recursive: true });
+    symlinkSync(genericDir, active, 'dir');
+    mkdirSync(stale);
+    writeFileSync(join(stale, 'README.md'), 'old plugin payload');
+    makeStale(stale);
+    writeFileSync(join(configDir, 'plugins', 'installed_plugins.json'), JSON.stringify({
+      version: 2, plugins: { 'hookify@official': [{ installPath: active }] },
+    }));
+
+    const result = purgeStalePluginCacheVersions();
+
+    expect(result.symlinked).toBe(0);
+    expect(result.errors).toHaveLength(1);
+    expect(lstatSync(stale).isDirectory()).toBe(true);
+    expect(existsSync(join(stale, 'README.md'))).toBe(true);
+    expect(readlinkSync(active)).toBe(genericDir);
+    expect(readdirSync(genericDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
+  });
+
   it('demotes a stale version to a redirect and keeps every pinned path resolving', () => {
     const stale = writeVersion(STALE);
     for (const v of LEGACY) symlinkSync(stale, join(pluginDir, v), 'dir');

@@ -10,6 +10,7 @@ vi.mock('fs', async () => {
     readdirSync: vi.fn(),
     statSync: vi.fn(),
     lstatSync: vi.fn(),
+    realpathSync: vi.fn(),
     rmSync: vi.fn(),
     unlinkSync: vi.fn(),
     renameSync: vi.fn(),
@@ -21,7 +22,7 @@ vi.mock('../utils/config-dir.js', () => ({
   getClaudeConfigDir: vi.fn(() => '/mock/.claude'),
 }));
 
-import { existsSync, readFileSync, readdirSync, statSync, lstatSync, rmSync, renameSync, symlinkSync, unlinkSync } from 'fs';
+import { existsSync, readFileSync, readdirSync, statSync, lstatSync, realpathSync, rmSync, renameSync, symlinkSync, unlinkSync } from 'fs';
 import { purgeStalePluginCacheVersions } from '../utils/paths.js';
 
 const mockedExistsSync = vi.mocked(existsSync);
@@ -31,6 +32,7 @@ const mockedStatSync = vi.mocked(statSync);
 const mockedRmSync = vi.mocked(rmSync);
 const mockedRenameSync = vi.mocked(renameSync);
 const mockedLstatSync = vi.mocked(lstatSync);
+const mockedRealpathSync = vi.mocked(realpathSync);
 const mockedUnlinkSync = vi.mocked(unlinkSync);
 const mockedSymlinkSync = vi.mocked(symlinkSync);
 
@@ -96,6 +98,7 @@ describe('purgeStalePluginCacheVersions', () => {
     mockedRmSync.mockImplementation(() => undefined);
     mockedUnlinkSync.mockImplementation(() => undefined);
     mockedLstatSync.mockImplementation(() => dirStats());
+    mockedRealpathSync.mockImplementation(path => String(path));
     stubOwnerLiveness();
   });
 
@@ -199,6 +202,46 @@ describe('purgeStalePluginCacheVersions', () => {
     expect(result.removed).toBe(0);
     expect(result.symlinkPaths).toContain(stale1);
     expect(result.symlinkPaths).toContain(stale2);
+  });
+
+  it('preserves a stale version when registry casing aliases the same directory', () => {
+    const cacheDir = '/mock/.claude/plugins/cache';
+    const pluginDir = join(cacheDir, 'omc/oh-my-claudecode');
+    const activeVersion = join(pluginDir, '4.15.6-beta');
+    const staleVersion = join(pluginDir, '4.15.6-BETA');
+    const originalPlatform = process.platform;
+    Object.defineProperty(process, 'platform', { value: 'darwin', configurable: true });
+    try {
+      mockedExistsSync.mockImplementation((p) => {
+        const ps = String(p);
+        return ps.includes('installed_plugins.json') || ps === cacheDir || ps === activeVersion ||
+          ps === staleVersion || ps.startsWith(`${activeVersion}/`) || ps.startsWith(`${staleVersion}/`);
+      });
+      mockedReadFileSync.mockReturnValue(JSON.stringify({
+        version: 2,
+        plugins: { 'oh-my-claudecode@omc': [{ installPath: activeVersion }] },
+      }));
+      mockedReaddirSync.mockImplementation((p, _opts?) => {
+        const ps = String(p);
+        if (ps === cacheDir) return [dirent('omc')] as any;
+        if (ps.endsWith('omc')) return [dirent('oh-my-claudecode')] as any;
+        if (ps === pluginDir) return [dirent('4.15.6-BETA')] as any;
+        return [] as any;
+      });
+      mockedRealpathSync.mockImplementation((p) => {
+        const ps = String(p);
+        return ps === activeVersion || ps === staleVersion ? staleVersion : ps;
+      });
+
+      const result = purgeStalePluginCacheVersions();
+
+      expect(result.symlinked).toBe(0);
+      expect(result.errors).toHaveLength(1);
+      expect(mockedRenameSync).not.toHaveBeenCalledWith(staleVersion, expect.any(String));
+      expect(mockedSymlinkSync).not.toHaveBeenCalled();
+    } finally {
+      Object.defineProperty(process, 'platform', { value: originalPlatform, configurable: true });
+    }
   });
 
   it('does nothing when all cache versions are active', () => {

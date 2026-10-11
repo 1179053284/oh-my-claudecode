@@ -665,18 +665,16 @@ export function purgeStalePluginCacheVersions(options?: { skipGracePeriod?: bool
             if (!statSync(target).isDirectory()) {
               throw new Error('Registered active plugin target is not a directory');
             }
-            let targetResolvesIntoStaleVersion = false;
-            if (lstatSync(target).isSymbolicLink()) {
-              const resolvedTarget = comparisonPath(realpathSync(target));
-              const resolvedStaleVersion = comparisonPath(realpathSync(versionDir));
-              targetResolvesIntoStaleVersion = resolvedTarget === resolvedStaleVersion ||
-                resolvedTarget.startsWith(`${resolvedStaleVersion}/`);
-            }
+            const resolvedTarget = comparisonPath(realpathSync(target));
+            const resolvedStaleVersion = comparisonPath(realpathSync(versionDir));
+            const targetOverlapsStaleVersion = resolvedTarget === resolvedStaleVersion ||
+              resolvedTarget.startsWith(`${resolvedStaleVersion}/`) ||
+              resolvedStaleVersion.startsWith(`${resolvedTarget}/`);
             const targetHasUsablePayload = pluginName.toLowerCase() === 'oh-my-claudecode'
               ? isUsableVersionPath(target)
               : readdirSync(target).length > 0;
-            if (targetResolvesIntoStaleVersion || !targetHasUsablePayload) {
-              throw new Error('Registered active plugin target is unusable or resolves inside the stale version');
+            if (targetOverlapsStaleVersion || !targetHasUsablePayload) {
+              throw new Error('Registered active plugin target is unusable or overlaps the stale version tree');
             }
             relinkStaleVersionDir(versionDir, target);
             result.symlinked++;
