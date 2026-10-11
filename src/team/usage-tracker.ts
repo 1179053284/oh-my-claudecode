@@ -10,7 +10,8 @@
  * Storage: append-only JSONL at .omc/logs/team-usage-{team}.jsonl
  */
 
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { closeSync, existsSync, openSync, readFileSync, readSync } from 'node:fs';
+import { StringDecoder } from 'node:string_decoder';
 import { join } from 'node:path';
 import { getOmcRoot } from '../lib/worktree-paths.js';
 import { appendFileWithMode, ensureDirWithMode, validateResolvedPath } from './fs-utils.js';
@@ -66,9 +67,28 @@ export function recordTaskUsage(
   appendFileWithMode(logPath, JSON.stringify(record) + '\n');
 }
 
+/** Count UTF-8 Unicode code points with bounded memory, preserving split characters. */
+function countFileCharacters(filePath: string): number {
+  const descriptor = openSync(filePath, 'r');
+  try {
+    const buffer = Buffer.alloc(64 * 1024);
+    const decoder = new StringDecoder('utf8');
+    let count = 0;
+    let bytesRead: number;
+    while ((bytesRead = readSync(descriptor, buffer, 0, buffer.length, null)) > 0) {
+      for (const _character of decoder.write(buffer.subarray(0, bytesRead))) count++;
+    }
+    for (const _character of decoder.end()) count++;
+    return count;
+  } finally {
+    closeSync(descriptor);
+  }
+}
+
 /**
- * Compute character counts from prompt and output files.
- * Returns { promptChars, responseChars }. Returns 0 for missing files.
+ * Compute Unicode code point counts from UTF-8 prompt and output files.
+ * Combining marks count separately; these are not grapheme or token counts.
+ * Returns { promptChars, responseChars }. Returns 0 for missing/unreadable files.
  */
 export function measureCharCounts(
   promptFilePath: string,
@@ -78,16 +98,12 @@ export function measureCharCounts(
   let responseChars = 0;
 
   try {
-    if (existsSync(promptFilePath)) {
-      promptChars = statSync(promptFilePath).size;
-    }
-  } catch { /* missing file */ }
+    promptChars = countFileCharacters(promptFilePath);
+  } catch { /* missing or unreadable file */ }
 
   try {
-    if (existsSync(outputFilePath)) {
-      responseChars = statSync(outputFilePath).size;
-    }
-  } catch { /* missing file */ }
+    responseChars = countFileCharacters(outputFilePath);
+  } catch { /* missing or unreadable file */ }
 
   return { promptChars, responseChars };
 }
