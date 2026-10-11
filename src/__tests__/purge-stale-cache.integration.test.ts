@@ -158,6 +158,38 @@ describe('purgeStalePluginCacheVersions on a real filesystem', () => {
     expect(readdirSync(pluginDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
   });
 
+  for (const shape of ['descendant', 'ancestor']) {
+    it(`preserves a stale root through a case-aliased ${shape} target`, ({ skip }) => {
+      if (process.platform !== 'darwin') skip();
+      const stale = writeVersion('4.15.6-BETA');
+      const alias = join(pluginDir, '4.15.6-beta');
+      if (!existsSync(alias)) skip();
+      let target: string;
+      if (shape === 'descendant') {
+        writeVersion('4.15.6-BETA/nested');
+        target = join(alias, 'nested');
+      } else {
+        mkdirSync(join(pluginDir, 'scripts'), { recursive: true });
+        writeFileSync(join(pluginDir, 'scripts', 'run.cjs'), '// namespace fixture');
+        mkdirSync(join(pluginDir, 'hooks'), { recursive: true });
+        writeFileSync(join(pluginDir, 'hooks', 'hooks.json'), '{}');
+        target = pluginDir.replace('oh-my-claudecode', 'OH-MY-CLAUDECODE');
+      }
+      const redirect = join(pluginDir, LEGACY[0]);
+      symlinkSync(target, redirect, 'dir');
+      makeStale(stale);
+      installedPlugins(redirect);
+
+      const result = purgeStalePluginCacheVersions();
+
+      expect(result.symlinked).toBe(0);
+      expect(result.errors.length).toBeGreaterThan(0);
+      expect(lstatSync(stale).isDirectory()).toBe(true);
+      expect(hookResolves('4.15.6-BETA')).toBe(true);
+      expect(readlinkSync(redirect)).toBe(target);
+    });
+  }
+
   it.each(['root', 'descendant'])('preserves a stale root when the registered target redirects through its %s', (targetShape) => {
     const stale = writeVersion(STALE);
     let redirectTarget = stale;
