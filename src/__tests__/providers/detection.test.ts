@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { detectProvider, parseRemoteUrl } from '../../providers/index.js';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { detectProvider, parseRemoteUrl, parseRemoteFromCwd, resetProviderCache } from '../../providers/index.js';
 
 describe('detectProvider', () => {
   it('detects GitHub from HTTPS URL', () => {
@@ -207,5 +211,34 @@ describe('parseRemoteUrl', () => {
       owner: 'group/subgroup',
       repo: 'repo',
     });
+  });
+});
+
+describe('remote URL cache cwd identity', () => {
+  it('resolves the same relative path against the current working directory', () => {
+    const originalCwd = process.cwd();
+    const tempRoot = mkdtempSync(join(tmpdir(), 'omc-provider-cache-'));
+    const firstParent = join(tempRoot, 'first');
+    const secondParent = join(tempRoot, 'second');
+    resetProviderCache();
+    try {
+      for (const [parent, remote] of [
+        [firstParent, 'https://github.com/one/first.git'],
+        [secondParent, 'https://gitlab.com/two/second.git'],
+      ]) {
+        const repoDir = join(parent, 'project');
+        mkdirSync(repoDir, { recursive: true });
+        execFileSync('git', ['init', '--quiet'], { cwd: repoDir });
+        execFileSync('git', ['remote', 'add', 'origin', remote], { cwd: repoDir });
+      }
+      process.chdir(firstParent);
+      expect(parseRemoteFromCwd('project')).toMatchObject({ provider: 'github', owner: 'one', repo: 'first' });
+      process.chdir(secondParent);
+      expect(parseRemoteFromCwd('project')).toMatchObject({ provider: 'gitlab', owner: 'two', repo: 'second' });
+    } finally {
+      process.chdir(originalCwd);
+      resetProviderCache();
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
   });
 });
