@@ -185,6 +185,8 @@ function durationAdditionLosesPrecision(
   nextTotal: ExactDecimal,
   roundedNextTotal: number,
 ): boolean {
+  if (duration.coefficient === 0n) return false;
+
   const reportedTotal = exactDecimalFromNumber(roundedNextTotal);
   const reportedDuration = subtractExactDecimals(reportedTotal, previousTotal);
   const recoveredPreviousTotal = subtractExactDecimals(reportedTotal, duration);
