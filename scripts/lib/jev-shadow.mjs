@@ -11,6 +11,7 @@ import {
   mkdtempSync,
   openSync,
   readdirSync,
+  readFileSync,
   rmSync,
   unlinkSync,
   writeFileSync,
@@ -125,6 +126,7 @@ function createSweepLockFile(lockPath) {
       unlinkSync(lockPath);
       return undefined;
     }
+    writeFileSync(descriptor, String(process.pid));
     return { path: lockPath, descriptor, dev: stats.dev, ino: stats.ino };
   } catch {
     if (descriptor !== undefined) {
@@ -182,6 +184,28 @@ function removeExpiredSweepLocks(markerPath, now = Date.now()) {
   }
 }
 
+function hasActivePreviousSweepLock(markerPath, now = Date.now()) {
+  if (!markerPath) return true;
+  const currentBucket = Math.floor(now / SWEEP_THROTTLE_MS);
+  const previousPath = `${markerPath}.lock-${currentBucket - 1}`;
+  try {
+    const stats = lstatSync(previousPath);
+    if (!isOwnedMarkerFile(stats)) return true;
+    const pid = Number(readFileSync(previousPath, "utf8"));
+    if (!Number.isSafeInteger(pid) || pid <= 0) {
+      return now - stats.mtimeMs < SWEEP_THROTTLE_MS;
+    }
+    try {
+      process.kill(pid, 0);
+      return true;
+    } catch (error) {
+      return error?.code !== "ESRCH";
+    }
+  } catch (error) {
+    return error?.code !== "ENOENT";
+  }
+}
+
 /**
  * Get the Jev mode for a point: 'off' | 'shadow' | 'active'.
  * Reuses the script resolver's config gates and union activation semantics.
@@ -204,6 +228,9 @@ export function isJevShadowOptedIn(point, env = process.env) {
  * Returns the count of successfully removed directories.
  */
 export function sweepStaleTempDirs(maxAgeMs = 24 * 60 * 60 * 1000) {
+  // On platforms without a comparable user id, do not delete from a possibly
+  // shared temp root because directory ownership cannot be verified.
+  if (typeof process.getuid !== "function") return 0;
   const tmpDir = tmpdir();
   const now = Date.now();
   let cleaned = 0;
@@ -216,18 +243,14 @@ export function sweepStaleTempDirs(maxAgeMs = 24 * 60 * 60 * 1000) {
       const fullPath = join(tmpDir, entry);
       try {
         const stats = lstatSync(fullPath);
-        const ownedByCurrentUser =
-          typeof process.getuid !== "function" ||
-          stats.uid === process.getuid();
+        const ownedByCurrentUser = stats.uid === process.getuid();
         if (!stats.isDirectory() || !ownedByCurrentUser) continue;
 
         const contents = readdirSync(fullPath);
         if (contents.length !== 1 || contents[0] !== "request.json") continue;
 
         const requestStats = lstatSync(join(fullPath, "request.json"));
-        const requestOwnedByCurrentUser =
-          typeof process.getuid !== "function" ||
-          requestStats.uid === process.getuid();
+        const requestOwnedByCurrentUser = requestStats.uid === process.getuid();
         if (
           requestStats.isFile() &&
           requestOwnedByCurrentUser &&
@@ -264,14 +287,16 @@ export function recordJevShadow({ point, state, questions, heuristic }) {
   try {
     if (shouldRunSweep(markerPath)) {
       removeExpiredSweepLocks(markerPath);
-      const lock = acquireSweepLock(markerPath);
-      if (lock) {
-        try {
-          if (shouldRunSweep(markerPath) && updateSweepMarker(markerPath)) {
-            sweepStaleTempDirs(24 * 60 * 60 * 1000); // Clean dirs older than 24h
+      if (!hasActivePreviousSweepLock(markerPath)) {
+        const lock = acquireSweepLock(markerPath);
+        if (lock) {
+          try {
+            if (shouldRunSweep(markerPath) && updateSweepMarker(markerPath)) {
+              sweepStaleTempDirs(24 * 60 * 60 * 1000); // Clean dirs older than 24h
+            }
+          } finally {
+            releaseSweepLock(lock);
           }
-        } finally {
-          releaseSweepLock(lock);
         }
       }
     }
