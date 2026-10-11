@@ -175,6 +175,34 @@ describe('purgeStalePluginCacheVersions symlink payload validation', () => {
     expect(existsSync(join(stale, 'scripts', 'run.cjs'))).toBe(true);
   });
 
+  it('rejects a generic target whose only entry is a directory cycle', () => {
+    const genericDir = join(configDir, 'plugins', 'cache', 'official', 'hookify');
+    const active = join(genericDir, ACTIVE);
+    const stale = join(genericDir, STALE);
+    const backLink = join(active, 'back');
+    mkdirSync(active, { recursive: true });
+    symlinkSync('.', backLink, 'dir');
+    mkdirSync(stale, { recursive: true });
+    writeFileSync(join(stale, 'README.md'), 'only stale payload');
+    makeStale(stale);
+    writeFileSync(
+      join(configDir, 'plugins', 'installed_plugins.json'),
+      JSON.stringify({
+        version: 2,
+        plugins: { 'hookify@official': [{ installPath: active }] },
+      }),
+    );
+
+    const result = purgeStalePluginCacheVersions();
+
+    expect(result.symlinked).toBe(0);
+    expect(result.errors).toHaveLength(1);
+    expect(lstatSync(stale).isDirectory()).toBe(true);
+    expect(readFileSync(join(stale, 'README.md'), 'utf8')).toBe('only stale payload');
+    expect(readlinkSync(backLink)).toBe('.');
+    expect(readdirSync(genericDir).filter((name) => name.includes('.omc-stale-'))).toEqual([]);
+  });
+
   it('preserves generic payload when a child symlink traverses the stale version', () => {
     const genericDir = join(configDir, 'plugins', 'cache', 'official', 'hookify');
     const active = join(genericDir, ACTIVE);

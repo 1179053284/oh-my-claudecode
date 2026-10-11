@@ -35,6 +35,7 @@ import {
   unlinkSync,
 } from 'fs';
 import { purgeStalePluginCacheVersions } from '../utils/paths.js';
+import { pathRootForTraversal } from '../utils/plugin-cache-validation.js';
 
 const mockedExistsSync = vi.mocked(existsSync);
 const mockedReadFileSync = vi.mocked(readFileSync);
@@ -91,6 +92,12 @@ describe('purgeStalePluginCacheVersions validation', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it('includes server and share in extended UNC roots', () => {
+    expect(pathRootForTraversal('\\\\?\\UNC\\server\\share\\plugins\\cache\\stale')).toBe(
+      '\\\\?\\UNC\\server\\share\\',
+    );
   });
 
   it('handles multiple marketplaces and plugins', () => {

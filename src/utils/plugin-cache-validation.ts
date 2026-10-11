@@ -52,6 +52,16 @@ export function firstChildBelowDirectoryIdentity(path: string, directoryIdentity
   }
 }
 
+/** Includes the server and share, which win32.parse omits for extended UNC roots. */
+export function pathRootForTraversal(path: string): string {
+  const extendedUnc = /^(\\\\\?\\UNC\\|\/\/\?\/UNC\/)([^\\/]+)[\\/]+([^\\/]+)(?:[\\/]|$)/i.exec(path);
+  if (extendedUnc) {
+    const separator = extendedUnc[1].includes('\\') ? '\\' : '/';
+    return `${extendedUnc[1]}${extendedUnc[2]}${separator}${extendedUnc[3]}${separator}`;
+  }
+  return parse(path).root;
+}
+
 function pathTraversesFileSystemIdentity(path: string, identity: Stats): boolean {
   let currentPath: string;
   let components: string[];
@@ -62,11 +72,11 @@ function pathTraversesFileSystemIdentity(path: string, identity: Stats): boolean
       .filter(Boolean);
 
   if (isAbsolute(path)) {
-    const pathRoot = parse(path).root;
+    const pathRoot = pathRootForTraversal(path);
     currentPath = process.platform === 'win32' && pathRoot === '\\' ? parse(resolve(path)).root : pathRoot;
     components = splitComponents(path, pathRoot);
   } else {
-    const pathRoot = parse(path).root;
+    const pathRoot = pathRootForTraversal(path);
     if (process.platform === 'win32' && pathRoot) {
       // Resolve the drive's current directory without normalizing the target components.
       const driveCwd = resolve(`${pathRoot}.`);
@@ -133,7 +143,7 @@ function pathTraversesFileSystemIdentity(path: string, identity: Stats): boolean
 
     activeLinks.add(linkKey);
     steps.push({ endLink: linkKey });
-    const targetPathRoot = parse(linkTarget).root;
+    const targetPathRoot = pathRootForTraversal(linkTarget);
     let targetComponents: string[];
     if (isAbsolute(linkTarget)) {
       currentPath =
@@ -189,23 +199,25 @@ function hasResolvablePluginSymlinks(
   const branch = [...ancestors, directoryStats];
   const entries = readdirSync(directory, { withFileTypes: true });
   if (requireNonEmpty && entries.length === 0) return false;
+  let hasPayload = false;
   for (const entry of entries) {
     const entryPath = join(directory, entry.name);
     if (entry.isSymbolicLink()) {
       const entryStats = statSync(entryPath);
       if (pathTraversesFileSystemIdentity(entryPath, staleVersionIdentity)) return false;
-      if (
-        entryStats.isDirectory() &&
-        !branch.some((identity) => sameFileSystemIdentity(entryStats, identity)) &&
-        !hasResolvablePluginSymlinks(entryPath, staleVersionIdentity, branch)
-      ) {
-        return false;
+      if (entryStats.isDirectory()) {
+        if (branch.some((identity) => sameFileSystemIdentity(entryStats, identity))) continue;
+        if (!hasResolvablePluginSymlinks(entryPath, staleVersionIdentity, branch)) return false;
       }
-    } else if (entry.isDirectory() && !hasResolvablePluginSymlinks(entryPath, staleVersionIdentity, branch)) {
-      return false;
+      hasPayload = true;
+    } else if (entry.isDirectory()) {
+      if (!hasResolvablePluginSymlinks(entryPath, staleVersionIdentity, branch)) return false;
+      hasPayload = true;
+    } else {
+      hasPayload = true;
     }
   }
-  return true;
+  return !requireNonEmpty || hasPayload;
 }
 
 export function isUsableGenericPluginTarget(target: string, staleVersionIdentity: Stats): boolean {
