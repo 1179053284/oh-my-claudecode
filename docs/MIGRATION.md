@@ -7,6 +7,7 @@ This guide covers all migration paths for oh-my-claudecode. Find your current ve
 ## Table of Contents
 
 - [Unreleased: Glossary File Rename (CONTEXT.md → GLOSSARY.md)](#unreleased-glossary-file-rename-contextmd--glossarymd)
+- [Unreleased: Shipyard Tracker Artifacts and Audit Contract v2](#unreleased-shipyard-tracker-artifacts-and-audit-contract-v2)
 - [Unreleased: SSRF Guard for IPv6 Literals](#unreleased-ssrf-guard-for-ipv6-literals)
 - [Unreleased: Team Instance Ownership](#unreleased-team-instance-ownership)
 - [Unreleased: Cancellation Scope](#unreleased-cancellation-scope)
@@ -34,7 +35,15 @@ The shipyard glossary surface is now `GLOSSARY.md` at the repository root. It ho
 
 A `CONTEXT.md` counts as a legacy glossary only when its frontmatter has a `documentLanguage` key, or its first visible non-blank line (after the frontmatter, ignoring a BOM and HTML comments) is a drydock glossary seed heading (`# Glossary`, `# 术语表`, `# 詞彙表`) for yards laid before the language tag existed. Any other `CONTEXT.md` (for example an agent-context file) is ignored by the audit and never renamed.
 
-The missing-glossary surface finding keeps its historical `CONTEXT-md` id slug, so consumers keyed by finding id are unaffected.
+## Unreleased: Shipyard Tracker Artifacts and Audit Contract v2
+
+New navigator maps and Launch specs/tickets are tracker-only. For an existing `.omc/wayfinder/<slug>/map.md`, use ask-navigator's one-time migration: create the tracker map issue and child issues, carry over decisions, frontier, dependencies, and mission brief, then verify the import before treating the tracker as canonical. Keep local files unchanged until that verification is complete; do not create new local maps.
+
+Launch recovery uses the parent spec issue, its native child issues, and the latest handoff comment on the parent. Put settled decisions in their child issues and progress pointers, open questions, next watch, and warning lines in a tracker comment. Do not create local spec, ticket, or handoff files.
+
+### Audit contract v2
+
+The `node scripts/shipyard-audit.mjs` JSON report now includes `contractVersion: 2`. This version retires the `shipyard.surface.missing.*` finding family: absence of an optional surface means it is not adopted, not that the yard is incomplete. Consumers that keyed on those IDs must stop treating absent optional paths as findings. The required base faces are handled separately by `shipyard.yard.unlaid`: `CLAUDE.md` and `GLOSSARY.md` must exist, or a recognizable legacy glossary `CONTEXT.md` may stand in until a full drydock run migrates it. Integrity checks still run on adopted surfaces.
 
 ## Unreleased: SSRF Guard for IPv6 Literals
 
