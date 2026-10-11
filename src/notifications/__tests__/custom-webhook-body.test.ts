@@ -26,6 +26,28 @@ const jsonHeaders: Record<string, string>[] = [
 ];
 
 describe("custom webhook body interpolation", () => {
+  it("escapes quoted strings alongside raw numeric placeholders", async () => {
+    let body = "";
+    vi.stubGlobal("fetch", vi.fn(async (_url: string, options: RequestInit) => {
+      body = String(options.body);
+      return new Response(null, { status: 204 });
+    }));
+    const template = '{"count":{{agentsSpawned}},"{{projectName}}":["{{contextSummary}}","escaped \\"quote\\"",null]}';
+    expect((await sendCustomWebhook(webhook(template, jsonHeaders[0]), payload)).success).toBe(true);
+    expect(JSON.parse(body)).toEqual({ count: 3, [payload.projectName!]: [payload.contextSummary, 'escaped "quote"', null] });
+  });
+
+  it("preserves exact numeric literals and formatting outside JSON strings", async () => {
+    let body = "";
+    vi.stubGlobal("fetch", vi.fn(async (_url: string, options: RequestInit) => {
+      body = String(options.body);
+      return new Response(null, { status: 204 });
+    }));
+    const template = '{ "id": 9223372036854775807, "small":1e-40, "summary":"{{contextSummary}}" }';
+    expect((await sendCustomWebhook(webhook(template, jsonHeaders[0]), payload)).success).toBe(true);
+    expect(body).toBe(`{ "id": 9223372036854775807, "small":1e-40, "summary":${JSON.stringify(payload.contextSummary)} }`);
+  });
+
   it.each(jsonHeaders)("serializes JSON string placeholders safely for %j", async headers => {
     let body: unknown;
     vi.stubGlobal("fetch", vi.fn(async (_url: string, options: RequestInit) => {

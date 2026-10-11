@@ -225,26 +225,23 @@ export function interpolateJsonTemplate(
   template: string,
   payload: NotificationPayload,
 ): string {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(template);
-  } catch {
-    // Raw numeric placeholders and other non-JSON templates retain text interpolation.
-    return interpolateTemplate(template, payload);
-  }
   const vars = computeTemplateVariables(payload);
-  const interpolateString = (value: string): string =>
-    replaceVariables(processConditionals(value, vars), vars);
-  const interpolate = (value: unknown): unknown => {
-    if (typeof value === "string") return interpolateString(value);
-    if (Array.isArray(value)) return value.map(interpolate);
-    if (value !== null && typeof value === "object") {
-      return Object.fromEntries(Object.entries(value).map(([key, item]) =>
-        [interpolateString(key), interpolate(item)]));
+  const conditioned = processConditionals(template, vars);
+  let result = "";
+  let cursor = 0;
+  // Decode only quoted tokens: numeric literals must retain their exact bytes,
+  // and raw placeholders outside strings keep their existing numeric behavior.
+  for (const match of conditioned.matchAll(/"(?:\\[\s\S]|[^"\\])*"/g)) {
+    const start = match.index!;
+    result += replaceVariables(conditioned.slice(cursor, start), vars);
+    try {
+      result += JSON.stringify(replaceVariables(JSON.parse(match[0]), vars));
+    } catch {
+      result += replaceVariables(match[0], vars);
     }
-    return value;
-  };
-  return JSON.stringify(interpolate(parsed));
+    cursor = start + match[0].length;
+  }
+  return result + replaceVariables(conditioned.slice(cursor), vars);
 }
 
 /**
