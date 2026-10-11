@@ -165,16 +165,20 @@ export function isUsableVersionPath(path: string, staleVersionIdentity?: Stats):
     return false;
   }
   if (!stats.isDirectory() && !stats.isSymbolicLink()) return false;
-  return PLUGIN_ROOT_REQUIREMENTS.every((required) => {
+  const hasRequiredEntries = PLUGIN_ROOT_REQUIREMENTS.every((required) => {
     const requiredPath = join(path, required);
     return (
       existsSync(requiredPath) &&
       (staleVersionIdentity === undefined || !pathTraversesFileSystemIdentity(requiredPath, staleVersionIdentity))
     );
   });
+  return (
+    hasRequiredEntries &&
+    (staleVersionIdentity === undefined || hasResolvablePluginSymlinks(path, staleVersionIdentity))
+  );
 }
 
-function hasResolvableGenericPluginSymlinks(
+function hasResolvablePluginSymlinks(
   directory: string,
   staleVersionIdentity: Stats,
   ancestors: Stats[] = [],
@@ -193,11 +197,11 @@ function hasResolvableGenericPluginSymlinks(
       if (
         entryStats.isDirectory() &&
         (branch.some((identity) => sameFileSystemIdentity(entryStats, identity)) ||
-          !hasResolvableGenericPluginSymlinks(entryPath, staleVersionIdentity, branch))
+          !hasResolvablePluginSymlinks(entryPath, staleVersionIdentity, branch))
       ) {
         return false;
       }
-    } else if (entry.isDirectory() && !hasResolvableGenericPluginSymlinks(entryPath, staleVersionIdentity, branch)) {
+    } else if (entry.isDirectory() && !hasResolvablePluginSymlinks(entryPath, staleVersionIdentity, branch)) {
       return false;
     }
   }
@@ -205,5 +209,5 @@ function hasResolvableGenericPluginSymlinks(
 }
 
 export function isUsableGenericPluginTarget(target: string, staleVersionIdentity: Stats): boolean {
-  return hasResolvableGenericPluginSymlinks(target, staleVersionIdentity, [], true);
+  return hasResolvablePluginSymlinks(target, staleVersionIdentity, [], true);
 }

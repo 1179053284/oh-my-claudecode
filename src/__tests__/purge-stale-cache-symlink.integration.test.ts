@@ -115,6 +115,47 @@ describe('purgeStalePluginCacheVersions symlink payload validation', () => {
     expect(readdirSync(pluginDir).filter((name) => name.includes('.omc-stale-'))).toEqual([]);
   });
 
+  it('preserves OMC payload when a non-entrypoint hook script links into the stale tree', () => {
+    const stale = writeVersion(STALE);
+    const staleScript = join(stale, 'scripts', 'session-start.mjs');
+    const active = join(pluginDir, ACTIVE);
+    const activeScript = join(active, 'scripts', 'session-start.mjs');
+    writeFileSync(staleScript, '// only stale hook script');
+    writeFileSync(
+      join(active, 'hooks', 'hooks.json'),
+      JSON.stringify({
+        description: 'OMC session-start hook',
+        hooks: {
+          SessionStart: [
+            {
+              matcher: '*',
+              hooks: [
+                {
+                  type: 'command',
+                  command:
+                    'node "${CLAUDE_PLUGIN_ROOT}"/scripts/run.cjs "${CLAUDE_PLUGIN_ROOT}"/scripts/session-start.mjs',
+                  timeout: 5,
+                },
+              ],
+            },
+          ],
+        },
+      }),
+    );
+    symlinkSync(staleScript, activeScript, 'file');
+    makeStale(stale);
+    installPath(active);
+
+    const result = purgeStalePluginCacheVersions();
+
+    expect(result.symlinked).toBe(0);
+    expect(result.errors).toHaveLength(1);
+    expect(lstatSync(stale).isDirectory()).toBe(true);
+    expect(readlinkSync(activeScript)).toBe(staleScript);
+    expect(existsSync(activeScript)).toBe(true);
+    expect(readdirSync(pluginDir).filter((name) => name.includes('.omc-stale-'))).toEqual([]);
+  });
+
   it('preserves generic payload when a child symlink traverses the stale version', () => {
     const genericDir = join(configDir, 'plugins', 'cache', 'official', 'hookify');
     const active = join(genericDir, ACTIVE);
