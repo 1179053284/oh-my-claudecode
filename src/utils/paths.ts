@@ -7,7 +7,7 @@
  */
 
 import { join, dirname } from 'path';
-import { existsSync, readFileSync, readdirSync, statSync, lstatSync, realpathSync, unlinkSync, rmSync, renameSync, symlinkSync } from 'fs';
+import { existsSync, readFileSync, readdirSync, statSync, lstatSync, realpathSync, unlinkSync, rmSync, renameSync, symlinkSync, type Stats } from 'fs';
 import { homedir } from 'os';
 import { getClaudeConfigDir } from './config-dir.js';
 import { pathIdentity, readOccupiedPluginRoots } from './cache-occupancy.js';
@@ -475,6 +475,27 @@ function comparisonPath(p: string): string {
   return toForwardSlash(pathIdentity(p)).replace(/\/+$/, '');
 }
 
+function sameFileSystemIdentity(left: Stats, right: Stats): boolean {
+  return typeof left.dev === 'number' && typeof left.ino === 'number' && left.ino !== 0 &&
+    typeof right.dev === 'number' && typeof right.ino === 'number' && right.ino !== 0 &&
+    left.dev === right.dev && left.ino === right.ino;
+}
+
+function hasAncestorWithIdentity(path: string, identity: Stats): boolean {
+  let currentPath = path;
+  while (true) {
+    if (sameFileSystemIdentity(statSync(currentPath), identity)) return true;
+    const parentPath = dirname(currentPath);
+    if (parentPath === currentPath) return false;
+    currentPath = parentPath;
+  }
+}
+
+const OMC_PLUGIN_CACHE_IDENTITIES = new Set([
+  'oh-my-claudecode@omc',
+  'oh-my-claudecode@oh-my-claudecode',
+]);
+
 /** Short install/update race guard. Session occupancy is the liveness source. */
 const STALE_THRESHOLD_MS = 10 * 60 * 1000;
 
@@ -662,15 +683,23 @@ export function purgeStalePluginCacheVersions(options?: { skipGracePeriod?: bool
             ),
           )[0];
           try {
-            if (!statSync(target).isDirectory()) {
+            const targetStats = statSync(target);
+            if (!targetStats.isDirectory()) {
               throw new Error('Registered active plugin target is not a directory');
             }
-            const resolvedTarget = comparisonPath(realpathSync(target));
-            const resolvedStaleVersion = comparisonPath(realpathSync(versionDir));
-            const targetOverlapsStaleVersion = resolvedTarget === resolvedStaleVersion ||
-              resolvedTarget.startsWith(`${resolvedStaleVersion}/`) ||
-              resolvedStaleVersion.startsWith(`${resolvedTarget}/`);
-            const targetHasUsablePayload = pluginName.toLowerCase() === 'oh-my-claudecode'
+            const staleVersionStats = statSync(versionDir);
+            const resolvedTarget = realpathSync(target);
+            const resolvedStaleVersion = realpathSync(versionDir);
+            const targetPath = comparisonPath(resolvedTarget);
+            const staleVersionPath = comparisonPath(resolvedStaleVersion);
+            const targetOverlapsStaleVersion = sameFileSystemIdentity(targetStats, staleVersionStats) ||
+              targetPath === staleVersionPath ||
+              targetPath.startsWith(`${staleVersionPath}/`) ||
+              staleVersionPath.startsWith(`${targetPath}/`) ||
+              hasAncestorWithIdentity(resolvedTarget, staleVersionStats) ||
+              hasAncestorWithIdentity(resolvedStaleVersion, targetStats);
+            const pluginIdentity = `${pluginName}@${marketplace}`.toLowerCase();
+            const targetHasUsablePayload = OMC_PLUGIN_CACHE_IDENTITIES.has(pluginIdentity)
               ? isUsableVersionPath(target)
               : readdirSync(target).length > 0;
             if (targetOverlapsStaleVersion || !targetHasUsablePayload) {

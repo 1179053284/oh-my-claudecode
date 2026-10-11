@@ -209,6 +209,11 @@ describe('purgeStalePluginCacheVersions', () => {
     const pluginDir = join(cacheDir, 'omc/oh-my-claudecode');
     const activeVersion = join(pluginDir, '4.15.6-beta');
     const staleVersion = join(pluginDir, '4.15.6-BETA');
+    const sameDirectoryStats = {
+      ...staleStats(),
+      dev: 1,
+      ino: 12345,
+    } as ReturnType<typeof statSync>;
     const originalPlatform = process.platform;
     Object.defineProperty(process, 'platform', { value: 'darwin', configurable: true });
     try {
@@ -221,16 +226,16 @@ describe('purgeStalePluginCacheVersions', () => {
         version: 2,
         plugins: { 'oh-my-claudecode@omc': [{ installPath: activeVersion }] },
       }));
+      mockedStatSync.mockImplementation((p) => {
+        const ps = String(p);
+        return ps === activeVersion || ps === staleVersion ? sameDirectoryStats : staleStats();
+      });
       mockedReaddirSync.mockImplementation((p, _opts?) => {
         const ps = String(p);
         if (ps === cacheDir) return [dirent('omc')] as any;
         if (ps.endsWith('omc')) return [dirent('oh-my-claudecode')] as any;
         if (ps === pluginDir) return [dirent('4.15.6-BETA')] as any;
         return [] as any;
-      });
-      mockedRealpathSync.mockImplementation((p) => {
-        const ps = String(p);
-        return ps === activeVersion || ps === staleVersion ? staleVersion : ps;
       });
 
       const result = purgeStalePluginCacheVersions();

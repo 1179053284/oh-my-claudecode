@@ -141,6 +141,23 @@ describe('purgeStalePluginCacheVersions on a real filesystem', () => {
     }
   });
 
+  it('preserves case-aliased cache entries on case-insensitive macOS', ({ skip }) => {
+    if (process.platform !== 'darwin') skip();
+    const stale = writeVersion('4.15.6-BETA');
+    const activeAlias = join(pluginDir, '4.15.6-beta');
+    if (!existsSync(activeAlias)) skip();
+    makeStale(stale);
+    installedPlugins(activeAlias);
+
+    const result = purgeStalePluginCacheVersions();
+
+    expect(result.symlinked).toBe(0);
+    expect(result.errors).toHaveLength(1);
+    expect(lstatSync(stale).isDirectory()).toBe(true);
+    expect(hookResolves('4.15.6-BETA')).toBe(true);
+    expect(readdirSync(pluginDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
+  });
+
   it.each(['root', 'descendant'])('preserves a stale root when the registered target redirects through its %s', (targetShape) => {
     const stale = writeVersion(STALE);
     let redirectTarget = stale;
@@ -177,6 +194,27 @@ describe('purgeStalePluginCacheVersions on a real filesystem', () => {
     makeStale(stale);
     writeFileSync(join(configDir, 'plugins', 'installed_plugins.json'), JSON.stringify({
       version: 2, plugins: { 'hookify@official': [{ installPath: active }] },
+    }));
+
+    const result = purgeStalePluginCacheVersions();
+
+    expect(result.errors).toEqual([]);
+    expect(result.symlinkPaths).toContain(stale);
+    expect(readlinkSync(stale)).toBe(active);
+    expect(existsSync(join(stale, 'README.md'))).toBe(true);
+  });
+
+  it('retains generic layout for an OMC-named plugin from another marketplace', () => {
+    const genericDir = join(configDir, 'plugins', 'cache', 'official', 'oh-my-claudecode');
+    const active = join(genericDir, ACTIVE);
+    const stale = join(genericDir, STALE);
+    mkdirSync(active, { recursive: true });
+    writeFileSync(join(active, 'README.md'), 'generic plugin payload');
+    mkdirSync(stale);
+    writeFileSync(join(stale, 'README.md'), 'old generic plugin payload');
+    makeStale(stale);
+    writeFileSync(join(configDir, 'plugins', 'installed_plugins.json'), JSON.stringify({
+      version: 2, plugins: { 'oh-my-claudecode@official': [{ installPath: active }] },
     }));
 
     const result = purgeStalePluginCacheVersions();
