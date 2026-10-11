@@ -991,6 +991,25 @@ describe('workflow profile activation hook fixtures (#3487)', () => {
     }
   });
 
+  it('accepts trailing commas in workflow config in both packaged artifacts', () => {
+    for (const script of HOOKS) {
+      const { cwd, configHome } = createFixture();
+      try {
+        writeFileSync(
+          join(cwd, '.claude', 'omc.jsonc'),
+          '{"autopilot":{"workflows":{"release-flow":{"version":1,"stages":["ralplan","execution",],},}}}',
+        );
+        const output = runHook(script, '/autopilot --workflow release-flow ship it', cwd, configHome);
+        expect(output.hookSpecificOutput?.additionalContext).toContain('## PIPELINE STAGE: RALPLAN (Consensus Planning)');
+        expect(JSON.parse(stateBytes(cwd)!.toString())).toMatchObject({
+          workflow: { workflowName: 'release-flow', stages: ['ralplan', 'execution'] },
+        });
+      } finally {
+        rmSync(cwd, { recursive: true, force: true });
+      }
+    }
+  });
+
   it.each([
     ['comma-bearing stage', ['ralplan', 'execution,qa']],
     ['nested stage array', [['ralplan', 'execution']]],
