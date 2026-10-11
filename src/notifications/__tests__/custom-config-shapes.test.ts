@@ -36,6 +36,7 @@ async function load(section: unknown) {
 describe('custom integration raw configuration boundary', () => {
   it.each([
     null, 7, [], { ...validWebhook, config: null }, { ...validWebhook, config: undefined },
+    { ...validCli, config: null },
     { ...validCli, config: { ...validCli.config, command: 7 } },
     { ...validCli, config: { ...validCli.config, args: [7] } },
     { ...validCli, config: { ...validCli.config, args: undefined } },
