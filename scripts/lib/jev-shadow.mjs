@@ -1,3 +1,5 @@
+/* global process, URL */
+
 import { spawn, spawnSync } from 'node:child_process';
 import { closeSync, constants, fstatSync, futimesSync, lstatSync, mkdirSync, mkdtempSync, openSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
