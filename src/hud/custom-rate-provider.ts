@@ -105,6 +105,10 @@ export function spawnWithTimeout(cmd: string | string[], timeoutMs: number): Pro
       }
     };
 
+    // Consume diagnostics without retaining them so a full stderr pipe cannot
+    // block the command before it writes its JSON result to stdout.
+    child.stderr.on('data', () => {});
+
     let stdout = '';
     child.stdout.on('data', (chunk: Buffer) => {
       stdout += chunk.toString();
