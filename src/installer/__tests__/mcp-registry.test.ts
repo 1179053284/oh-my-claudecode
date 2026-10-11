@@ -909,7 +909,8 @@ describe('unified MCP registry sync', () => {
       '',
       '[mcp_servers.multilineType]',
       'url = "https://mcp.example.com/multiline-type"',
-      'type = """http"""',
+      'type = """',
+      'http"""',
       '',
     ].join('\n'));
 

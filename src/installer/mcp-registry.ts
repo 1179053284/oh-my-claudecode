@@ -796,6 +796,24 @@ interface ParsedCodexMcpRegistry {
   typeFieldsPresent: Set<string>;
 }
 
+function hasClosingTomlMultilineBasicString(value: string): boolean {
+  let escaped = false;
+  for (let index = 3; index <= value.length - 3; index++) {
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (value[index] === '\\') {
+      escaped = true;
+      continue;
+    }
+    if (value.startsWith('"""', index)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function parseCodexMcpRegistryEntries(content: string): ParsedCodexMcpRegistry {
   const entries: UnifiedMcpRegistry = {};
   const typeFieldsPresent = new Set<string>();
@@ -815,7 +833,8 @@ function parseCodexMcpRegistryEntries(content: string): ParsedCodexMcpRegistry {
     currentSection = null;
   };
 
-  for (const rawLine of lines) {
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+    const rawLine = lines[lineIndex];
     const line = rawLine.trim();
     if (!line || line.startsWith('#')) {
       continue;
@@ -855,7 +874,12 @@ function parseCodexMcpRegistryEntries(content: string): ParsedCodexMcpRegistry {
     if (!key) {
       continue;
     }
-    const value = rawValueParts.join('=').trim();
+    let value = rawValueParts.join('=').trim();
+    if (value.startsWith('"""') && !hasClosingTomlMultilineBasicString(value)) {
+      while (lineIndex + 1 < lines.length && !hasClosingTomlMultilineBasicString(value)) {
+        value += `\n${lines[++lineIndex]}`;
+      }
+    }
 
     if (currentSection === 'headers') {
       const parsed = parseTomlQuotedString(value);
