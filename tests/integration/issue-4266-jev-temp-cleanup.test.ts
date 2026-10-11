@@ -141,6 +141,10 @@ describe("issue #4266: Jev temp directory cleanup", () => {
     writeFileSync(unrelatedFile, "keep");
     utimesSync(unrelatedDir, oldTime, oldTime);
 
+    const freshDir = mkdtempSync(join(tempRoot, "omc-jev-"));
+    const freshRequest = join(freshDir, "request.json");
+    writeFileSync(freshRequest, "{}");
+
     const sharedTmpMarker = join(tempRoot, ".omc-jev-sweep-throttle");
     const victimPath = join(homeRoot, "victim");
     let createdSymlink = false;
@@ -163,13 +167,49 @@ describe("issue #4266: Jev temp directory cleanup", () => {
       expect(existsSync(staleDir)).toBe(false);
       expect(existsSync(unrelatedDir)).toBe(true);
       expect(existsSync(unrelatedFile)).toBe(true);
+      expect(existsSync(freshDir)).toBe(true);
+      expect(existsSync(freshRequest)).toBe(true);
       expect(existsSync(privateMarker)).toBe(true);
       expect(existsSync(victimPath)).toBe(false);
       expect(
         readdirSync(tempRoot).filter((entry) => entry.startsWith("omc-jev-")),
-      ).toHaveLength(1);
+      ).toHaveLength(2);
       if (createdSymlink)
         expect(lstatSync(sharedTmpMarker).isSymbolicLink()).toBe(true);
+    } finally {
+      rmSync(testRoot, { recursive: true, force: true });
+    }
+  });
+
+  it("skips a sweep when the cross-process marker is recent", () => {
+    const testRoot = mkdtempSync(join(tmpdir(), "issue-4266-throttled-"));
+    const tempRoot = join(testRoot, "tmp");
+    const homeRoot = join(testRoot, "home");
+    const stateDir = join(homeRoot, ".omc", "state");
+    mkdirSync(tempRoot, { mode: 0o700 });
+    mkdirSync(stateDir, { recursive: true, mode: 0o700 });
+    const markerPath = join(stateDir, ".jev-sweep-throttle");
+    writeFileSync(markerPath, "recent");
+    const recentTime = new Date(Date.now() - 10 * 60 * 1000);
+    utimesSync(markerPath, recentTime, recentTime);
+
+    const staleDir = mkdtempSync(join(tempRoot, "omc-jev-"));
+    writeFileSync(join(staleDir, "request.json"), "{}");
+    const oldTime = new Date(Date.now() - 48 * 60 * 60 * 1000);
+    utimesSync(staleDir, oldTime, oldTime);
+
+    try {
+      const result = runActiveRecord(tempRoot, homeRoot);
+
+      expect(result.status).toBe(0);
+      expect(JSON.parse(result.stdout).result.mode).toBe("degraded");
+      expect(existsSync(staleDir)).toBe(true);
+      expect(Date.now() - lstatSync(markerPath).mtimeMs).toBeGreaterThan(
+        9 * 60 * 1000,
+      );
+      expect(existsSync(join(stateDir, ".jev-sweep-throttle.lock"))).toBe(
+        false,
+      );
     } finally {
       rmSync(testRoot, { recursive: true, force: true });
     }
