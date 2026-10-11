@@ -8,6 +8,7 @@ import { existsSync, lstatSync, readlinkSync, readdirSync, statSync, type Stats 
 const PLUGIN_ROOT_REQUIREMENTS = [join('hooks', 'hooks.json'), join('scripts', 'run.cjs'), 'scripts'];
 
 const OMC_PLUGIN_CACHE_IDENTITIES = new Set(['oh-my-claudecode@omc', 'oh-my-claudecode@oh-my-claudecode']);
+const FILESYSTEM_JUNK_NAMES = new Set(['.ds_store', 'desktop.ini', 'thumbs.db']);
 
 export function isOmcPluginCacheIdentity(pluginName: string, marketplace: string): boolean {
   return OMC_PLUGIN_CACHE_IDENTITIES.has(`${pluginName}@${marketplace}`.toLowerCase());
@@ -210,12 +211,12 @@ function hasResolvablePluginSymlinks(
       if (entryStats.isDirectory()) {
         if (branch.some((identity) => sameFileSystemIdentity(entryStats, identity))) continue;
         if (!hasResolvablePluginSymlinks(entryPath, staleVersionIdentity, branch, payload)) return false;
-      } else if (payload) {
+      } else if (payload && !FILESYSTEM_JUNK_NAMES.has(entry.name.toLowerCase())) {
         payload.found = true;
       }
     } else if (entry.isDirectory()) {
       if (!hasResolvablePluginSymlinks(entryPath, staleVersionIdentity, branch, payload)) return false;
-    } else if (payload) {
+    } else if (payload && !FILESYSTEM_JUNK_NAMES.has(entry.name.toLowerCase())) {
       payload.found = true;
     }
   }

@@ -228,6 +228,32 @@ describe('purgeStalePluginCacheVersions symlink payload validation', () => {
     expect(readdirSync(genericDir).filter((name) => name.includes('.omc-stale-'))).toEqual([]);
   });
 
+  it.each(['.DS_Store', 'desktop.ini', 'Thumbs.db'])('rejects a generic target containing only %s', (junkName) => {
+    const genericDir = join(configDir, 'plugins', 'cache', 'official', 'hookify');
+    const active = join(genericDir, ACTIVE);
+    const stale = join(genericDir, STALE);
+    mkdirSync(active, { recursive: true });
+    writeFileSync(join(active, junkName), 'operating-system metadata');
+    mkdirSync(stale, { recursive: true });
+    writeFileSync(join(stale, 'README.md'), 'only stale payload');
+    makeStale(stale);
+    writeFileSync(
+      join(configDir, 'plugins', 'installed_plugins.json'),
+      JSON.stringify({
+        version: 2,
+        plugins: { 'hookify@official': [{ installPath: active }] },
+      }),
+    );
+
+    const result = purgeStalePluginCacheVersions();
+
+    expect(result.symlinked).toBe(0);
+    expect(result.errors).toHaveLength(1);
+    expect(lstatSync(stale).isDirectory()).toBe(true);
+    expect(readFileSync(join(stale, 'README.md'), 'utf8')).toBe('only stale payload');
+    expect(readdirSync(genericDir).filter((name) => name.includes('.omc-stale-'))).toEqual([]);
+  });
+
   it('preserves generic payload when a child symlink traverses the stale version', () => {
     const genericDir = join(configDir, 'plugins', 'cache', 'official', 'hookify');
     const active = join(genericDir, ACTIVE);
