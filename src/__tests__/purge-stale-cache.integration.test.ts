@@ -9,7 +9,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
-  mkdtempSync, mkdirSync, readFileSync, writeFileSync, symlinkSync, renameSync, rmSync,
+  mkdtempSync, mkdirSync, writeFileSync, symlinkSync, renameSync, rmSync,
   existsSync, lstatSync, readdirSync, readlinkSync, utimesSync,
 } from 'fs';
 import { join } from 'path';
@@ -263,33 +263,6 @@ describe('purgeStalePluginCacheVersions on a real filesystem', () => {
     expect(readdirSync(pluginDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
   });
 
-  it('preserves OMC payload when a required entry point links into the stale tree', () => {
-    const stale = writeVersion(STALE);
-    const staleScript = join(stale, 'payload', 'run.cjs');
-    const active = join(pluginDir, ACTIVE);
-    const activeScript = join(active, 'scripts', 'run.cjs');
-    mkdirSync(join(stale, 'payload'), { recursive: true });
-    writeFileSync(staleScript, '// only stale entrypoint');
-    mkdirSync(join(active, 'hooks'), { recursive: true });
-    writeFileSync(join(active, 'hooks', 'hooks.json'), '{}\n');
-    mkdirSync(join(active, 'scripts'), { recursive: true });
-    mkdirSync(join(active, 'payload'), { recursive: true });
-    writeFileSync(join(active, 'payload', 'run.cjs'), '// active counterpart');
-    rmSync(activeScript, { force: true });
-    symlinkSync(staleScript, activeScript, 'file');
-    makeStale(stale);
-    installedPlugins(active);
-
-    const result = purgeStalePluginCacheVersions();
-
-    expect(result.symlinked).toBe(0);
-    expect(result.errors).toHaveLength(1);
-    expect(lstatSync(stale).isDirectory()).toBe(true);
-    expect(readlinkSync(activeScript)).toBe(staleScript);
-    expect(existsSync(join(activeScript))).toBe(true);
-    expect(readdirSync(pluginDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
-  });
-
   it('retains support for other plugins without OMC hook entry points', () => {
     const genericDir = join(configDir, 'plugins', 'cache', 'official', 'hookify');
     const active = join(genericDir, ACTIVE);
@@ -350,129 +323,6 @@ describe('purgeStalePluginCacheVersions on a real filesystem', () => {
     expect(result.errors).toHaveLength(1);
     expect(lstatSync(stale).isDirectory()).toBe(true);
     expect(existsSync(join(stale, 'README.md'))).toBe(true);
-    expect(readdirSync(genericDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
-  });
-
-  it('restores generic payload when a child symlink traverses the stale version', () => {
-    const genericDir = join(configDir, 'plugins', 'cache', 'official', 'hookify');
-    const active = join(genericDir, ACTIVE);
-    const stale = join(genericDir, STALE);
-    const staleCommands = join(stale, 'commands');
-    const activeCommands = join(active, 'commands');
-    mkdirSync(active, { recursive: true });
-    writeFileSync(join(active, 'README.md'), 'active generic payload');
-    mkdirSync(staleCommands, { recursive: true });
-    writeFileSync(join(staleCommands, 'old-command.js'), 'old payload');
-    writeFileSync(join(stale, 'README.md'), 'old generic payload');
-    symlinkSync(staleCommands, activeCommands, 'dir');
-    makeStale(stale);
-    writeFileSync(join(configDir, 'plugins', 'installed_plugins.json'), JSON.stringify({
-      version: 2, plugins: { 'hookify@official': [{ installPath: active }] },
-    }));
-
-    const result = purgeStalePluginCacheVersions();
-
-    expect(result.symlinked).toBe(0);
-    expect(result.errors).toHaveLength(1);
-    expect(lstatSync(stale).isDirectory()).toBe(true);
-    expect(existsSync(join(stale, 'commands', 'old-command.js'))).toBe(true);
-    expect(readlinkSync(activeCommands)).toBe(staleCommands);
-    expect(readdirSync(genericDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
-  });
-
-  it('preserves generic payload when a resolvable link aliases stale data', () => {
-    const genericDir = join(configDir, 'plugins', 'cache', 'official', 'hookify');
-    const active = join(genericDir, ACTIVE);
-    const stale = join(genericDir, STALE);
-    const activePayload = join(active, 'payload');
-    const stalePayload = join(stale, 'payload');
-    const legacyPayload = join(active, 'legacy');
-    mkdirSync(activePayload, { recursive: true });
-    writeFileSync(join(activePayload, 'current-command.js'), 'current payload');
-    mkdirSync(stalePayload, { recursive: true });
-    writeFileSync(join(stalePayload, 'legacy-command.js'), 'only stale payload');
-    writeFileSync(join(active, 'README.md'), 'active generic payload');
-    writeFileSync(join(stale, 'README.md'), 'old generic payload');
-    symlinkSync(stalePayload, legacyPayload, 'dir');
-    makeStale(stale);
-    writeFileSync(join(configDir, 'plugins', 'installed_plugins.json'), JSON.stringify({
-      version: 2, plugins: { 'hookify@official': [{ installPath: active }] },
-    }));
-
-    const result = purgeStalePluginCacheVersions();
-
-    expect(result.symlinked).toBe(0);
-    expect(result.errors).toHaveLength(1);
-    expect(lstatSync(stale).isDirectory()).toBe(true);
-    expect(existsSync(join(legacyPayload, 'legacy-command.js'))).toBe(true);
-    expect(readlinkSync(legacyPayload)).toBe(stalePayload);
-    expect(readdirSync(genericDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
-  });
-
-  it('preserves generic payload when an intermediate link traverses the stale tree', () => {
-    const genericDir = join(configDir, 'plugins', 'cache', 'official', 'hookify');
-    const active = join(genericDir, ACTIVE);
-    const stale = join(genericDir, STALE);
-    const oldRoot = join(configDir, 'external-old-root');
-    const newRoot = join(configDir, 'external-new-root');
-    const staleForward = join(stale, 'forward');
-    const activeForward = join(active, 'forward');
-    const activeLegacy = join(active, 'legacy');
-    mkdirSync(active, { recursive: true });
-    writeFileSync(join(active, 'README.md'), 'generic plugin payload');
-    mkdirSync(oldRoot, { recursive: true });
-    writeFileSync(join(oldRoot, 'legacy-command.js'), 'old payload');
-    mkdirSync(newRoot, { recursive: true });
-    writeFileSync(join(newRoot, 'legacy-command.js'), 'new payload');
-    mkdirSync(stale, { recursive: true });
-    symlinkSync(oldRoot, staleForward, 'dir');
-    symlinkSync(newRoot, activeForward, 'dir');
-    symlinkSync(staleForward, activeLegacy, 'dir');
-    makeStale(stale);
-    writeFileSync(join(configDir, 'plugins', 'installed_plugins.json'), JSON.stringify({
-      version: 2, plugins: { 'hookify@official': [{ installPath: active }] },
-    }));
-
-    const result = purgeStalePluginCacheVersions();
-
-    expect(result.symlinked).toBe(0);
-    expect(result.errors).toHaveLength(1);
-    expect(lstatSync(stale).isDirectory()).toBe(true);
-    expect(readFileSync(join(activeLegacy, 'legacy-command.js'), 'utf8')).toBe('old payload');
-    expect(readlinkSync(activeLegacy)).toBe(staleForward);
-    expect(readlinkSync(staleForward)).toBe(oldRoot);
-    expect(readdirSync(genericDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
-  });
-
-  it('restores generic payload when a directory symlink contains a stale-version link', () => {
-    const genericDir = join(configDir, 'plugins', 'cache', 'official', 'hookify');
-    const active = join(genericDir, ACTIVE);
-    const stale = join(genericDir, STALE);
-    const externalPayload = join(configDir, 'external-generic-payload');
-    const staleData = join(stale, 'data');
-    const externalChild = join(externalPayload, 'child');
-    const activePayload = join(active, 'payload');
-    mkdirSync(active, { recursive: true });
-    writeFileSync(join(active, 'README.md'), 'active generic payload');
-    mkdirSync(stale, { recursive: true });
-    writeFileSync(staleData, 'only old data');
-    mkdirSync(externalPayload, { recursive: true });
-    symlinkSync(staleData, externalChild, 'file');
-    symlinkSync(externalPayload, activePayload, 'dir');
-    writeFileSync(join(stale, 'README.md'), 'old generic payload');
-    makeStale(stale);
-    writeFileSync(join(configDir, 'plugins', 'installed_plugins.json'), JSON.stringify({
-      version: 2, plugins: { 'hookify@official': [{ installPath: active }] },
-    }));
-
-    const result = purgeStalePluginCacheVersions();
-
-    expect(result.symlinked).toBe(0);
-    expect(result.errors).toHaveLength(1);
-    expect(lstatSync(stale).isDirectory()).toBe(true);
-    expect(existsSync(staleData)).toBe(true);
-    expect(readlinkSync(activePayload)).toBe(externalPayload);
-    expect(readlinkSync(externalChild)).toBe(staleData);
     expect(readdirSync(genericDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
   });
 

@@ -5,15 +5,15 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "76a66d6710eb9468f0a9e2bf2c9760c4becbf123",
-    "sourceSha256": "f4ac999cd5d205799fe3a4be6221164b4f314648ea96be0da69cd4cd48e803f4",
+    "head": "cbe9b30c3b9932488d15a698acd1095bb6bccea4",
+    "sourceSha256": "c1bb7e411e3ec70131d7f8628303decb1b76ebc963f495896d4404acff5df9d4",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "76a66d6710eb9468f0a9e2bf2c9760c4becbf123",
-  "sourceSha256": "f4ac999cd5d205799fe3a4be6221164b4f314648ea96be0da69cd4cd48e803f4",
+  "head": "cbe9b30c3b9932488d15a698acd1095bb6bccea4",
+  "sourceSha256": "c1bb7e411e3ec70131d7f8628303decb1b76ebc963f495896d4404acff5df9d4",
   "counts": {
     "public": {
       "skills": 47,
@@ -28,8 +28,8 @@
       "toolFiles": 61,
       "libFiles": 48,
       "templateHooks": 23,
-      "srcFiles": 1446,
-      "total": 1469
+      "srcFiles": 1447,
+      "total": 1470
     },
     "generated": {
       "distFiles": 5611,
@@ -45134,6 +45134,11 @@
         "path": "src/utils/paths.ts"
       },
       {
+        "id": "src/utils/plugin-cache-validation.ts",
+        "kind": "src",
+        "path": "src/utils/plugin-cache-validation.ts"
+      },
+      {
         "id": "src/utils/resolve-node.ts",
         "kind": "src",
         "path": "src/utils/resolve-node.ts"
@@ -85511,6 +85516,21 @@
         "kind": "imports"
       },
       {
+        "from": "src/utils/plugin-cache-validation.ts",
+        "to": "external:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/plugin-cache-validation.ts",
+        "to": "external:fs",
+        "kind": "type-imports"
+      },
+      {
+        "from": "src/utils/plugin-cache-validation.ts",
+        "to": "external:path",
+        "kind": "imports"
+      },
+      {
         "from": "src/utils/resolve-node.ts",
         "to": "external:child_process",
         "kind": "imports"
@@ -87282,12 +87302,12 @@
       }
     ],
     "stats": {
-      "nodeCount": 7707,
-      "edgeCount": 8329,
-      "importEdgeCount": 6892,
+      "nodeCount": 7708,
+      "edgeCount": 8332,
+      "importEdgeCount": 6894,
       "registerEdgeCount": 68
     }
   },
-  "inventorySha256": "68c854b413f1396b5cba321f0de6ac876579513b781bbe60b2ef6895c4a9cdf8",
-  "manifestSha256": "2979e86315ab9d5cc400945072fc64716fd13f6e1d9e33ab4652703e47b103b2"
+  "inventorySha256": "9d044660ed628e31c8560f5c1f4f77b3bea0f564724ccbdb7a3269c5042e7ac7",
+  "manifestSha256": "ee41d344ad834d7243c0e03907ccf7f42b45da875736b15b2600274c11301b04"
 }
