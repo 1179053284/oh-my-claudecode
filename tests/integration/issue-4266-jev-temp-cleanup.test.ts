@@ -176,6 +176,35 @@ describe("issue #4266: Jev temp directory cleanup", () => {
     }
   });
 
+  it("skips a duplicate sweep while another process holds the throttle lock", () => {
+    const testRoot = mkdtempSync(join(tmpdir(), "issue-4266-locked-"));
+    const tempRoot = join(testRoot, "tmp");
+    const homeRoot = join(testRoot, "home");
+    const stateDir = join(homeRoot, ".omc", "state");
+    mkdirSync(tempRoot, { mode: 0o700 });
+    mkdirSync(stateDir, { recursive: true, mode: 0o700 });
+    const lockPath = join(stateDir, ".jev-sweep-throttle.lock");
+    writeFileSync(lockPath, "held");
+
+    const staleDir = mkdtempSync(join(tempRoot, "omc-jev-"));
+    writeFileSync(join(staleDir, "request.json"), "{}");
+    const oldTime = new Date(Date.now() - 48 * 60 * 60 * 1000);
+    utimesSync(staleDir, oldTime, oldTime);
+
+    try {
+      const result = runActiveRecord(tempRoot, homeRoot);
+      const privateMarker = join(stateDir, ".jev-sweep-throttle");
+
+      expect(result.status).toBe(0);
+      expect(JSON.parse(result.stdout).result.mode).toBe("degraded");
+      expect(existsSync(staleDir)).toBe(true);
+      expect(existsSync(privateMarker)).toBe(false);
+      expect(existsSync(lockPath)).toBe(true);
+    } finally {
+      rmSync(testRoot, { recursive: true, force: true });
+    }
+  });
+
   it("skips the sweep when the private state directory cannot host a throttle marker", () => {
     const testRoot = mkdtempSync(join(tmpdir(), "issue-4266-no-marker-"));
     const tempRoot = join(testRoot, "tmp");

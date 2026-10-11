@@ -12,6 +12,7 @@ import {
   openSync,
   readdirSync,
   rmSync,
+  unlinkSync,
   writeFileSync,
 } from "node:fs";
 import { homedir, tmpdir } from "node:os";
@@ -109,6 +110,77 @@ function updateSweepMarker(markerPath) {
   }
 }
 
+function createSweepLock(lockPath) {
+  const flags =
+    constants.O_WRONLY |
+    constants.O_CREAT |
+    constants.O_EXCL |
+    (constants.O_NOFOLLOW ?? 0);
+  let descriptor;
+  try {
+    descriptor = openSync(lockPath, flags, 0o600);
+    const stats = fstatSync(descriptor);
+    if (!isOwnedMarkerFile(stats)) {
+      closeSync(descriptor);
+      unlinkSync(lockPath);
+      return undefined;
+    }
+    return { path: lockPath, descriptor, dev: stats.dev, ino: stats.ino };
+  } catch {
+    if (descriptor !== undefined) {
+      try {
+        closeSync(descriptor);
+      } catch {
+        // Best effort
+      }
+    }
+    return undefined;
+  }
+}
+
+function acquireSweepLock(markerPath) {
+  if (!markerPath) return undefined;
+  const lockPath = `${markerPath}.lock`;
+  const lock = createSweepLock(lockPath);
+  if (lock) return lock;
+
+  try {
+    const staleLock = lstatSync(lockPath);
+    if (
+      !isOwnedMarkerFile(staleLock) ||
+      Date.now() - staleLock.mtimeMs < SWEEP_THROTTLE_MS
+    ) {
+      return undefined;
+    }
+    const currentLock = lstatSync(lockPath);
+    if (
+      currentLock.dev !== staleLock.dev ||
+      currentLock.ino !== staleLock.ino
+    ) {
+      return undefined;
+    }
+    unlinkSync(lockPath);
+  } catch {
+    return undefined;
+  }
+
+  return createSweepLock(lockPath);
+}
+
+function releaseSweepLock(lock) {
+  try {
+    closeSync(lock.descriptor);
+  } catch {
+    // Best effort
+  }
+  try {
+    const stats = lstatSync(lock.path);
+    if (stats.dev === lock.dev && stats.ino === lock.ino) unlinkSync(lock.path);
+  } catch {
+    // Best effort
+  }
+}
+
 /**
  * Get the Jev mode for a point: 'off' | 'shadow' | 'active'.
  * Reuses the script resolver's config gates and union activation semantics.
@@ -189,8 +261,17 @@ export function recordJevShadow({ point, state, questions, heuristic }) {
   // This cleans up leftovers from killed resolvers that couldn't clean themselves
   const markerPath = getSweepThrottleMarkerPath();
   try {
-    if (shouldRunSweep(markerPath) && updateSweepMarker(markerPath)) {
-      sweepStaleTempDirs(24 * 60 * 60 * 1000); // Clean dirs older than 24h
+    if (shouldRunSweep(markerPath)) {
+      const lock = acquireSweepLock(markerPath);
+      if (lock) {
+        try {
+          if (shouldRunSweep(markerPath) && updateSweepMarker(markerPath)) {
+            sweepStaleTempDirs(24 * 60 * 60 * 1000); // Clean dirs older than 24h
+          }
+        } finally {
+          releaseSweepLock(lock);
+        }
+      }
     }
   } catch {
     // Best effort: marker or sweep failures never affect judgment recording
