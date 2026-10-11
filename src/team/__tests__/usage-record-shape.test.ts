@@ -164,21 +164,20 @@ describe('usage JSONL record recovery', () => {
     expect(report.workers.map(worker => worker.workerName)).toEqual(['worker-1', 'worker-3']);
     expect(report.workers[1].totalPromptChars).toBe(2);
   });
-  it('skips a positive duration increment when floating-point precision changes it', () => {
+  it('retains exact fractional totals when the Number projection rounds the increment', () => {
     recordTaskUsage(root, 'rounded', {
       ...valid, workerName: 'worker-1', wallClockMs: Number.MAX_SAFE_INTEGER - 1, promptChars: 0, responseChars: 0,
     });
     recordTaskUsage(root, 'rounded', { ...valid, taskId: 'overstated', wallClockMs: 0.75 });
-    recordTaskUsage(root, 'rounded', { ...valid, taskId: 'later', workerName: 'worker-3', wallClockMs: 1 });
 
     const report = generateUsageReport(root, 'rounded');
     expect(report.taskCount).toBe(2);
     expect(report.totalWallClockMs).toBe(Number.MAX_SAFE_INTEGER);
-    expect(report.workers.map(worker => worker.workerName)).toEqual(['worker-1', 'worker-3']);
-    expect(report.workers[0].totalWallClockMs).toBe(Number.MAX_SAFE_INTEGER - 1);
-    expect(report.workers[1].totalWallClockMs).toBe(1);
+    expect(report.workers.map(worker => worker.workerName)).toEqual(['worker-1']);
+    expect(report.workers[0].taskCount).toBe(2);
+    expect(report.workers[0].totalWallClockMs).toBe(Number.MAX_SAFE_INTEGER);
   });
-  it('skips duration additions that round away the existing subtotal', () => {
+  it('retains prior fractional durations while bounding later totals', () => {
     recordTaskUsage(root, 'prior-total', {
       ...valid, workerName: 'worker-1', wallClockMs: 0.25, promptChars: 0, responseChars: 0,
     });
@@ -187,15 +186,16 @@ describe('usage JSONL record recovery', () => {
       wallClockMs: Number.MAX_SAFE_INTEGER - 1, promptChars: 0, responseChars: 0,
     });
     recordTaskUsage(root, 'prior-total', {
-      ...valid, taskId: 'later', workerName: 'worker-3', wallClockMs: 1, promptChars: 2, responseChars: 3,
+      ...valid, taskId: 'later', workerName: 'worker-3', wallClockMs: 0.5, promptChars: 2, responseChars: 3,
     });
 
     const report = generateUsageReport(root, 'prior-total');
-    expect(report.taskCount).toBe(2);
-    expect(report.totalWallClockMs).toBe(1.25);
+    expect(report.taskCount).toBe(3);
+    expect(report.totalWallClockMs).toBe(Number.MAX_SAFE_INTEGER);
     expect(report.workers.map(worker => worker.workerName)).toEqual(['worker-1', 'worker-3']);
-    expect(report.workers[0].totalWallClockMs).toBe(0.25);
-    expect(report.workers[1].totalWallClockMs).toBe(1);
+    expect(report.workers[0].taskCount).toBe(2);
+    expect(report.workers[0].totalWallClockMs).toBe(Number.MAX_SAFE_INTEGER - 1);
+    expect(report.workers[1].totalWallClockMs).toBe(0.5);
   });
   it('returns an empty report when every syntactically valid record is invalid', () => {
     recordTaskUsage(root, 'empty', valid);
