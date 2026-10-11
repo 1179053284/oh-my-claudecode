@@ -124,6 +124,12 @@ jobs:
           src/installer/__tests__/claude-md-transaction.test.ts
           src/team/__tests__/cli-detection.windows.integration.test.ts
 
+      - name: Run Windows legacy state-lock tests
+        run: >-
+          npx vitest run --fileParallelism=false
+          src/lib/__tests__/atomic-write.test.ts
+          -t "legacy.*lock"
+
   better-sqlite3-node26:
     name: better-sqlite3 Node 26 (${{ matrix.os }})
     if: github.event_name != 'push' || github.ref_type != 'tag'
@@ -181,6 +187,10 @@ jobs:
           npx vitest run
           src/hooks/__tests__/precompact-restore.test.ts
           src/__tests__/session-start-precompact-restore.test.ts
+
+      - name: Run Unix state-lock tests
+        if: runner.os != 'Windows'
+        run: npx vitest run src/lib/__tests__/atomic-write.test.ts
 
   build:
     name: Build
