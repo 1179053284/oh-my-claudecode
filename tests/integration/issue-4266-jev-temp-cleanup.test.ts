@@ -287,6 +287,51 @@ describe("issue #4266: Jev temp directory cleanup", () => {
     }
   });
 
+  it("continues sweeping when the prior hour lock owner has exited", () => {
+    const exitedOwner = spawnSync(process.execPath, ["-e", "process.exit(0)"]);
+    expect(exitedOwner.status).toBe(0);
+
+    const testRoot = mkdtempSync(join(tmpdir(), "issue-4266-dead-lock-"));
+    const tempRoot = join(testRoot, "tmp");
+    const homeRoot = join(testRoot, "home");
+    const stateDir = join(homeRoot, ".omc", "state");
+    mkdirSync(tempRoot, { mode: 0o700 });
+    mkdirSync(stateDir, { recursive: true, mode: 0o700 });
+
+    const currentBucket = Math.floor(Date.now() / (60 * 60 * 1000));
+    const previousLock = join(
+      stateDir,
+      `.jev-sweep-throttle.lock-${currentBucket - 1}`,
+    );
+    const currentLock = join(
+      stateDir,
+      `.jev-sweep-throttle.lock-${currentBucket}`,
+    );
+    writeFileSync(previousLock, String(exitedOwner.pid));
+
+    const markerPath = join(stateDir, ".jev-sweep-throttle");
+    const oldTime = new Date(Date.now() - 48 * 60 * 60 * 1000);
+    writeFileSync(markerPath, "expired");
+    utimesSync(markerPath, oldTime, oldTime);
+
+    const staleDir = mkdtempSync(join(tempRoot, "omc-jev-"));
+    writeFileSync(join(staleDir, "request.json"), "{}");
+    utimesSync(staleDir, oldTime, oldTime);
+
+    try {
+      const result = runActiveRecord(tempRoot, homeRoot);
+
+      expect(result.status).toBe(0);
+      expect(JSON.parse(result.stdout).result.mode).toBe("degraded");
+      expect(lstatSync(markerPath).mtimeMs).toBeGreaterThan(oldTime.getTime());
+      expect(existsSync(staleDir)).toBe(typeof process.getuid !== "function");
+      expect(existsSync(currentLock)).toBe(false);
+      expect(existsSync(previousLock)).toBe(true);
+    } finally {
+      rmSync(testRoot, { recursive: true, force: true });
+    }
+  });
+
   it("rolls past abandoned hourly locks left by crashed processes", () => {
     const testRoot = mkdtempSync(join(tmpdir(), "issue-4266-stale-lock-"));
     const tempRoot = join(testRoot, "tmp");
