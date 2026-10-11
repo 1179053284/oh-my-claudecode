@@ -818,6 +818,41 @@ describe('unified MCP registry sync', () => {
     expect(status.codexMismatched).toEqual([]);
   });
 
+  it('ignores Codex-unrepresented MCP types and key order but reports real differences (issue #4294)', () => {
+    const registry = {
+      context7: {
+        command: '/tools/context7-mcp.sh',
+        type: 'stdio',
+        env: { ZED: 'last', ALPHA: 'first' },
+      },
+      deepwiki: { url: 'https://mcp.deepwiki.com/mcp', type: 'http' },
+      changed: { command: 'python', args: ['server.py'], type: 'stdio' },
+    };
+
+    writeFileSync(getUnifiedMcpRegistryPath(), JSON.stringify(registry, null, 2));
+    writeFileSync(getClaudeMcpConfigPath(), JSON.stringify({ mcpServers: registry }, null, 2));
+    writeFileSync(getCodexConfigPath(), [
+      '[mcp_servers.context7]',
+      'command = "/tools/context7-mcp.sh"',
+      'env = { ALPHA = "first", ZED = "last" }',
+      '',
+      '[mcp_servers.deepwiki]',
+      'url = "https://mcp.deepwiki.com/mcp"',
+      '',
+      '[mcp_servers.changed]',
+      'command = "node"',
+      'args = ["server.py"]',
+      '',
+    ].join('\n'));
+
+    const status = inspectUnifiedMcpRegistrySync();
+
+    expect(status.codexMissing).toEqual([]);
+    expect(status.codexMismatched).toEqual(['changed']);
+    expect(status.claudeMissing).toEqual([]);
+    expect(status.claudeMismatched).toEqual([]);
+  });
+
   it('parses literal url, type, and nested header values (issue #3601)', () => {
     const registry = {
       remote: {

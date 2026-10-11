@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { homedir } from 'os';
 import { dirname, join } from 'path';
+import { isDeepStrictEqual } from 'util';
 
 import { getClaudeConfigDir } from '../utils/config-dir.js';
 import {
@@ -296,6 +297,14 @@ function loadOrBootstrapRegistry(settings: Record<string, unknown>): {
 
 function entriesEqual(left: unknown, right: unknown): boolean {
   return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function codexEntriesEqual(left: UnifiedMcpRegistryEntry, right: UnifiedMcpRegistryEntry): boolean {
+  const leftCodexEntry = { ...left };
+  const rightCodexEntry = { ...right };
+  delete leftCodexEntry.type;
+  delete rightCodexEntry.type;
+  return isDeepStrictEqual(leftCodexEntry, rightCodexEntry);
 }
 
 export function applyRegistryToClaudeSettings(
@@ -941,7 +950,7 @@ export function inspectUnifiedMcpRegistrySync(): UnifiedMcpRegistryStatus {
 
     if (!codexEntries[name]) {
       codexMissing.push(name);
-    } else if (!entriesEqual(codexEntries[name], entry)) {
+    } else if (!codexEntriesEqual(codexEntries[name], entry)) {
       codexMismatched.push(name);
     }
   }
