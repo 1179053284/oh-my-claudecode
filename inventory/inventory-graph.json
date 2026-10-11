@@ -5,22 +5,22 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "dc918dfe668acee73071e27f5764857e589b66fc",
-    "sourceSha256": "3e0e9659f6b73b606aa5cd4726720589f2ab7b82670a43b12e80f634e6c9f118",
+    "head": "4eaa68293758ade5c811ffa181cf038ca7ef7c94",
+    "sourceSha256": "9812fcd827099e1b8f033a15e7fe94642552c8a03c3ec4221f913c33ecdb0601",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "dc918dfe668acee73071e27f5764857e589b66fc",
-  "sourceSha256": "3e0e9659f6b73b606aa5cd4726720589f2ab7b82670a43b12e80f634e6c9f118",
+  "head": "4eaa68293758ade5c811ffa181cf038ca7ef7c94",
+  "sourceSha256": "9812fcd827099e1b8f033a15e7fe94642552c8a03c3ec4221f913c33ecdb0601",
   "counts": {
     "public": {
-      "skills": 47,
+      "skills": 48,
       "commands": 21,
       "workflows": 8,
       "agents": 20,
-      "total": 96
+      "total": 97
     },
     "internal": {
       "hookFiles": 339,
@@ -39,7 +39,7 @@
     "prompt": {
       "promptLikeFiles": 61
     },
-    "skills": 47,
+    "skills": 48,
     "commands": 21,
     "hookFiles": 339,
     "workflows": 8,
@@ -86,6 +86,7 @@
       "research",
       "review",
       "self-improve",
+      "session-flow",
       "skill",
       "skillify",
       "tdd",
@@ -37953,6 +37954,11 @@
         "path": "skills/self-improve/templates/settings.json"
       },
       {
+        "id": "skills/session-flow/SKILL.md",
+        "kind": "skill",
+        "path": "skills/session-flow/SKILL.md"
+      },
+      {
         "id": "skills/skill/SKILL.md",
         "kind": "skill",
         "path": "skills/skill/SKILL.md"
@@ -45563,6 +45569,11 @@
         "path": "tests/integration/runs-reconciler.test.ts"
       },
       {
+        "id": "tests/integration/session-flow-skill.test.ts",
+        "kind": "other",
+        "path": "tests/integration/session-flow-skill.test.ts"
+      },
+      {
         "id": "tests/integration/skill-map-references.test.ts",
         "kind": "other",
         "path": "tests/integration/skill-map-references.test.ts"
@@ -48573,6 +48584,11 @@
         "from": "skills/self-improve/scripts/resolve-paths.mjs",
         "to": "scripts/lib/state-root.mjs",
         "kind": "imports"
+      },
+      {
+        "from": "skills/session-flow/SKILL.md",
+        "to": "src/features/builtin-skills/skills.ts",
+        "kind": "registers"
       },
       {
         "from": "skills/skill/SKILL.md",
@@ -87245,6 +87261,31 @@
         "kind": "imports"
       },
       {
+        "from": "tests/integration/session-flow-skill.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/session-flow-skill.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/session-flow-skill.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/session-flow-skill.test.ts",
+        "to": "src/features/builtin-skills/skills.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/session-flow-skill.test.ts",
+        "to": "src/workflow/registry.ts",
+        "kind": "imports"
+      },
+      {
         "from": "tests/integration/skill-map-references.test.ts",
         "to": "external:node:fs",
         "kind": "imports"
@@ -87896,12 +87937,12 @@
       }
     ],
     "stats": {
-      "nodeCount": 7725,
-      "edgeCount": 8433,
-      "importEdgeCount": 6989,
-      "registerEdgeCount": 68
+      "nodeCount": 7727,
+      "edgeCount": 8439,
+      "importEdgeCount": 6994,
+      "registerEdgeCount": 69
     }
   },
-  "inventorySha256": "e325119a876df07eec3291edfaf6f7eba20d5bc99dd0c2d612d470c9e81f5284",
-  "manifestSha256": "ebe7b5b80693d7890e4807bf7d86600e45fab866052fc2c7dfe6d714a284ca47"
+  "inventorySha256": "19979bcabac516495a07a2ca4763e27a78475cb8dfb908f6db0398647e698f96",
+  "manifestSha256": "48078ab7fa1c6a1616afe2b9a772b437b3926c242759f3c5f2ce401a89dc3e42"
 }
