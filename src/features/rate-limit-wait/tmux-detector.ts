@@ -172,12 +172,50 @@ const WAITING_PATTERNS = [
 /** The first menu option must still offer an actionable continuation. */
 const LIVE_RESUME_OPTION_PATTERN =
   /^\s*(?:❯\s*)?(?:\[1\]|1[.)]?)\s+(?:continue|resume|retry|try again|stop and wait|wait and continue automatically)\b/im;
-const LIVE_SELECTED_RESUME_OPTION_PATTERN =
-  /^\s*❯\s*(?:\[1\]|1[.)]?)\s+(?:continue|resume|retry|try again|stop and wait|wait and continue automatically)\b/i;
 const LIVE_CONFIRMATION_PROMPT_PATTERN =
   /^\s*(?:enter to confirm(?:\s*·\s*esc to cancel)?|enter choice:)\s*$/i;
+const LIVE_MENU_OPTION_PATTERN = /^\s*(?:❯\s*)?(?:\[\d+\]|\d+[.)]?)\s+/;
+const LIVE_MENU_QUESTION_PATTERN = /^\s*what (?:would you like|do you want) to do\?\s*$/i;
+const LIVE_MENU_DIVIDER_PATTERN = /^\s*[-─━═]+\s*$/;
 const LIVE_WAIT_AND_CONTINUE_PROMPT_PATTERN =
   /what would you like to do\?[\s\S]*^\s*\[1\]\s+wait and continue automatically\b[\s\S]*^\s*>\s*$/im;
+
+function hasLiveResumeMenuPrompt(lines: string[]): boolean {
+  const lastLine = lines.at(-1) ?? '';
+  const hasConfirmation = LIVE_CONFIRMATION_PROMPT_PATTERN.test(lastLine);
+  if (!hasConfirmation && !LIVE_RESUME_OPTION_PATTERN.test(lastLine)) return false;
+  let firstOptionIndex = lines.length - (hasConfirmation ? 2 : 1);
+  if (firstOptionIndex < 0 || !LIVE_MENU_OPTION_PATTERN.test(lines[firstOptionIndex] ?? '')) {
+    return false;
+  }
+
+  while (firstOptionIndex > 0 && LIVE_MENU_OPTION_PATTERN.test(lines[firstOptionIndex - 1] ?? '')) {
+    firstOptionIndex--;
+  }
+  if (!LIVE_RESUME_OPTION_PATTERN.test(lines[firstOptionIndex] ?? '')) return false;
+
+  let contextIndex = firstOptionIndex - 1;
+  while (contextIndex >= 0 && LIVE_MENU_DIVIDER_PATTERN.test(lines[contextIndex] ?? '')) {
+    contextIndex--;
+  }
+  if (contextIndex >= 0 && RATE_LIMIT_PATTERNS.some((pattern) =>
+    pattern.test(lines[contextIndex] ?? '')
+  )) {
+    return true;
+  }
+
+  if (contextIndex >= 0 && LIVE_MENU_QUESTION_PATTERN.test(lines[contextIndex] ?? '')) {
+    contextIndex--;
+    while (contextIndex >= 0 && LIVE_MENU_DIVIDER_PATTERN.test(lines[contextIndex] ?? '')) {
+      contextIndex--;
+    }
+    return contextIndex >= 0 && RATE_LIMIT_PATTERNS.some((pattern) =>
+      pattern.test(lines[contextIndex] ?? '')
+    );
+  }
+
+  return false;
+}
 
 /**
  * Check if tmux is installed and available.
@@ -462,9 +500,9 @@ export function revalidateBlockedPanes(
         !OMC_HUD_MODE_LINE_PATTERN.test(line))
       .slice(-5)
       .join('\n');
-    const lastLine = recentLines.split('\n').at(-1) ?? '';
-    const hasLivePrompt = LIVE_SELECTED_RESUME_OPTION_PATTERN.test(lastLine) ||
-      LIVE_CONFIRMATION_PROMPT_PATTERN.test(lastLine) ||
+    const recentLineList = recentLines.split('\n');
+    const lastLine = recentLineList.at(-1) ?? '';
+    const hasLivePrompt = hasLiveResumeMenuPrompt(recentLineList) ||
       (lastLine.trim() === '>' && LIVE_WAIT_AND_CONTINUE_PROMPT_PATTERN.test(recentLines));
     if (
       !analysis.isBlocked ||

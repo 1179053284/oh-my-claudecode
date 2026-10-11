@@ -640,6 +640,24 @@ describe('tmux-detector', () => {
       expect(revalidateBlockedPanes([trackedPane])).toEqual([]);
     });
 
+    it('rejects a stale rate-limit option before an unrelated confirmation menu', () => {
+      makeTmuxAvailable();
+      const unrelatedConfirmation = [
+        'Claude Code v1.2.3',
+        "You've reached your rate limit. Please wait for the limit to reset.",
+        '[1] Continue when ready',
+        'Run this command?',
+        '[1] Yes',
+        '[2] No',
+        'Enter to confirm',
+      ].join('\n');
+      vi.mocked(tmuxExec)
+        .mockReturnValueOnce(paneList)
+        .mockReturnValueOnce(unrelatedConfirmation);
+
+      expect(revalidateBlockedPanes([trackedPane])).toEqual([]);
+    });
+
     it('ignores live OMC HUD footer lines when checking the prompt', () => {
       makeTmuxAvailable();
       const livePromptWithHud = [

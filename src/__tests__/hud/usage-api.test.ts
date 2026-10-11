@@ -672,6 +672,64 @@ describe('getUsage routing', () => {
     expect(getUsageCredentialIdentity(false, true)).not.toBe(runtimeIdentity);
   });
 
+  function getIdentityForCredentialAndRuntimeAccount(
+    embeddedAccount: Record<string, string>,
+    runtimeAccount: Record<string, string>,
+  ): string | null {
+    const configDir = '/tmp/test-base/.omc-launch';
+    const credentialsPath = `${configDir}/.credentials.json`;
+    const runtimeClaudeJsonPath = `${configDir}/.claude.json`;
+    const credentialsContent = JSON.stringify({
+      claudeAiOauth: {
+        accessToken: 'account-b-access',
+        refreshToken: 'account-b-refresh',
+        oauthAccount: embeddedAccount,
+      },
+    });
+
+    process.env.CLAUDE_CONFIG_DIR = configDir;
+    vi.mocked(fs.existsSync).mockImplementation(path =>
+      String(path) === credentialsPath || String(path) === runtimeClaudeJsonPath,
+    );
+    vi.mocked(fs.readFileSync).mockImplementation(path => {
+      if (String(path) === credentialsPath) return credentialsContent;
+      if (String(path) === runtimeClaudeJsonPath) {
+        return JSON.stringify({ oauthAccount: runtimeAccount });
+      }
+      return '{}';
+    });
+
+    return getUsageCredentialIdentity(false, true);
+  }
+
+  it('rejects a config UUID when credentials instead identify an account ID', () => {
+    expect(getIdentityForCredentialAndRuntimeAccount(
+      { accountId: 'account-b' },
+      { accountUuid: 'account-a' },
+    )).toBeNull();
+  });
+
+  it('rejects a config UUID when credentials instead identify an email', () => {
+    expect(getIdentityForCredentialAndRuntimeAccount(
+      { emailAddress: 'account-b@example.test' },
+      { accountUuid: 'account-a' },
+    )).toBeNull();
+  });
+
+  it('rejects config UUID metadata when its email conflicts with credential email', () => {
+    expect(getIdentityForCredentialAndRuntimeAccount(
+      { emailAddress: 'account-b@example.test' },
+      { accountUuid: 'account-a', emailAddress: 'account-a@example.test' },
+    )).toBeNull();
+  });
+
+  it('uses a config UUID when embedded credential email confirms the account', () => {
+    expect(getIdentityForCredentialAndRuntimeAccount(
+      { emailAddress: 'account-a@example.test' },
+      { accountUuid: 'account-a', emailAddress: 'account-a@example.test' },
+    )).not.toBeNull();
+  });
+
   it('treats unreadable active account metadata as an inconclusive profile', () => {
     const configDir = '/tmp/test-base/.omc-launch';
     const credentialsPath = `${configDir}/.credentials.json`;

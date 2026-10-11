@@ -582,6 +582,20 @@ function getOAuthAccountProfileIdentity(credentials: Record<string, unknown>): s
   if (credentialUuid) {
     return hashCredentialIdentity(JSON.stringify(['oauth-account-uuid', credentialUuid.toLowerCase()]));
   }
+  const credentialAccountId = firstString(
+    credentials.accountId,
+    credentials.userId,
+    credentials.userID,
+    account.accountId,
+    account.userId,
+    account.userID,
+  );
+  const credentialEmail = firstString(
+    credentials.emailAddress,
+    credentials.email,
+    account.emailAddress,
+    account.email,
+  );
 
   // Managed OMC launches copy account metadata into the active config directory;
   // the standard Claude layout keeps it beside that directory instead.
@@ -630,23 +644,39 @@ function getOAuthAccountProfileIdentity(credentials: Record<string, unknown>): s
     claudeJsonAccount.accountUUID,
     claudeJsonAccount.uuid,
   );
-  if (accountUuid) {
-    return hashCredentialIdentity(JSON.stringify(['oauth-account-uuid', accountUuid.toLowerCase()]));
-  }
-
-  const accountId = firstString(
-    credentials.accountId,
-    credentials.userId,
-    credentials.userID,
-    account.accountId,
-    account.userId,
-    account.userID,
+  const claudeJsonAccountId = firstString(
     claudeJsonAccount.accountId,
     claudeJsonAccount.userId,
     claudeJsonAccount.userID,
   );
-  if (accountId) {
-    return hashCredentialIdentity(JSON.stringify(['oauth-account', accountId]));
+  const claudeJsonEmail = firstString(claudeJsonAccount.emailAddress, claudeJsonAccount.email);
+  if (accountUuid) {
+    // A config UUID cannot safely stand in for a credential with a different identifier shape.
+    if (credentialAccountId) return null;
+    if (
+      credentialEmail &&
+      (!claudeJsonEmail || credentialEmail.toLowerCase() !== claudeJsonEmail.toLowerCase())
+    ) {
+      return null;
+    }
+    return hashCredentialIdentity(JSON.stringify(['oauth-account-uuid', accountUuid.toLowerCase()]));
+  }
+
+  if (claudeJsonAccountId && credentialAccountId) {
+    if (claudeJsonAccountId !== credentialAccountId) return null;
+    return hashCredentialIdentity(JSON.stringify(['oauth-account', credentialAccountId]));
+  }
+  if ((claudeJsonAccountId && credentialEmail) || (credentialAccountId && claudeJsonEmail)) {
+    return null;
+  }
+  const accountId = credentialAccountId ?? claudeJsonAccountId;
+  if (accountId) return hashCredentialIdentity(JSON.stringify(['oauth-account', accountId]));
+
+  if (
+    credentialEmail && claudeJsonEmail &&
+    credentialEmail.toLowerCase() !== claudeJsonEmail.toLowerCase()
+  ) {
+    return null;
   }
 
   const tokenMaterial = firstString(credentials.refreshToken, credentials.accessToken);
@@ -657,14 +687,7 @@ function getOAuthAccountProfileIdentity(credentials: Record<string, unknown>): s
     return storedProfileIdentity;
   }
 
-  const emailAddress = firstString(
-    credentials.emailAddress,
-    credentials.email,
-    account.emailAddress,
-    account.email,
-    claudeJsonAccount.emailAddress,
-    claudeJsonAccount.email,
-  );
+  const emailAddress = credentialEmail ?? claudeJsonEmail;
   if (emailAddress) {
     return hashCredentialIdentity(JSON.stringify(['oauth-email', emailAddress.toLowerCase()]));
   }
