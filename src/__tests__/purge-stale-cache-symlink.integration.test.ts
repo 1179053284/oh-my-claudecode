@@ -156,6 +156,25 @@ describe('purgeStalePluginCacheVersions symlink payload validation', () => {
     expect(readdirSync(pluginDir).filter((name) => name.includes('.omc-stale-'))).toEqual([]);
   });
 
+  it('allows a directory symlink back to an ancestor when validating OMC payload', () => {
+    const stale = writeVersion(STALE);
+    const active = join(pluginDir, ACTIVE);
+    const docs = join(active, 'docs');
+    const backLink = join(docs, 'back');
+    mkdirSync(docs);
+    symlinkSync('..', backLink, 'dir');
+    makeStale(stale);
+    installPath(active);
+
+    const result = purgeStalePluginCacheVersions();
+
+    expect(result.symlinked).toBe(1);
+    expect(result.errors).toHaveLength(0);
+    expect(lstatSync(stale).isSymbolicLink()).toBe(true);
+    expect(readlinkSync(stale)).toBe(active);
+    expect(existsSync(join(stale, 'scripts', 'run.cjs'))).toBe(true);
+  });
+
   it('preserves generic payload when a child symlink traverses the stale version', () => {
     const genericDir = join(configDir, 'plugins', 'cache', 'official', 'hookify');
     const active = join(genericDir, ACTIVE);

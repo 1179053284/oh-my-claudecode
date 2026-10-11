@@ -196,8 +196,8 @@ function hasResolvablePluginSymlinks(
       if (pathTraversesFileSystemIdentity(entryPath, staleVersionIdentity)) return false;
       if (
         entryStats.isDirectory() &&
-        (branch.some((identity) => sameFileSystemIdentity(entryStats, identity)) ||
-          !hasResolvablePluginSymlinks(entryPath, staleVersionIdentity, branch))
+        !branch.some((identity) => sameFileSystemIdentity(entryStats, identity)) &&
+        !hasResolvablePluginSymlinks(entryPath, staleVersionIdentity, branch)
       ) {
         return false;
       }
