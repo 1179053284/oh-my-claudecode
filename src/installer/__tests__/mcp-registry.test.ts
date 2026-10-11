@@ -830,6 +830,7 @@ describe('unified MCP registry sync', () => {
       typeMismatch: { url: 'https://mcp.example.com', type: 'http' },
       typeComment: { url: 'https://mcp.example.com/comment', type: 'sse' },
       unparsedType: { command: 'node', type: 'stdio' },
+      quotedTypeMismatch: { url: 'https://mcp.example.com/quoted', type: 'http' },
     };
 
     writeFileSync(getUnifiedMcpRegistryPath(), JSON.stringify(registry, null, 2));
@@ -858,12 +859,16 @@ describe('unified MCP registry sync', () => {
       'command = "node"',
       'type = 17',
       '',
+      '[mcp_servers.quotedTypeMismatch]',
+      'url = "https://mcp.example.com/quoted"',
+      '"type" = "sse"',
+      '',
     ].join('\n'));
 
     const status = inspectUnifiedMcpRegistrySync();
 
     expect(status.codexMissing).toEqual([]);
-    expect(status.codexMismatched).toEqual(['changed', 'typeMismatch', 'unparsedType']);
+    expect(status.codexMismatched).toEqual(['changed', 'quotedTypeMismatch', 'typeMismatch', 'unparsedType']);
     expect(status.claudeMissing).toEqual([]);
     expect(status.claudeMismatched).toEqual([]);
   });

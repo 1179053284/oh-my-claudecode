@@ -817,7 +817,7 @@ function parseCodexMcpRegistryEntries(content: string): ParsedCodexMcpRegistry {
       continue;
     }
 
-    const key = currentSection === 'headers' ? parseTomlKey(rawKey) : rawKey.trim();
+    const key = parseTomlKey(rawKey);
     if (!key) {
       continue;
     }
