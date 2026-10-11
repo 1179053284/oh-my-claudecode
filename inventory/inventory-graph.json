@@ -5,15 +5,15 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "0b46a5952763f2202dfe23f469b502da82305d45",
-    "sourceSha256": "56f433d5c5f74f439bf194c91f4d1533ea231198c3853e7a3672c73ba848c429",
+    "head": "b46a8db4f2ac25a7d9783a227abb435d2fe331f1",
+    "sourceSha256": "54066406a5dc9bf84254a82bd70d3f62f7589ce2de561b4e636d859953e42338",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "0b46a5952763f2202dfe23f469b502da82305d45",
-  "sourceSha256": "56f433d5c5f74f439bf194c91f4d1533ea231198c3853e7a3672c73ba848c429",
+  "head": "b46a8db4f2ac25a7d9783a227abb435d2fe331f1",
+  "sourceSha256": "54066406a5dc9bf84254a82bd70d3f62f7589ce2de561b4e636d859953e42338",
   "counts": {
     "public": {
       "skills": 47,
@@ -28,8 +28,8 @@
       "toolFiles": 63,
       "libFiles": 48,
       "templateHooks": 23,
-      "srcFiles": 1461,
-      "total": 1484
+      "srcFiles": 1462,
+      "total": 1485
     },
     "generated": {
       "distFiles": 5611,
@@ -44363,6 +44363,11 @@
         "path": "src/team/__tests__/unified-team.test.ts"
       },
       {
+        "id": "src/team/__tests__/usage-record-shape.test.ts",
+        "kind": "src",
+        "path": "src/team/__tests__/usage-record-shape.test.ts"
+      },
+      {
         "id": "src/team/__tests__/usage-tracker.test.ts",
         "kind": "src",
         "path": "src/team/__tests__/usage-tracker.test.ts"
@@ -80540,6 +80545,41 @@
         "kind": "imports"
       },
       {
+        "from": "src/team/__tests__/usage-record-shape.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-record-shape.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-record-shape.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-record-shape.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-record-shape.test.ts",
+        "to": "src/lib/worktree-paths.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-record-shape.test.ts",
+        "to": "src/team/usage-tracker.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-record-shape.test.ts",
+        "to": "src/team/usage-tracker.ts",
+        "kind": "type-imports"
+      },
+      {
         "from": "src/team/__tests__/usage-tracker.test.ts",
         "to": "external:fs",
         "kind": "imports"
@@ -83847,6 +83887,11 @@
       {
         "from": "src/team/usage-tracker.ts",
         "to": "external:node:string_decoder",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/usage-tracker.ts",
+        "to": "external:zod",
         "kind": "imports"
       },
       {
@@ -87841,12 +87886,12 @@
       }
     ],
     "stats": {
-      "nodeCount": 7724,
-      "edgeCount": 8423,
-      "importEdgeCount": 6980,
+      "nodeCount": 7725,
+      "edgeCount": 8431,
+      "importEdgeCount": 6987,
       "registerEdgeCount": 68
     }
   },
-  "inventorySha256": "aa61c99665c122a1122932b60f1059d68a3af8eeea50bc15008920a5bd859f01",
-  "manifestSha256": "9d88de7e6f2b6108e42a75c863cc84b1835a068ef91574b2e6ca01ebe46a3e01"
+  "inventorySha256": "e325119a876df07eec3291edfaf6f7eba20d5bc99dd0c2d612d470c9e81f5284",
+  "manifestSha256": "09b83b717e8c27e599280bab2a9b134515f5c10db9a0ab2ac8112ca30e598f02"
 }
