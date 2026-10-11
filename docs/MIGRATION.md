@@ -7,6 +7,7 @@ This guide covers all migration paths for oh-my-claudecode. Find your current ve
 ## Table of Contents
 
 - [Unreleased: Glossary File Rename (CONTEXT.md → GLOSSARY.md)](#unreleased-glossary-file-rename-contextmd--glossarymd)
+- [Unreleased: SSRF Guard for IPv6 Literals](#unreleased-ssrf-guard-for-ipv6-literals)
 - [Unreleased: Team Instance Ownership](#unreleased-team-instance-ownership)
 - [Unreleased: Cancellation Scope](#unreleased-cancellation-scope)
 - [v4.x → v5.0: Workflow Retirement](#v4x--v50-workflow-retirement)
@@ -34,6 +35,29 @@ The shipyard glossary surface is now `GLOSSARY.md` at the repository root. It ho
 A `CONTEXT.md` counts as a legacy glossary only when its frontmatter has a `documentLanguage` key, or its first visible non-blank line (after the frontmatter, ignoring a BOM and HTML comments) is a drydock glossary seed heading (`# Glossary`, `# 术语表`, `# 詞彙表`) for yards laid before the language tag existed. Any other `CONTEXT.md` (for example an agent-context file) is ignored by the audit and never renamed.
 
 The missing-glossary surface finding keeps its historical `CONTEXT-md` id slug, so consumers keyed by finding id are unaffected.
+
+## Unreleased: SSRF Guard for IPv6 Literals
+
+OMC's URL guard now rejects literal IPv6 unique-local (`FC00::/7`), link-local
+(`FE80::/10`), unspecified (`::`), and multicast (`FF00::/8`) addresses. This
+affects `GITEA_URL` when OMC uses its direct REST fallback. A blocked Gitea URL
+disables that fallback. This change does not alter HUD usage routing for an
+IPv6-literal `ANTHROPIC_BASE_URL`: provider selection checks the supported DNS
+hostnames, and other endpoints follow the existing Anthropic OAuth usage path.
+The guard does not override Claude Code's own model requests.
+
+### Migration
+
+- For self-hosted Gitea on a unique-local address, configure the `tea` CLI for
+  that host; OMC can continue to use the CLI path, while its direct REST fallback
+  intentionally fails closed for blocked literals. If you rely on the REST
+  fallback, expose Gitea through a trusted routable endpoint outside the blocked
+  ranges.
+- There is no SSRF-guard opt-out. Do not use a hostname that resolves to the same
+  private address as a workaround; DNS resolution and redirect validation are
+  separate protections not provided by this guard.
+
+---
 
 ## Unreleased: Team Instance Ownership
 
