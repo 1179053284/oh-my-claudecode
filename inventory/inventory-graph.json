@@ -5,15 +5,15 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "506b6548d9c392bbd23588e504e1d6a121c25c0d",
-    "sourceSha256": "867e5fb21d87aa2ea9dc365e204c8be250d758297190f38e45d8ab3035b32b0d",
+    "head": "a720eabd02a9816cf22d5f3ce74edbeaaaa92f45",
+    "sourceSha256": "3286209eb51739e74e2cc6bc210fc0b44da1bfd9cf1ea10e25ab0fe46dbe89c6",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "506b6548d9c392bbd23588e504e1d6a121c25c0d",
-  "sourceSha256": "867e5fb21d87aa2ea9dc365e204c8be250d758297190f38e45d8ab3035b32b0d",
+  "head": "a720eabd02a9816cf22d5f3ce74edbeaaaa92f45",
+  "sourceSha256": "3286209eb51739e74e2cc6bc210fc0b44da1bfd9cf1ea10e25ab0fe46dbe89c6",
   "counts": {
     "public": {
       "skills": 47,
@@ -25,11 +25,11 @@
     "internal": {
       "hookFiles": 339,
       "featureFiles": 84,
-      "toolFiles": 61,
+      "toolFiles": 62,
       "libFiles": 48,
       "templateHooks": 23,
-      "srcFiles": 1446,
-      "total": 1469
+      "srcFiles": 1447,
+      "total": 1470
     },
     "generated": {
       "distFiles": 5611,
@@ -596,6 +596,7 @@
       "src/tools/deepinit-manifest.ts",
       "src/tools/diagnostics/AGENTS.md",
       "src/tools/diagnostics/__tests__/lsp-aggregator.test.ts",
+      "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
       "src/tools/diagnostics/index.ts",
       "src/tools/diagnostics/lsp-aggregator.ts",
       "src/tools/diagnostics/tsc-runner.ts",
@@ -7048,6 +7049,7 @@
       "src/tools/deepinit-manifest.ts",
       "src/tools/diagnostics/AGENTS.md",
       "src/tools/diagnostics/__tests__/lsp-aggregator.test.ts",
+      "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
       "src/tools/diagnostics/index.ts",
       "src/tools/diagnostics/lsp-aggregator.ts",
       "src/tools/diagnostics/tsc-runner.ts",
@@ -44812,6 +44814,11 @@
         "id": "src/tools/diagnostics/__tests__/lsp-aggregator.test.ts",
         "kind": "tool",
         "path": "src/tools/diagnostics/__tests__/lsp-aggregator.test.ts"
+      },
+      {
+        "id": "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
+        "kind": "tool",
+        "path": "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts"
       },
       {
         "id": "src/tools/diagnostics/index.ts",
@@ -84061,6 +84068,31 @@
         "kind": "type-imports"
       },
       {
+        "from": "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
+        "to": "src/tools/diagnostics/index.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/tools/diagnostics/index.ts",
         "to": "external:fs",
         "kind": "imports"
@@ -87277,12 +87309,12 @@
       }
     ],
     "stats": {
-      "nodeCount": 7707,
-      "edgeCount": 8328,
-      "importEdgeCount": 6891,
+      "nodeCount": 7708,
+      "edgeCount": 8333,
+      "importEdgeCount": 6896,
       "registerEdgeCount": 68
     }
   },
-  "inventorySha256": "68c854b413f1396b5cba321f0de6ac876579513b781bbe60b2ef6895c4a9cdf8",
-  "manifestSha256": "4f7475859dd7389c0498f504215edc379ce378ac8b9d3e5776a55ac2b19aaf73"
+  "inventorySha256": "c979712233b70ac80563925529b696f9403f5697eef36b4232311ad9d0aabbfd",
+  "manifestSha256": "65cba3b07715de2cd0ca35caed81bab64f7f225b4e404d43af7111a864b4d3ca"
 }
