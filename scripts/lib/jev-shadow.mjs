@@ -143,7 +143,14 @@ export function sweepStaleTempDirs(maxAgeMs = 24 * 60 * 60 * 1000) {
       const fullPath = join(tmpDir, entry);
       try {
         const stats = lstatSync(fullPath);
-        if (stats.isDirectory() && now - stats.mtimeMs > maxAgeMs) {
+        const ownedByCurrentUser =
+          typeof process.getuid !== "function" ||
+          stats.uid === process.getuid();
+        if (
+          stats.isDirectory() &&
+          ownedByCurrentUser &&
+          now - stats.mtimeMs > maxAgeMs
+        ) {
           rmSync(fullPath, { recursive: true, force: true });
           cleaned++;
         }

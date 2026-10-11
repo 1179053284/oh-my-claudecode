@@ -102,22 +102,25 @@ describe("issue #4266: Jev temp directory cleanup", () => {
     }
   });
 
-  it("does not recursively remove a nested directory outside the temp root", () => {
+  it("only removes the request file outside the temp root", () => {
     const parent = mkdtempSync(join(tmpdir(), "issue-4266-parent-"));
     const nested = join(parent, "omc-jev-cache");
     mkdirSync(nested);
     const requestFile = join(nested, "request.json");
+    const siblingFile = join(nested, "unrelated.txt");
     writeFileSync(
       requestFile,
       JSON.stringify({ point: "test", state: {}, questions: {} }),
     );
+    writeFileSync(siblingFile, "keep");
 
     try {
       const result = runResolver(requestFile);
 
       expect(result.status).toBe(0);
       expect(existsSync(nested)).toBe(true);
-      expect(existsSync(requestFile)).toBe(true);
+      expect(existsSync(requestFile)).toBe(false);
+      expect(existsSync(siblingFile)).toBe(true);
     } finally {
       rmSync(parent, { recursive: true, force: true });
     }
