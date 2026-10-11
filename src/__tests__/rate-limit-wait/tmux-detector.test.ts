@@ -559,6 +559,17 @@ describe('tmux-detector', () => {
       ]);
     });
 
+    it('revalidates a live pane after its window is renamed', () => {
+      makeTmuxAvailable();
+      vi.mocked(tmuxExec)
+        .mockReturnValueOnce('main:0.0 %0 1 renamed Claude\n')
+        .mockReturnValueOnce(livePrompt);
+
+      expect(revalidateBlockedPanes([trackedPane])).toMatchObject([
+        { id: '%0', session: 'main', windowName: 'renamed' },
+      ]);
+    });
+
     it('recognizes a cursor-selected continuation option', () => {
       makeTmuxAvailable();
       vi.mocked(tmuxExec)

@@ -353,6 +353,25 @@ async function pollLoop(config: Required<DaemonConfig>): Promise<void> {
             setTimeout(() => reject(new Error('checkRateLimitStatus timed out after 30s')), 30_000)
           ),
         ]);
+      if (usageProfileHash !== null) {
+        const checkedUsageProfileHash = getUsageProfileHash();
+        if (checkedUsageProfileHash !== usageProfileHash) {
+          if (checkedUsageProfileHash !== null) {
+            scopeStateToCurrentUsageProfile(
+              state,
+              checkedUsageProfileHash,
+              dirname(config.stateFilePath),
+            );
+            lastConfirmedLimited = state.lastConfirmedLimited === true;
+            log('Claude usage profile changed during quota check; discarded saved quota and pane state', config);
+          } else {
+            log('Claude usage profile became unavailable during quota check; discarding quota sample', config);
+          }
+          writeDaemonState(state, config);
+          await new Promise((resolve) => setTimeout(resolve, config.pollIntervalMs));
+          continue;
+        }
+      }
       const isNowLimited = shouldMonitorBlockedPanes(rateLimitStatus);
       const isConfirmedClear =
         rateLimitStatus !== null && !isNowLimited && !isRateLimitStatusDegraded(rateLimitStatus);
@@ -421,7 +440,6 @@ async function pollLoop(config: Required<DaemonConfig>): Promise<void> {
               current.id === pane.id &&
               current.session === pane.session &&
               current.windowIndex === pane.windowIndex &&
-              current.windowName === pane.windowName &&
               current.paneIndex === pane.paneIndex
             );
             if (!currentPane) {

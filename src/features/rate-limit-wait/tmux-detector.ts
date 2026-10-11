@@ -525,7 +525,6 @@ export function revalidateBlockedPanes(
       pane.id === tracked.id &&
       pane.session === tracked.session &&
       pane.windowIndex === tracked.windowIndex &&
-      pane.windowName === tracked.windowName &&
       pane.paneIndex === tracked.paneIndex
     );
     if (!current) continue;

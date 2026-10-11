@@ -214,6 +214,15 @@ describe('confirmed quota transitions in the actual daemon polling loop', () => 
     expect(boundary.resume).not.toHaveBeenCalled();
     expect(observed().successfulResumes).toBe(0);
   });
+  it('resumes a live pane after its window is renamed', async () => {
+    seed(status(true));
+    await start(null);
+    boundary.revalidate.mockReturnValue([blockedPane({ windowName: 'renamed' })]);
+
+    await next(status(false));
+
+    expect(boundary.resume).toHaveBeenCalledExactlyOnceWith('%test');
+  });
   it('retains panes after inconclusive revalidation and retries on the next clear poll', async () => {
     seed(status(true));
     await start(null);
@@ -267,6 +276,24 @@ describe('confirmed quota transitions in the actual daemon polling loop', () => 
     await next(status(false));
 
     expect(boundary.resume).not.toHaveBeenCalled();
+    expect(observed().lastConfirmedLimited).toBe(false);
+    expect(observed().blockedPanes).toEqual([]);
+    expect(observed().usageProfileHash).toBe(currentUsageProfileHash());
+  });
+  it('discards an all-clear fetched while the stored OAuth account changes', async () => {
+    setStoredOAuthCredentials('account-a', 'access-a', 'refresh-a');
+    seed(status(true));
+    boundary.check.mockImplementationOnce(async () => {
+      setStoredOAuthCredentials('account-b', 'access-b', 'refresh-b');
+      return status(false);
+    });
+
+    void pollLoop(config);
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(boundary.resume).not.toHaveBeenCalled();
+    expect(boundary.revalidate).not.toHaveBeenCalled();
+    expect(observed().rateLimitStatus).toBeNull();
     expect(observed().lastConfirmedLimited).toBe(false);
     expect(observed().blockedPanes).toEqual([]);
     expect(observed().usageProfileHash).toBe(currentUsageProfileHash());
