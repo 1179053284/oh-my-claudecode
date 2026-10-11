@@ -455,12 +455,16 @@ function renderTomlString(value: string): string {
   return `"${escapeTomlString(value)}"`;
 }
 
-function isValidTomlLiteralContent(content: string): boolean {
+function isValidTomlLiteralContent(content: string, allowNewlines = false): boolean {
   // TOML literal strings permit only tab (U+0009) among control characters.
-  // Reject U+0000–U+0008, U+000A–U+001F, and U+007F (DEL).
+  // Multiline strings additionally permit line feed (U+000A).
   for (let i = 0; i < content.length; i++) {
     const code = content.charCodeAt(i);
-    if ((code <= 0x08) || (code >= 0x0A && code <= 0x1F) || code === 0x7F) {
+    if (
+      code <= 0x08
+      || (code >= 0x0A && code <= 0x1F && !(allowNewlines && code === 0x0A))
+      || code === 0x7F
+    ) {
       return false;
     }
   }
@@ -473,6 +477,12 @@ function parseTomlQuotedString(value: string): string | undefined {
   const multilineBasicMatch = trimmed.match(/^"""([\s\S]*?)"""\s*(?:#.*)?$/);
   if (multilineBasicMatch) {
     return unescapeTomlString(multilineBasicMatch[1].replace(/^\r?\n/, ''));
+  }
+
+  const multilineLiteralMatch = trimmed.match(/^'''([\s\S]*?)'''\s*(?:#.*)?$/);
+  if (multilineLiteralMatch) {
+    const content = multilineLiteralMatch[1].replace(/^\r?\n/, '');
+    return isValidTomlLiteralContent(content, true) ? content : undefined;
   }
 
   const basicMatch = trimmed.match(/^"((?:\\.|[^"\\])*)"\s*(?:#.*)?$/);
@@ -796,18 +806,22 @@ interface ParsedCodexMcpRegistry {
   typeFieldsPresent: Set<string>;
 }
 
-function hasClosingTomlMultilineBasicString(value: string): boolean {
+type TomlMultilineDelimiter = '"""' | "'''";
+
+function hasClosingTomlMultilineString(value: string, delimiter: TomlMultilineDelimiter): boolean {
   let escaped = false;
-  for (let index = 3; index <= value.length - 3; index++) {
-    if (escaped) {
-      escaped = false;
-      continue;
+  for (let index = delimiter.length; index <= value.length - delimiter.length; index++) {
+    if (delimiter === '"""') {
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (value[index] === '\\') {
+        escaped = true;
+        continue;
+      }
     }
-    if (value[index] === '\\') {
-      escaped = true;
-      continue;
-    }
-    if (value.startsWith('"""', index)) {
+    if (value.startsWith(delimiter, index)) {
       return true;
     }
   }
@@ -875,8 +889,13 @@ function parseCodexMcpRegistryEntries(content: string): ParsedCodexMcpRegistry {
       continue;
     }
     let value = rawValueParts.join('=').trim();
-    if (value.startsWith('"""') && !hasClosingTomlMultilineBasicString(value)) {
-      while (lineIndex + 1 < lines.length && !hasClosingTomlMultilineBasicString(value)) {
+    const multilineDelimiter: TomlMultilineDelimiter | undefined = value.startsWith('"""')
+      ? '"""'
+      : value.startsWith("'''")
+        ? "'''"
+        : undefined;
+    if (multilineDelimiter && !hasClosingTomlMultilineString(value, multilineDelimiter)) {
+      while (lineIndex + 1 < lines.length && !hasClosingTomlMultilineString(value, multilineDelimiter)) {
         value += `\n${lines[++lineIndex]}`;
       }
     }

@@ -841,6 +841,7 @@ describe('unified MCP registry sync', () => {
       implicitHttp: { url: 'https://mcp.example.com/implicit-http' },
       implicitTypeMismatch: { url: 'https://mcp.example.com/implicit-mismatch' },
       multilineType: { url: 'https://mcp.example.com/multiline-type' },
+      multilineLiteralType: { url: 'https://mcp.example.com/multiline-literal-type' },
     };
 
     writeFileSync(getUnifiedMcpRegistryPath(), JSON.stringify(registry, null, 2));
@@ -911,6 +912,11 @@ describe('unified MCP registry sync', () => {
       'url = "https://mcp.example.com/multiline-type"',
       'type = """',
       'http"""',
+      '',
+      '[mcp_servers.multilineLiteralType]',
+      'url = "https://mcp.example.com/multiline-literal-type"',
+      "type = '''",
+      "http'''",
       '',
     ].join('\n'));
 
