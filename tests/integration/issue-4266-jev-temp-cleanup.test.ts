@@ -1,6 +1,7 @@
 /** Temp directory cleanup for jev-shadow and jev-resolve (issue #4266). */
 import { describe, expect, it } from "vitest";
 import {
+  chmodSync,
   existsSync,
   lstatSync,
   mkdirSync,
@@ -18,13 +19,19 @@ import { spawnSync } from "node:child_process";
 
 const PROJECT_ROOT = fileURLToPath(new URL("../../", import.meta.url));
 const JEVRESOLVE_PATH = join(PROJECT_ROOT, "scripts/jev-resolve.mjs");
-const JEV_SHADOW_URL = pathToFileURL(join(PROJECT_ROOT, "scripts/lib/jev-shadow.mjs")).href;
+const JEV_SHADOW_URL = pathToFileURL(
+  join(PROJECT_ROOT, "scripts/lib/jev-shadow.mjs"),
+).href;
 
 function runResolver(requestFile: string) {
-  return spawnSync(process.execPath, [JEVRESOLVE_PATH, "--request-file", requestFile], {
-    env: { ...process.env, OMC_JEV: "off" },
-    encoding: "utf8",
-  });
+  return spawnSync(
+    process.execPath,
+    [JEVRESOLVE_PATH, "--request-file", requestFile],
+    {
+      env: { ...process.env, OMC_JEV: "off" },
+      encoding: "utf8",
+    },
+  );
 }
 
 function runActiveRecord(tempRoot: string, homeRoot: string) {
@@ -63,7 +70,10 @@ describe("issue #4266: Jev temp directory cleanup", () => {
     const tempDir = mkdtempSync(join(tmpdir(), "omc-jev-"));
     try {
       const requestFile = join(tempDir, "request.json");
-      writeFileSync(requestFile, JSON.stringify({ point: "test", state: {}, questions: {} }));
+      writeFileSync(
+        requestFile,
+        JSON.stringify({ point: "test", state: {}, questions: {} }),
+      );
 
       const result = runResolver(requestFile);
 
@@ -97,7 +107,10 @@ describe("issue #4266: Jev temp directory cleanup", () => {
     const nested = join(parent, "omc-jev-cache");
     mkdirSync(nested);
     const requestFile = join(nested, "request.json");
-    writeFileSync(requestFile, JSON.stringify({ point: "test", state: {}, questions: {} }));
+    writeFileSync(
+      requestFile,
+      JSON.stringify({ point: "test", state: {}, questions: {} }),
+    );
 
     try {
       const result = runResolver(requestFile);
@@ -130,15 +143,52 @@ describe("issue #4266: Jev temp directory cleanup", () => {
 
     try {
       const result = runActiveRecord(tempRoot, homeRoot);
-      const privateMarker = join(homeRoot, ".omc", "state", ".jev-sweep-throttle");
+      const privateMarker = join(
+        homeRoot,
+        ".omc",
+        "state",
+        ".jev-sweep-throttle",
+      );
 
       expect(result.status).toBe(0);
       expect(JSON.parse(result.stdout).result.mode).toBe("degraded");
       expect(existsSync(staleDir)).toBe(false);
       expect(existsSync(privateMarker)).toBe(true);
       expect(existsSync(victimPath)).toBe(false);
-      expect(readdirSync(tempRoot).filter((entry) => entry.startsWith("omc-jev-"))).toEqual([]);
-      if (createdSymlink) expect(lstatSync(sharedTmpMarker).isSymbolicLink()).toBe(true);
+      expect(
+        readdirSync(tempRoot).filter((entry) => entry.startsWith("omc-jev-")),
+      ).toEqual([]);
+      if (createdSymlink)
+        expect(lstatSync(sharedTmpMarker).isSymbolicLink()).toBe(true);
+    } finally {
+      rmSync(testRoot, { recursive: true, force: true });
+    }
+  });
+
+  it("skips the sweep when the private state directory cannot host a throttle marker", () => {
+    const testRoot = mkdtempSync(join(tmpdir(), "issue-4266-no-marker-"));
+    const tempRoot = join(testRoot, "tmp");
+    const homeRoot = join(testRoot, "home");
+    mkdirSync(tempRoot, { mode: 0o700 });
+    mkdirSync(homeRoot, { mode: 0o700 });
+    chmodSync(homeRoot, 0o777);
+    const staleDir = mkdtempSync(join(tempRoot, "omc-jev-"));
+    const oldTime = new Date(Date.now() - 48 * 60 * 60 * 1000);
+    utimesSync(staleDir, oldTime, oldTime);
+
+    try {
+      const result = runActiveRecord(tempRoot, homeRoot);
+      const privateMarker = join(
+        homeRoot,
+        ".omc",
+        "state",
+        ".jev-sweep-throttle",
+      );
+
+      expect(result.status).toBe(0);
+      expect(JSON.parse(result.stdout).result.mode).toBe("degraded");
+      expect(existsSync(staleDir)).toBe(true);
+      expect(existsSync(privateMarker)).toBe(false);
     } finally {
       rmSync(testRoot, { recursive: true, force: true });
     }
