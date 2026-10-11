@@ -126,8 +126,23 @@ function tmuxFormatEscape(value: string): string {
   return value.replace(/#/g, '##');
 }
 
-function shellQuote(value: string): string {
-  return `'${value.replace(/'/g, `'\"'\"'`)}'`;
+/**
+ * @internal Exported for testing only.
+ */
+export function shellQuote(value: string): string {
+  return `'${value.replace(/'/g, `'"'"'`)}'`;
+}
+
+/**
+ * Quote a string for PowerShell invocation using single-quoted literals.
+ * Single quotes in PowerShell prevent variable expansion and subexpression evaluation.
+ * Literal apostrophes are escaped by doubling them.
+ * @internal Exported for testing only.
+ */
+export function powershellQuote(value: string): string {
+  // PowerShell single-quoted strings: apostrophes must be doubled
+  const escaped = value.replace(/'/g, "''");
+  return `'${escaped}'`;
 }
 
 interface TmuxServerGuardRuntime {
@@ -379,18 +394,78 @@ function encodeTmuxServerIdentity(identity: TmuxServerIdentity): string {
   return Buffer.from(JSON.stringify(identity), 'utf8').toString('base64url');
 }
 
-function tmuxServerGuardCondition(identity: TmuxServerIdentity): string {
+/**
+ * Distinguish a POSIX tmux session from native psmux on Windows. psmux also
+ * exports TMUX, but identifies its socket namespace under `/tmp/psmux-*`.
+ * @internal Exported for testing only.
+ */
+export function isPosixTmuxSession(): boolean {
+  const tmuxValue = process.env.TMUX;
+  if (!tmuxValue) return false;
+
+  const parts = tmuxValue.split(',');
+  if (parts.length !== 3 || !parts[0] || !/^[0-9]+$/.test(parts[1]!)) return false;
+
+  // Native psmux exports TMUX too, using `/tmp/psmux-<pid>/<namespace>`;
+  // the presence of TMUX alone therefore cannot identify a POSIX shell.
+  const socketPath = parts[0]!.replace(/\\/g, '/');
+  return !/^\/tmp\/psmux-[^/]+(?:\/|$)/i.test(socketPath);
+}
+
+/**
+ * Generate the tmux server identity guard condition for the native shell.
+ * On native Windows and native psmux, generates PowerShell syntax even when
+ * OMC's parent process runs under MSYS/Git Bash; psmux independently chooses
+ * PowerShell for its `if-shell` implementation. POSIX tmux uses POSIX syntax.
+ * @internal Exported for testing only.
+ */
+export function tmuxServerGuardCondition(identity: TmuxServerIdentity): string {
   const runtime = resolveTmuxServerGuardRuntime();
   const runtimePath = tmuxFormatEscape(runtime.runtimePath);
   const nodePath = tmuxFormatEscape(runtime.nodePath);
-  const envPath = process.platform === 'win32' && !isUnixLikeOnWindows()
-    ? 'env'
-    : '/usr/bin/env';
   const encodedIdentity = tmuxFormatEscape(encodeTmuxServerIdentity(identity));
+
+  // Detect native Windows (not MSYS2/Cygwin)
+  if (process.platform === 'win32' && !isUnixLikeOnWindows()) {
+    return tmuxServerGuardConditionPowerShell(
+      nodePath,
+      runtimePath,
+      encodedIdentity,
+    );
+  }
+
+  // MSYS tmux runs POSIX commands; native psmux uses PowerShell even when
+  // the parent process has MSYS variables and psmux sets a valid TMUX value.
+  if (process.platform === 'win32' && isUnixLikeOnWindows() && !isPosixTmuxSession()) {
+    return tmuxServerGuardConditionPowerShell(
+      nodePath,
+      runtimePath,
+      encodedIdentity,
+    );
+  }
+
+  // POSIX shell syntax
+  return tmuxServerGuardConditionPosix(
+    nodePath,
+    runtimePath,
+    encodedIdentity,
+  );
+}
+
+/**
+ * Generate POSIX shell syntax for the guard condition.
+ * Uses `env -i` to create a clean environment and `< /dev/null` for stdin safety.
+ * @internal Exported for testing only.
+ */
+export function tmuxServerGuardConditionPosix(
+  nodePath: string,
+  runtimePath: string,
+  encodedIdentity: string,
+): string {
   // `#{pid}` is controlled tmux format syntax. All other values are shell
   // quoted after escaping tmux's `#` expansion characters.
   return [
-    shellQuote(envPath),
+    shellQuote('/usr/bin/env'),
     '-i',
     shellQuote(nodePath),
     shellQuote(runtimePath),
@@ -399,6 +474,46 @@ function tmuxServerGuardCondition(identity: TmuxServerIdentity): string {
     shellQuote('#{pid}'),
     '<',
     shellQuote('/dev/null'),
+  ].join(' ');
+}
+
+/**
+ * Generate PowerShell syntax for the guard condition.
+ * Uses the `&` call operator for invocation in a clean environment.
+ * Clears NODE_OPTIONS and other Node-related startup variables to prevent
+ * unauthorized module loading before the identity guard runs.
+ * Note: The tmux format expansion placeholder `#{pid}` is preserved as-is
+ * for tmux to expand it before passing to PowerShell.
+ * @internal Exported for testing only.
+ */
+export function tmuxServerGuardConditionPowerShell(
+  nodePath: string,
+  runtimePath: string,
+  encodedIdentity: string,
+): string {
+  // Use the call operator (&) with properly quoted arguments. The outer
+  // PowerShell process otherwise exits successfully even when a native child
+  // exits nonzero, so explicitly propagate the guard's verdict and fail
+  // closed if Node cannot be started.
+  // Note: `#{pid}` is preserved as literal text for tmux format expansion.
+  return [
+    '&',
+    '{',
+    'Remove-Item',
+    '@(\"env:NODE_OPTIONS\",\"env:NODE_PATH\",\"env:NODE_PRESERVE_SYMLINKS\")',
+    '-ErrorAction',
+    'SilentlyContinue',
+    ';',
+    '&',
+    powershellQuote(nodePath),
+    powershellQuote(runtimePath),
+    powershellQuote('--tmux-server-identity-guard'),
+    powershellQuote(encodedIdentity),
+    powershellQuote('#{pid}'),
+    ';',
+    'if ($LASTEXITCODE -eq 0) { exit 0 }',
+    'exit 1',
+    '}',
   ].join(' ');
 }
 
@@ -455,6 +570,27 @@ async function runGuardedNativeTmuxCommand(
       stderr: isTmuxServerNotFoundError(error) ? 'tmux_server_unavailable' : redactBoundedDiagnostic(error),
     };
   }
+}
+
+async function runGuardedNativeTmuxCreationCommand(
+  identity: TmuxServerIdentity,
+  nativeCommand: string,
+  resourceFields: 3 | 4,
+): ReturnType<typeof runGuardedNativeTmuxCommand> {
+  const result = await runGuardedNativeTmuxCommand(identity, nativeCommand);
+  if (result.outcome !== 'unknown' || result.stderr.trim()) return result;
+
+  // psmux can return a successful `-P -F` creation record while omitting a
+  // following `display-message -p` marker. Accept only a well-formed record
+  // bound to the already-captured server incarnation as proof of execution.
+  const record = parseTmuxCreationRecord(
+    result.stdout,
+    resourceFields,
+    currentStrictProcessStartIdentity,
+    identity,
+  );
+  if (!record || !sameTmuxServerIdentity(record.identity, identity)) return result;
+  return { ...result, outcome: 'executed' };
 }
 
 function isTmuxServerNotFoundError(error: unknown): boolean {
@@ -1522,10 +1658,11 @@ async function runPaneCreationCommand(
   identity: TmuxServerIdentity,
   nativeCommand: string,
   paneShell: WorkerPaneShell,
+  resourceFields: 3 | 4,
 ): ReturnType<typeof runGuardedNativeTmuxCommand> {
   let result: Awaited<ReturnType<typeof runGuardedNativeTmuxCommand>>;
   try {
-    result = await runGuardedNativeTmuxCommand(identity, nativeCommand);
+    result = await runGuardedNativeTmuxCreationCommand(identity, nativeCommand, resourceFields);
   } catch (error) {
     discardPaneEnvFile(paneShell.envFile);
     throw error;
@@ -2006,10 +2143,10 @@ export async function splitTeamWorkerPaneWithEvidence(
       '-c', cwd,
       ...splitPaneShell.args,
     ];
-    const splitResult = await runPaneCreationCommand(
+    const splitResult = await runGuardedNativeTmuxCreationCommand(
           identity,
           tmuxCommandString(splitArgs, ['#{pane_id}\t#{socket_path}\t#{pid}']),
-          splitPaneShell,
+          3,
         );
     const parsed = splitResult.outcome === 'executed'
       ? parseTmuxCreationRecord(
@@ -2191,6 +2328,7 @@ export async function createTeamSession(
           existingDetachedIdentity,
           tmuxCommandString(detachedArgs, [detachedFormat]),
           detachedPaneShell,
+          4,
         );
       } catch (error) {
         const cleaned = await cleanupDetachedSession();
@@ -2238,6 +2376,7 @@ export async function createTeamSession(
           tmuxServerIdentity,
           tmuxCommandString(detachedArgs, [detachedFormat]),
           detachedPaneShell,
+          4,
         );
       } catch (error) {
         // Reached only when bootstrap failed before new-session ran or the
@@ -2415,6 +2554,7 @@ export async function createTeamSession(
           tmuxServerIdentity!,
           tmuxCommandString(newWindowArgs, ['#S:#I\t#{pane_id}\t#{socket_path}\t#{pid}']),
           newWindowPaneShell,
+          4,
         );
     } catch (error) {
       const creationError = new TeamSessionCreationError(
@@ -2615,6 +2755,7 @@ export async function createTeamSession(
           tmuxServerIdentity!,
           tmuxCommandString(splitArgs, ['#{pane_id}\t#{socket_path}\t#{pid}']),
           splitPaneShell,
+          3,
         );
     if (splitResult.outcome !== 'executed') {
       const creationError = new TeamSessionCreationError(
