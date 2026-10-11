@@ -25,10 +25,11 @@ This guide covers all migration paths for oh-my-claudecode. Find your current ve
 
 OMC's URL guard now rejects literal IPv6 unique-local (`FC00::/7`), link-local
 (`FE80::/10`), unspecified (`::`), and multicast (`FF00::/8`) addresses. This
-affects `GITEA_URL` when OMC uses its direct REST fallback and `ANTHROPIC_BASE_URL`
-for OMC provider detection and HUD usage polling. A blocked Gitea URL disables
-the REST fallback; blocked Anthropic base URLs produce no HUD usage data. The
-guard does not override Claude Code's own model requests.
+affects `GITEA_URL` when OMC uses its direct REST fallback. A blocked Gitea URL
+disables that fallback. This change does not alter HUD usage routing for an
+IPv6-literal `ANTHROPIC_BASE_URL`: provider selection checks the supported DNS
+hostnames, and other endpoints follow the existing Anthropic OAuth usage path.
+The guard does not override Claude Code's own model requests.
 
 ### Migration
 
@@ -37,10 +38,6 @@ guard does not override Claude Code's own model requests.
   intentionally fails closed for blocked literals. If you rely on the REST
   fallback, expose Gitea through a trusted routable endpoint outside the blocked
   ranges.
-- For a private Anthropic-compatible endpoint, HUD usage polling is unavailable
-  while `ANTHROPIC_BASE_URL` is a blocked literal. Use a trusted routable
-  endpoint outside the blocked ranges if OMC HUD usage polling is required;
-  otherwise, expect no provider usage data in the HUD.
 - There is no SSRF-guard opt-out. Do not use a hostname that resolves to the same
   private address as a workaround; DNS resolution and redirect validation are
   separate protections not provided by this guard.
