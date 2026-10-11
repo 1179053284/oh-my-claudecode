@@ -5,15 +5,15 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "642a128114dc9fbd14a76c74bc738d9e8e6827b9",
-    "sourceSha256": "cb3f1e406178aeddc47719678310a5b0ca6d7d60f2b3fad3173cc7e852ee4d40",
+    "head": "5e41c6a3be2faab121802b8b823be1128c4f1d55",
+    "sourceSha256": "fcd13545105b69b4acdaaa92538031b830ff3c789cee43c114c07f0e53a5ce2e",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "642a128114dc9fbd14a76c74bc738d9e8e6827b9",
-  "sourceSha256": "cb3f1e406178aeddc47719678310a5b0ca6d7d60f2b3fad3173cc7e852ee4d40",
+  "head": "5e41c6a3be2faab121802b8b823be1128c4f1d55",
+  "sourceSha256": "fcd13545105b69b4acdaaa92538031b830ff3c789cee43c114c07f0e53a5ce2e",
   "counts": {
     "public": {
       "skills": 47,
@@ -28,8 +28,8 @@
       "toolFiles": 61,
       "libFiles": 48,
       "templateHooks": 23,
-      "srcFiles": 1450,
-      "total": 1473
+      "srcFiles": 1451,
+      "total": 1474
     },
     "generated": {
       "distFiles": 5611,
@@ -45144,6 +45144,11 @@
         "path": "src/utils/jsonc.ts"
       },
       {
+        "id": "src/utils/node-version.ts",
+        "kind": "src",
+        "path": "src/utils/node-version.ts"
+      },
+      {
         "id": "src/utils/omc-cli-rendering.ts",
         "kind": "src",
         "path": "src/utils/omc-cli-rendering.ts"
@@ -72877,6 +72882,11 @@
       },
       {
         "from": "src/installer/index.ts",
+        "to": "src/utils/node-version.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/installer/index.ts",
         "to": "src/utils/resolve-node.ts",
         "kind": "imports"
       },
@@ -85676,6 +85686,11 @@
         "kind": "imports"
       },
       {
+        "from": "src/utils/resolve-node.ts",
+        "to": "src/utils/node-version.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/utils/skill-pipeline.ts",
         "to": "src/utils/frontmatter.ts",
         "kind": "imports"
@@ -87427,12 +87442,12 @@
       }
     ],
     "stats": {
-      "nodeCount": 7712,
-      "edgeCount": 8353,
-      "importEdgeCount": 6913,
+      "nodeCount": 7713,
+      "edgeCount": 8355,
+      "importEdgeCount": 6915,
       "registerEdgeCount": 68
     }
   },
-  "inventorySha256": "41c3b020de78b99ac9c439063908af761b0ef213ee218b081ea09befcfedbe0e",
-  "manifestSha256": "26d232bb3bc88107f25d3eb5391edbec0aaf5b08769d28afd13a167b2587493d"
+  "inventorySha256": "de00792efb41e85a032452373be958837f7391001503f03b13192f2838e11e49",
+  "manifestSha256": "a752fe7965e85817513e64561d448f23e251d663e6fecc6fae1be1897ca116f3"
 }
