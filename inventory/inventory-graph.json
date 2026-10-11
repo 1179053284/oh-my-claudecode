@@ -5,15 +5,15 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "3d50d685a81fc47980ea6a8aa02756f05501e1af",
-    "sourceSha256": "d3b4c8126af035e0ab945d3475c5b1cf0cd28e5a64bf6b4d8da90ea9d8b2fd6e",
+    "head": "8c0d2f93cfb3e0cbe1cc7e2b3df82cacd6277d90",
+    "sourceSha256": "00d0f96263ab44638b15d7b48fa59d0b02dbf365c046766cee7aff4dd074c88a",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "3d50d685a81fc47980ea6a8aa02756f05501e1af",
-  "sourceSha256": "d3b4c8126af035e0ab945d3475c5b1cf0cd28e5a64bf6b4d8da90ea9d8b2fd6e",
+  "head": "8c0d2f93cfb3e0cbe1cc7e2b3df82cacd6277d90",
+  "sourceSha256": "00d0f96263ab44638b15d7b48fa59d0b02dbf365c046766cee7aff4dd074c88a",
   "counts": {
     "public": {
       "skills": 48,
@@ -73162,6 +73162,11 @@
       },
       {
         "from": "src/installer/mcp-registry.ts",
+        "to": "external:util",
+        "kind": "imports"
+      },
+      {
+        "from": "src/installer/mcp-registry.ts",
         "to": "src/utils/config-dir.ts",
         "kind": "imports"
       },
@@ -87983,11 +87988,11 @@
     ],
     "stats": {
       "nodeCount": 7728,
-      "edgeCount": 8447,
-      "importEdgeCount": 7002,
+      "edgeCount": 8448,
+      "importEdgeCount": 7003,
       "registerEdgeCount": 69
     }
   },
   "inventorySha256": "691dd70f25c397fc73c7210dd25b688310cd04150350ab2023616d9943bba855",
-  "manifestSha256": "9c9b510dfd1a514507841fcb80a1b949243807d1daf6385456720ef7779270a8"
+  "manifestSha256": "f60dcd1600892cbcd82aa81bd297c6a2f255f4c1fc6a9c834e5d1068c516656c"
 }
