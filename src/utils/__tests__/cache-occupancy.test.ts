@@ -1,13 +1,96 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
-import { mkdtempSync, mkdirSync, writeFileSync, readdirSync, rmSync } from 'fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readdirSync, rmSync, existsSync, utimesSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
+import { purgeStalePluginCacheVersions } from '../paths.js';
 import { processStartIdentities, publishCacheOccupancy, readOccupiedPluginRoots } from '../cache-occupancy.js';
+
+const readFailures = vi.hoisted(() => new Map<string, string>());
+vi.mock('fs', async () => {
+  const actual = await vi.importActual<typeof import('fs')>('fs');
+  return {
+    ...actual,
+    readFileSync: vi.fn((...args: Parameters<typeof actual.readFileSync>) => {
+      const code = readFailures.get(String(args[0]));
+      if (code) throw Object.assign(new Error(code), { code });
+      return actual.readFileSync(...args);
+    }),
+  };
+});
 
 describe('cache occupancy registry', () => {
   let dir: string;
   beforeEach(() => { dir = mkdtempSync(join(tmpdir(), 'omc-occupancy-')); });
-  afterEach(() => { rmSync(dir, { recursive: true, force: true }); });
+  afterEach(() => { vi.unstubAllEnvs(); readFailures.clear(); rmSync(dir, { recursive: true, force: true }); });
+
+  it.each([
+    ['typescript', null],
+    ['script', '../../../scripts/lib/cache-occupancy.mjs'],
+    ['template', '../../../templates/hooks/lib/cache-occupancy.mjs'],
+  ].flatMap(([name, path]) => ['EACCES', 'EIO'].map(code => [name, path, code]))) (
+    'retains unreadable live records in %s for %s (%s)', async (_name, path, code) => {
+    const read = path ? (await import(path)).readOccupiedPluginRoots : readOccupiedPluginRoots;
+    const root = join(dir, 'plugins', '1.0.0');
+    mkdirSync(root, { recursive: true });
+    expect(await publishCacheOccupancy(root, dir)).toBe(true);
+    const registry = join(dir, '.omc', 'cache-occupancy');
+    const recordPath = join(registry, readdirSync(registry)[0]);
+    readFailures.set(recordPath, code!);
+
+    expect.soft(read(dir).unavailable).toBe(true);
+    expect.soft(existsSync(recordPath)).toBe(true);
+    readFailures.clear();
+    expect(read(dir).roots).toEqual(new Set([root]));
+  });
+
+  it.each(['EACCES', 'EIO'])('preserves a live pinned cache version when its record reports %s', async code => {
+    vi.stubEnv('CLAUDE_CONFIG_DIR', dir);
+    const root = join(dir, 'plugins', 'cache', 'omc', 'oh-my-claudecode', '1.0.0');
+    mkdirSync(join(root, 'hooks'), { recursive: true });
+    mkdirSync(join(root, 'scripts'));
+    writeFileSync(join(root, 'hooks', 'hooks.json'), '{}');
+    writeFileSync(join(root, 'scripts', 'run.cjs'), '// fixture');
+    writeFileSync(join(dir, 'plugins', 'installed_plugins.json'), JSON.stringify({ version: 2, plugins: {} }));
+    const old = new Date(Date.now() - 26 * 60 * 60 * 1000);
+    utimesSync(root, old, old);
+    expect(await publishCacheOccupancy(root, dir)).toBe(true);
+    const registry = join(dir, '.omc', 'cache-occupancy');
+    const recordPath = join(registry, readdirSync(registry)[0]);
+    readFailures.set(recordPath, code);
+
+    const result = purgeStalePluginCacheVersions();
+
+    expect.soft(result.removed).toBe(0);
+    expect.soft(result.skippedPaths).toContain(root);
+    expect.soft(existsSync(join(root, 'scripts', 'run.cjs'))).toBe(true);
+    expect(existsSync(recordPath)).toBe(true);
+  });
+
+  it.each(['../../../scripts/lib/cache-occupancy.mjs', '../../../templates/hooks/lib/cache-occupancy.mjs'])(
+    'preserves corruption cleanup and concurrent-disappearance behavior in %s', async path => {
+      const { readOccupiedPluginRoots: read } = await import(path);
+      const registry = join(dir, '.omc', 'cache-occupancy');
+      mkdirSync(registry, { recursive: true });
+      const recordPath = join(registry, `${'a'.repeat(64)}.json`);
+      writeFileSync(recordPath, '{broken');
+      expect(read(dir).unavailable).toBe(false);
+      expect(existsSync(recordPath)).toBe(false);
+      writeFileSync(recordPath, '{}');
+      readFailures.set(recordPath, 'ENOENT');
+      expect(read(dir).unavailable).toBe(false);
+      expect(existsSync(recordPath)).toBe(true);
+    },
+  );
+
+  it('treats a concurrently disappeared TypeScript record as available', () => {
+    const registry = join(dir, '.omc', 'cache-occupancy');
+    mkdirSync(registry, { recursive: true });
+    const recordPath = join(registry, `${'a'.repeat(64)}.json`);
+    writeFileSync(recordPath, '{}');
+    readFailures.set(recordPath, 'ENOENT');
+    expect(readOccupiedPluginRoots(dir).unavailable).toBe(false);
+    expect(existsSync(recordPath)).toBe(true);
+  });
 
   it('publishes an atomic, privacy-bounded record and reads the occupied root', async () => {
     const root = join(dir, 'plugins', '1.0.0');

@@ -143,11 +143,19 @@ export function readOccupiedPluginRoots(configDir = getClaudeConfigDir(), option
 
   const roots = new Set<string>();
   const records: Array<{ path: string; record: CacheOccupancyRecord }> = [];
+  let unavailable = false;
   const now = Date.now();
   for (const name of names) {
     const path = join(directory, name);
     let record: unknown;
-    try { record = JSON.parse(readFileSync(path, 'utf8')); } catch { try { unlinkSync(path); } catch { /* best effort */ } continue; }
+    let content: string;
+    try { content = readFileSync(path, 'utf8'); }
+    catch (error) {
+      // An unreadable record may pin a live session; do not discard uncertainty.
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') unavailable = true;
+      continue;
+    }
+    try { record = JSON.parse(content); } catch { try { unlinkSync(path); } catch { /* best effort */ } continue; }
     if (!validRecord(record)) { try { unlinkSync(path); } catch { /* best effort */ } continue; }
     const age = now - Date.parse(record.updatedAt);
     if (age < -5 * 60 * 1000) { try { unlinkSync(path); } catch { /* best effort */ } continue; }
@@ -168,5 +176,5 @@ export function readOccupiedPluginRoots(configDir = getClaudeConfigDir(), option
     // conservatively; only a proven-dead PID or proven mismatch self-invalidates.
     roots.add(pathIdentity(record.pluginRoot));
   }
-  return { roots, unavailable: false, identities: currentIdentities };
+  return { roots, unavailable, identities: currentIdentities };
 }

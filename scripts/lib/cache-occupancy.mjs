@@ -93,11 +93,18 @@ export function readOccupiedPluginRoots(configDir, options = {}) {
   try { names = readdirSync(dir).filter(name => NAME.test(name)); }
   catch (error) { return { roots: new Set(), unavailable: error?.code !== 'ENOENT', identities: new Map() }; }
   const roots = new Set();
-  const records = [];
+  const records = []; let unavailable = false;
   for (const name of names) {
     const path = join(dir, name);
     let record;
-    try { record = JSON.parse(readFileSync(path, 'utf8')); } catch { try { unlinkSync(path); } catch {} continue; }
+    let content;
+    try { content = readFileSync(path, 'utf8'); }
+    catch (error) {
+      // An unreadable record may pin a live session; do not discard uncertainty.
+      if (error?.code !== 'ENOENT') unavailable = true;
+      continue;
+    }
+    try { record = JSON.parse(content); } catch { try { unlinkSync(path); } catch { /* best effort */ } continue; }
     const age = Date.now() - Date.parse(record?.updatedAt);
     if (record?.version !== 1 || !Number.isSafeInteger(record?.pid) || !record?.processStartIdentity || !record?.pluginRoot || !Number.isFinite(Date.parse(record?.updatedAt)) || age < -300000 || !alive(record.pid)) {
       try { unlinkSync(path); } catch {}
@@ -120,5 +127,5 @@ export function readOccupiedPluginRoots(configDir, options = {}) {
     }
     roots.add(pathIdentity(record.pluginRoot));
   }
-  return { roots, unavailable: false, identities: currentIdentities };
+  return { roots, unavailable, identities: currentIdentities };
 }
