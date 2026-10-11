@@ -6,7 +6,6 @@ import { clearWorktreeCache } from '../../../lib/worktree-paths.js';
 import {
   isSafeCommand,
   isSafeRepoInspectionCommand,
-  isHeredocWithSafeBase,
   isActiveModeRunning,
   processPermissionRequest,
 } from '../index.js';
@@ -243,136 +242,6 @@ describe('permission-handler', () => {
       }
     });
   });
-
-
-  describe('isHeredocWithSafeBase (Issue #608)', () => {
-    describe('should detect and allow safe heredoc commands', () => {
-      const safeCases = [
-        {
-          desc: 'git commit with HEREDOC message',
-          cmd: `git commit -m "$(cat <<'EOF'\nCommit message here.\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n)"`,
-        },
-        {
-          desc: 'git commit with double-quoted delimiter',
-          cmd: `git commit -m "$(cat <<"EOF"\nMessage body\nEOF\n)"`,
-        },
-        {
-          desc: 'git commit with whitespace before the quoted delimiter',
-          cmd: `git commit -m "$(cat << 'EOF'\nMessage body\nEOF\n)"`,
-        },
-        {
-          desc: 'git commit with long multi-line message',
-          cmd: `git commit -m "$(cat <<'EOF'\nfeat: add authentication module\n\nThis adds OAuth2 support with:\n- Google provider\n- GitHub provider\n- Session management\n\nCloses #123\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n)"`,
-        },
-        {
-          desc: 'git commit --amend with heredoc',
-          cmd: `git commit --amend -m "$(cat <<'EOF'\nUpdated message\nEOF\n)"`,
-        },
-        {
-          desc: 'git tag with heredoc annotation',
-          cmd: `git tag -a v1.0.0 -m "$(cat <<'EOF'\nRelease v1.0.0\n\nChangelog:\n- Feature A\n- Fix B\nEOF\n)"`,
-        },
-        {
-          desc: 'git commit with <<- (strip tabs) heredoc',
-          cmd: `git commit -m "$(cat <<-'EOF'\n\tIndented message\nEOF\n)"`,
-        },
-      ];
-
-      safeCases.forEach(({ desc, cmd }) => {
-        it(`should return true for: ${desc}`, () => {
-          expect(isHeredocWithSafeBase(cmd)).toBe(true);
-        });
-      });
-    });
-
-    describe('should reject unsafe or non-heredoc commands', () => {
-      const unsafeCases = [
-        {
-          desc: 'single-line command (no heredoc body)',
-          cmd: 'git commit -m "simple message"',
-        },
-        {
-          desc: 'single-line with << but no newlines',
-          cmd: "git commit -m \"$(cat <<'EOF' EOF)\"",
-        },
-        {
-          desc: 'git commit with an unquoted heredoc delimiter',
-          cmd: `git commit -m "$(cat <<EOF\nSome commit message\nEOF\n)"`,
-        },
-        {
-          desc: 'git commit with command substitution in an unquoted heredoc body',
-          cmd: `git commit -m "$(cat <<EOF\n$(printf expanded)\nEOF\n)"`,
-        },
-        {
-          desc: 'git commit with a command after the heredoc terminator',
-          cmd: `git commit -m "$(cat <<'EOF'\nCommit message\nEOF\n)" && git status`,
-        },
-        {
-          desc: 'git commit with an extra command on the heredoc opener line',
-          cmd: `git commit -m "$(cat <<'EOF'; git status\nCommit message\nEOF\n)"`,
-        },
-        {
-          desc: 'git commit with a command in the base options',
-          cmd: `git commit --amend; git status -m "$(cat <<'EOF'\nCommit message\nEOF\n)"`,
-        },
-        {
-          desc: 'git commit with message option after the option terminator',
-          cmd: `git commit --amend --no-edit -- -m "$(cat <<'EOF'\nmessage.txt\nEOF\n)"`,
-        },
-        {
-          desc: 'git commit with an unbalanced quote in the base options',
-          cmd: `git commit ' --amend -m "$(cat <<'EOF'\nCommit message\nEOF\n)"`,
-        },
-        {
-          desc: 'git commit-tree prefix',
-          cmd: `git commit-tree -m "$(cat <<'EOF'\nCommit message\nEOF\n)"`,
-        },
-        {
-          desc: 'git commit with a here-string',
-          cmd: `git commit -m "$(cat <<<EOF\nCommit message\nEOF\n)"`,
-        },
-        {
-          desc: 'curl with heredoc (unsafe base)',
-          cmd: `curl -X POST http://example.com << 'EOF'\n{"key":"value"}\nEOF`,
-        },
-        {
-          desc: 'rm command with heredoc-like content',
-          cmd: `rm -rf /tmp/files << 'EOF'\nfile1\nfile2\nEOF`,
-        },
-        {
-          desc: 'cat with heredoc writing to file (unsafe)',
-          cmd: `cat > /etc/passwd << 'EOF'\nmalicious content\nEOF`,
-        },
-        {
-          desc: 'multi-line command without heredoc operator',
-          cmd: 'git status\nrm -rf /',
-        },
-        {
-          desc: 'echo with heredoc (not in safe list)',
-          cmd: `echo << 'EOF'\nHello world\nEOF`,
-        },
-        {
-          desc: 'python with heredoc stdin',
-          cmd: `python3 << 'EOF'\nimport os\nos.system("whoami")\nEOF`,
-        },
-        {
-          desc: 'empty command',
-          cmd: '',
-        },
-        {
-          desc: 'whitespace only',
-          cmd: '   \n   ',
-        },
-      ];
-
-      unsafeCases.forEach(({ desc, cmd }) => {
-        it(`should return false for: ${desc}`, () => {
-          expect(isHeredocWithSafeBase(cmd)).toBe(false);
-        });
-      });
-    });
-  });
-
   describe('isActiveModeRunning', () => {
     const testDir = '/tmp/omc-permission-test';
     const stateDir = path.join(testDir, '.omc', 'state');
@@ -674,7 +543,7 @@ describe('permission-handler', () => {
       });
     });
 
-    describe('heredoc command handling (Issue #608)', () => {
+    describe('Git heredoc commands require normal permission flow', () => {
       it('should respect explicit ask rules for git commit heredoc commands', () => {
         fs.mkdirSync(path.join(testDir, '.claude'), { recursive: true });
         fs.writeFileSync(
@@ -689,40 +558,17 @@ describe('permission-handler', () => {
         expect(result.hookSpecificOutput?.decision?.behavior).not.toBe('allow');
       });
 
-      it('should auto-allow git commit with heredoc message', () => {
-        const cmd = `git commit -m "$(cat <<'EOF'\nfeat: add new feature\n\nDetailed description here.\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n)"`;
-        const result = processPermissionRequest(createInput(cmd));
-        expect(result.continue).toBe(true);
-        expect(result.hookSpecificOutput?.decision?.behavior).toBe('allow');
-        expect(result.hookSpecificOutput?.decision?.reason).toContain('heredoc');
-      });
-
-      it('should auto-allow a quoted heredoc with whitespace before its delimiter', () => {
-        const cmd = `git commit -m "$(cat << 'EOF'\nfeat: add new feature\nEOF\n)"`;
-        const result = processPermissionRequest(createInput(cmd));
-        expect(result.continue).toBe(true);
-        expect(result.hookSpecificOutput?.decision?.behavior).toBe('allow');
-      });
-
-      it('should not auto-allow a heredoc commit with a trailing command', () => {
-        const cmd = `git commit -m "$(cat <<'EOF'\nfeat: add new feature\nEOF\n)" && git status`;
+      it.each([
+        `git commit -m "$(cat <<'EOF'\nfeat: add new feature\nEOF\n)"`,
+        `git commit -m "$(cat << 'EOF'\nfeat: add new feature\nEOF\n)"`,
+        `git tag -a v1.0.0 -m "$(cat <<'EOF'\nRelease v1.0.0\nEOF\n)"`,
+        `git commit -m "$(cat <<EOF\n$(printf expanded)\nEOF\n)"`,
+        `git commit -m "$(cat <<'EOF'\nfeat: add new feature\nEOF\n)" && git status`,
+        `git commit; rm -rf / <<'EOF'\nmalicious payload\nEOF`,
+      ])('should not auto-allow Git heredoc commands: %s', (cmd) => {
         const result = processPermissionRequest(createInput(cmd));
         expect(result.continue).toBe(true);
         expect(result.hookSpecificOutput?.decision?.behavior).not.toBe('allow');
-      });
-
-      it('should not auto-allow an unquoted heredoc with command substitution', () => {
-        const cmd = `git commit -m "$(cat <<EOF\n$(printf expanded)\nEOF\n)"`;
-        const result = processPermissionRequest(createInput(cmd));
-        expect(result.continue).toBe(true);
-        expect(result.hookSpecificOutput?.decision?.behavior).not.toBe('allow');
-      });
-
-      it('should auto-allow git tag with heredoc annotation', () => {
-        const cmd = `git tag -a v1.0.0 -m "$(cat <<'EOF'\nRelease v1.0.0\nEOF\n)"`;
-        const result = processPermissionRequest(createInput(cmd));
-        expect(result.continue).toBe(true);
-        expect(result.hookSpecificOutput?.decision?.behavior).toBe('allow');
       });
 
       it('should NOT auto-allow unsafe heredoc commands', () => {

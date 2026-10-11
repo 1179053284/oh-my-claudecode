@@ -77,6 +77,17 @@ describe('scripts/permission-handler.mjs runtime entrypoint', () => {
     expect(targetedTestResult.hookSpecificOutput?.decision?.behavior).not.toBe('allow');
   });
 
+  it.each([
+    `git commit -m "$(cat <<'EOF'\nfeat: commit message\nEOF\n)"`,
+    `git tag -a v1.0.0 -m "$(cat <<'EOF'\nRelease v1.0.0\nEOF\n)"`,
+    `git commit -m "$(cat <<EOF\n$(touch /tmp/permission-bypass)\nEOF\n)"`,
+    `git commit; rm -rf / <<'EOF'\nmalicious payload\nEOF`,
+  ])('does not auto-allow Git heredoc commands: %s', (command) => {
+    const result = runPermissionHandler(command, gitDir);
+    expect(result.continue).toBe(true);
+    expect(result.hookSpecificOutput?.decision?.behavior).not.toBe('allow');
+  });
+
   it('does not auto-allow ripgrep directory or hidden sweeps inside a git worktree', () => {
     writeFileSync(join(gitDir, '.env.local'), 'SECRET=1\n');
 

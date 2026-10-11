@@ -43,13 +43,6 @@ const SAFE_PATTERNS = [
 // and command substitution is already caught by $ detection
 const DANGEROUS_SHELL_CHARS = /[;&|`$()<>\n\r\t\0\\{}\[\]*?~!#]/;
 
-/**
- * The only heredoc form eligible for auto-approval: a git commit/tag message
- * supplied by a cat heredoc inside a quoted command substitution.
- */
-const SAFE_HEREDOC_COMMAND_PATTERN =
-  /^(git (?:commit|tag)(?=[ \t])[^\r\n]*)[ \t]+-m[ \t]+"\$\(cat[ \t]+<<(-?)[ \t]*(?:'(\w+)'|"(\w+)")$/;
-
 const SAFE_RIPGREP_FLAGS = new Set([
   '-n',
   '--line-number',
@@ -470,8 +463,7 @@ export function isSafeRepoInspectionCommand(command: string, cwd: string): boole
 
 export function isSafeAutoApprovedCommand(command: string, cwd: string): boolean {
   return isSafeCommand(command)
-    || isSafeRepoInspectionCommand(command, cwd)
-    || isHeredocWithSafeBase(command);
+    || isSafeRepoInspectionCommand(command, cwd);
 }
 
 /**
@@ -487,53 +479,6 @@ export function isSafeCommand(command: string): boolean {
   }
 
   return SAFE_PATTERNS.some(pattern => pattern.test(trimmed));
-}
-
-/**
- * Check if a command is a heredoc command with a safe base command.
- * Issue #608: Heredoc commands contain shell metacharacters (<<, \n, $, etc.)
- * that cause isSafeCommand() to reject them. When they fall through to Claude
- * Code's native permission flow and the user approves "Always allow", the entire
- * heredoc body (potentially hundreds of lines) gets stored in settings.local.json.
- *
- * This function accepts only a git commit/tag message heredoc with a safe
- * command prefix, a matching terminator, and no commands after the substitution.
- */
-export function isHeredocWithSafeBase(command: string): boolean {
-  const trimmed = command.trim();
-
-  if (!trimmed.includes('\n')) {
-    return false;
-  }
-
-  const lines = trimmed.split(/\r?\n/);
-  const match = lines[0].match(SAFE_HEREDOC_COMMAND_PATTERN);
-  if (!match || DANGEROUS_SHELL_CHARS.test(match[1])) {
-    return false;
-  }
-
-  const prefixTokens = tokenizeShellCommand(match[1]);
-  if (!prefixTokens || prefixTokens.includes('--')) {
-    return false;
-  }
-
-  const delimiter = match[3] ?? match[4];
-  if (!delimiter) {
-    return false;
-  }
-
-  const stripLeadingTabs = match[2] === '-';
-  const terminatorIndex = lines.findIndex((line, index) => {
-    if (index === 0) {
-      return false;
-    }
-
-    const candidate = stripLeadingTabs ? line.replace(/^\t+/, '') : line;
-    return candidate === delimiter;
-  });
-
-  // The only content after the heredoc body may be the substitution's closing syntax.
-  return terminatorIndex === lines.length - 2 && lines[terminatorIndex + 1] === ')"';
 }
 
 /**
@@ -595,16 +540,13 @@ export function processPermissionRequest(input: PermissionRequestInput): HookOut
 
   // Auto-allow safe commands
   if (!shouldAskBashPermission && isSafeAutoApprovedCommand(command, input.cwd)) {
-    const reason = isHeredocWithSafeBase(command)
-      ? 'Safe command with heredoc content'
-      : 'Safe read-only command';
     return {
       continue: true,
       hookSpecificOutput: {
         hookEventName: 'PermissionRequest',
         decision: {
           behavior: 'allow',
-          reason,
+          reason: 'Safe read-only command',
         },
       },
     };
