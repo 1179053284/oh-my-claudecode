@@ -6,11 +6,19 @@
  * (which work universally) and handle platform-specific directory conventions.
  */
 
-import { join, dirname, basename, isAbsolute } from 'path';
-import { existsSync, readFileSync, readdirSync, statSync, lstatSync, realpathSync, unlinkSync, rmSync, renameSync, symlinkSync, type Stats } from 'fs';
+import { join, dirname } from 'path';
+import { existsSync, readFileSync, readdirSync, statSync, lstatSync, realpathSync, unlinkSync, rmSync, renameSync, symlinkSync } from 'fs';
 import { homedir } from 'os';
 import { getClaudeConfigDir } from './config-dir.js';
 import { pathIdentity, readOccupiedPluginRoots } from './cache-occupancy.js';
+import {
+  firstChildBelowDirectoryIdentity,
+  hasAncestorWithIdentity,
+  isOmcPluginCacheIdentity,
+  isUsableGenericPluginTarget,
+  isUsableVersionPath,
+  sameFileSystemIdentity,
+} from './plugin-cache-validation.js';
 
 /**
  * Convert a path to use forward slashes (for JSON/config files)
@@ -223,52 +231,6 @@ const ASIDE_SUFFIX = '.omc-stale-';
 const ASIDE_SUFFIX_RE = /\.omc-stale-(\d+)$/;
 
 /**
- * What a plugin root has to expose for a pinned session to keep working.
- *
- * This mirrors `isPluginRoot()` in `scripts/run.cjs` — the hook runner's own
- * check — and must stay in step with it. The runner requires all of these, so a
- * root missing any one cannot run hooks no matter what else it holds. Note that
- * `.claude-plugin/plugin.json` is deliberately absent: the runner does not
- * consult it, so a manifest-only directory is not a usable root.
- */
-const PLUGIN_ROOT_REQUIREMENTS = [
-  join('hooks', 'hooks.json'),
-  join('scripts', 'run.cjs'),
-  'scripts',
-];
-
-/**
- * True when `path` can serve as a plugin root: a live redirect symlink, or a
- * directory that actually carries plugin payload.
- *
- * Presence is not enough, and neither is "holds a non-dotfile", and neither is
- * "holds one of the entry points". A directory left by a lost relink window can
- * hold `.DS_Store` (Finder writes it the moment it walks the path),
- * `desktop.ini`/`Thumbs.db` on Windows, a half-extracted `scripts/`, or a
- * partially copied root with only the manifest or only `hooks/hooks.json` — none
- * of which the hook runner will load. Treating any of those as usable is what
- * makes a recovery discard the only intact copy.
- *
- * A dangling symlink is not usable either: `existsSync` follows the link, so a
- * redirect whose target has since been removed is correctly rejected.
- */
-function isUsableVersionPath(path: string): boolean {
-  let stats;
-  try {
-    stats = lstatSync(path);
-  } catch {
-    return false;
-  }
-  // A plain file at a version path is never a root; anything else gets the same
-  // payload check.  `existsSync` follows symlinks, so one expression covers a
-  // real directory, a redirect to a real root (usable), a redirect to some other
-  // directory (not usable — the runner validates the resolved root), and a
-  // dangling redirect (not usable).
-  if (!stats.isDirectory() && !stats.isSymbolicLink()) return false;
-  return PLUGIN_ROOT_REQUIREMENTS.every(required => existsSync(join(path, required)));
-}
-
-/**
  * True when the purge that created an aside directory is still running, i.e.
  * the backup belongs to a swap in flight and must not be touched.
  *
@@ -478,75 +440,6 @@ function comparisonPath(p: string): string {
   if (process.platform !== 'win32') return stripTrailing(p);
   return toForwardSlash(pathIdentity(p)).replace(/\/+$/, '');
 }
-
-function sameFileSystemIdentity(left: Stats, right: Stats): boolean {
-  return typeof left.dev === 'number' && typeof left.ino === 'number' && left.ino !== 0 &&
-    typeof right.dev === 'number' && typeof right.ino === 'number' && right.ino !== 0 &&
-    left.dev === right.dev && left.ino === right.ino;
-}
-
-function hasAncestorWithIdentity(path: string, identity: Stats): boolean {
-  let currentPath = path;
-  while (true) {
-    if (sameFileSystemIdentity(statSync(currentPath), identity)) return true;
-    const parentPath = dirname(currentPath);
-    if (parentPath === currentPath) return false;
-    currentPath = parentPath;
-  }
-}
-
-function firstChildBelowDirectoryIdentity(path: string, directoryIdentity: Stats): string | undefined {
-  // Relative install paths retain the existing lexical-only matching semantics.
-  if (!isAbsolute(path)) return undefined;
-  let currentPath = stripTrailing(path);
-  while (true) {
-    const parentPath = dirname(currentPath);
-    if (parentPath === currentPath) return undefined;
-    try {
-      if (sameFileSystemIdentity(statSync(parentPath), directoryIdentity)) return basename(currentPath);
-    } catch {
-      // The registered version can be missing while its namespace still exists.
-    }
-    currentPath = parentPath;
-  }
-}
-
-function hasResolvableGenericPluginSymlinks(
-  directory: string,
-  staleVersionIdentity: Stats,
-  ancestors: Stats[] = [],
-  requireNonEmpty = false,
-): boolean {
-  const directoryStats = statSync(directory);
-  if (ancestors.some(identity => sameFileSystemIdentity(directoryStats, identity))) return false;
-  const branch = [...ancestors, directoryStats];
-  const entries = readdirSync(directory, { withFileTypes: true });
-  if (requireNonEmpty && entries.length === 0) return false;
-  for (const entry of entries) {
-    const entryPath = join(directory, entry.name);
-    if (entry.isSymbolicLink()) {
-      const entryStats = statSync(entryPath);
-      if (hasAncestorWithIdentity(realpathSync(entryPath), staleVersionIdentity)) return false;
-      if (entryStats.isDirectory() && (branch.some(identity => sameFileSystemIdentity(entryStats, identity)) ||
-          !hasResolvableGenericPluginSymlinks(entryPath, staleVersionIdentity, branch))) {
-        return false;
-      }
-    } else if (entry.isDirectory() &&
-        !hasResolvableGenericPluginSymlinks(entryPath, staleVersionIdentity, branch)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-function isUsableGenericPluginTarget(target: string, staleVersionIdentity: Stats): boolean {
-  return hasResolvableGenericPluginSymlinks(target, staleVersionIdentity, [], true);
-}
-
-const OMC_PLUGIN_CACHE_IDENTITIES = new Set([
-  'oh-my-claudecode@omc',
-  'oh-my-claudecode@oh-my-claudecode',
-]);
 
 /** Short install/update race guard. Session occupancy is the liveness source. */
 const STALE_THRESHOLD_MS = 10 * 60 * 1000;
@@ -763,10 +656,11 @@ export function purgeStalePluginCacheVersions(options?: { skipGracePeriod?: bool
               staleVersionPath.startsWith(`${targetPath}/`) ||
               hasAncestorWithIdentity(resolvedTarget, staleVersionStats) ||
               hasAncestorWithIdentity(resolvedStaleVersion, targetStats);
-            const pluginIdentity = `${pluginName}@${marketplace}`.toLowerCase();
-            const isOmcPlugin = OMC_PLUGIN_CACHE_IDENTITIES.has(pluginIdentity);
+            const isOmcPlugin = isOmcPluginCacheIdentity(pluginName, marketplace);
             const isTargetUsable = () => statSync(target).isDirectory() &&
-              (isOmcPlugin ? isUsableVersionPath(target) : isUsableGenericPluginTarget(target, staleVersionStats));
+              (isOmcPlugin
+                ? isUsableVersionPath(target, staleVersionStats)
+                : isUsableGenericPluginTarget(target, staleVersionStats));
             if (targetOverlapsStaleVersion || !isTargetUsable()) {
               throw new Error('Registered active plugin target is unusable or overlaps the stale version tree');
             }

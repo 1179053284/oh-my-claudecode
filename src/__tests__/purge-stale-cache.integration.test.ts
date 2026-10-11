@@ -9,7 +9,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
-  mkdtempSync, mkdirSync, writeFileSync, symlinkSync, renameSync, rmSync,
+  mkdtempSync, mkdirSync, readFileSync, writeFileSync, symlinkSync, renameSync, rmSync,
   existsSync, lstatSync, readdirSync, readlinkSync, utimesSync,
 } from 'fs';
 import { join } from 'path';
@@ -263,6 +263,33 @@ describe('purgeStalePluginCacheVersions on a real filesystem', () => {
     expect(readdirSync(pluginDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
   });
 
+  it('preserves OMC payload when a required entry point links into the stale tree', () => {
+    const stale = writeVersion(STALE);
+    const staleScript = join(stale, 'payload', 'run.cjs');
+    const active = join(pluginDir, ACTIVE);
+    const activeScript = join(active, 'scripts', 'run.cjs');
+    mkdirSync(join(stale, 'payload'), { recursive: true });
+    writeFileSync(staleScript, '// only stale entrypoint');
+    mkdirSync(join(active, 'hooks'), { recursive: true });
+    writeFileSync(join(active, 'hooks', 'hooks.json'), '{}\n');
+    mkdirSync(join(active, 'scripts'), { recursive: true });
+    mkdirSync(join(active, 'payload'), { recursive: true });
+    writeFileSync(join(active, 'payload', 'run.cjs'), '// active counterpart');
+    rmSync(activeScript, { force: true });
+    symlinkSync(staleScript, activeScript, 'file');
+    makeStale(stale);
+    installedPlugins(active);
+
+    const result = purgeStalePluginCacheVersions();
+
+    expect(result.symlinked).toBe(0);
+    expect(result.errors).toHaveLength(1);
+    expect(lstatSync(stale).isDirectory()).toBe(true);
+    expect(readlinkSync(activeScript)).toBe(staleScript);
+    expect(existsSync(join(activeScript))).toBe(true);
+    expect(readdirSync(pluginDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
+  });
+
   it('retains support for other plugins without OMC hook entry points', () => {
     const genericDir = join(configDir, 'plugins', 'cache', 'official', 'hookify');
     const active = join(genericDir, ACTIVE);
@@ -379,6 +406,41 @@ describe('purgeStalePluginCacheVersions on a real filesystem', () => {
     expect(lstatSync(stale).isDirectory()).toBe(true);
     expect(existsSync(join(legacyPayload, 'legacy-command.js'))).toBe(true);
     expect(readlinkSync(legacyPayload)).toBe(stalePayload);
+    expect(readdirSync(genericDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
+  });
+
+  it('preserves generic payload when an intermediate link traverses the stale tree', () => {
+    const genericDir = join(configDir, 'plugins', 'cache', 'official', 'hookify');
+    const active = join(genericDir, ACTIVE);
+    const stale = join(genericDir, STALE);
+    const oldRoot = join(configDir, 'external-old-root');
+    const newRoot = join(configDir, 'external-new-root');
+    const staleForward = join(stale, 'forward');
+    const activeForward = join(active, 'forward');
+    const activeLegacy = join(active, 'legacy');
+    mkdirSync(active, { recursive: true });
+    writeFileSync(join(active, 'README.md'), 'generic plugin payload');
+    mkdirSync(oldRoot, { recursive: true });
+    writeFileSync(join(oldRoot, 'legacy-command.js'), 'old payload');
+    mkdirSync(newRoot, { recursive: true });
+    writeFileSync(join(newRoot, 'legacy-command.js'), 'new payload');
+    mkdirSync(stale, { recursive: true });
+    symlinkSync(oldRoot, staleForward, 'dir');
+    symlinkSync(newRoot, activeForward, 'dir');
+    symlinkSync(staleForward, activeLegacy, 'dir');
+    makeStale(stale);
+    writeFileSync(join(configDir, 'plugins', 'installed_plugins.json'), JSON.stringify({
+      version: 2, plugins: { 'hookify@official': [{ installPath: active }] },
+    }));
+
+    const result = purgeStalePluginCacheVersions();
+
+    expect(result.symlinked).toBe(0);
+    expect(result.errors).toHaveLength(1);
+    expect(lstatSync(stale).isDirectory()).toBe(true);
+    expect(readFileSync(join(activeLegacy, 'legacy-command.js'), 'utf8')).toBe('old payload');
+    expect(readlinkSync(activeLegacy)).toBe(staleForward);
+    expect(readlinkSync(staleForward)).toBe(oldRoot);
     expect(readdirSync(genericDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
   });
 
