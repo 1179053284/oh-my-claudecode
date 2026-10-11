@@ -627,6 +627,47 @@ describe('getUsage routing', () => {
     expect(getUsageCredentialIdentity(false, true)).not.toBe(originalIdentity);
   });
 
+  it('prefers account metadata in the active managed runtime directory', () => {
+    const configDir = '/tmp/test-base/.omc-launch';
+    const credentialsPath = `${configDir}/.credentials.json`;
+    const runtimeClaudeJsonPath = `${configDir}/.claude.json`;
+    const adjacentClaudeJsonPath = '/tmp/test-base/.claude.json';
+    let runtimeClaudeJsonContent = JSON.stringify({
+      oauthAccount: { accountUuid: 'runtime-account' },
+    });
+    let adjacentClaudeJsonContent = JSON.stringify({
+      oauthAccount: { accountUuid: 'base-account' },
+    });
+    const credentialsContent = JSON.stringify({
+      claudeAiOauth: {
+        accessToken: 'managed-access-token',
+        refreshToken: 'managed-refresh-token',
+      },
+    });
+
+    process.env.CLAUDE_CONFIG_DIR = configDir;
+    vi.mocked(fs.existsSync).mockImplementation(path =>
+      [credentialsPath, runtimeClaudeJsonPath, adjacentClaudeJsonPath].includes(String(path)),
+    );
+    vi.mocked(fs.readFileSync).mockImplementation(path => {
+      if (String(path) === credentialsPath) return credentialsContent;
+      if (String(path) === runtimeClaudeJsonPath) return runtimeClaudeJsonContent;
+      if (String(path) === adjacentClaudeJsonPath) return adjacentClaudeJsonContent;
+      return '{}';
+    });
+
+    const runtimeIdentity = getUsageCredentialIdentity(false, true);
+    adjacentClaudeJsonContent = JSON.stringify({
+      oauthAccount: { accountUuid: 'another-base-account' },
+    });
+    expect(getUsageCredentialIdentity(false, true)).toBe(runtimeIdentity);
+
+    runtimeClaudeJsonContent = JSON.stringify({
+      oauthAccount: { accountUuid: 'another-runtime-account' },
+    });
+    expect(getUsageCredentialIdentity(false, true)).not.toBe(runtimeIdentity);
+  });
+
   it('normalizes the email fallback when no stable account UUID is available', () => {
     const credentialsPath = '/tmp/test-claude/.credentials.json';
     let credentialsContent = JSON.stringify({

@@ -570,23 +570,41 @@ function getOAuthAccountProfileIdentity(credentials: Record<string, unknown>): s
     }
     return undefined;
   };
-  // OMC's launch reconciliation keeps this stable account UUID alongside
-  // refreshed credentials that may not contain account metadata themselves.
+  // Managed OMC launches copy account metadata into the active config directory;
+  // the standard Claude layout keeps it beside that directory instead.
   let claudeJsonAccount: Record<string, unknown> = {};
-  try {
-    const claudeJsonPath = join(dirname(getClaudeConfigDir()), '.claude.json');
-    if (existsSync(claudeJsonPath)) {
+  const configDir = getClaudeConfigDir();
+  const claudeJsonPaths = new Set([
+    join(configDir, '.claude.json'),
+    join(dirname(configDir), '.claude.json'),
+  ]);
+  for (const claudeJsonPath of claudeJsonPaths) {
+    try {
+      if (!existsSync(claudeJsonPath)) continue;
       const parsed = JSON.parse(readFileSync(claudeJsonPath, 'utf-8')) as Record<string, unknown>;
       const accountMetadata = parsed.oauthAccount;
       if (
         typeof accountMetadata === 'object' && accountMetadata !== null &&
         !Array.isArray(accountMetadata)
       ) {
-        claudeJsonAccount = accountMetadata as Record<string, unknown>;
+        const candidate = accountMetadata as Record<string, unknown>;
+        if (firstString(
+          candidate.accountUuid,
+          candidate.accountUUID,
+          candidate.uuid,
+          candidate.accountId,
+          candidate.userId,
+          candidate.userID,
+          candidate.emailAddress,
+          candidate.email,
+        )) {
+          claudeJsonAccount = candidate;
+          break;
+        }
       }
+    } catch {
+      // Account metadata is optional; try the other supported config location.
     }
-  } catch {
-    // Account metadata is optional; credentials may still provide an identity.
   }
   const accountUuid = firstString(
     credentials.accountUuid,
