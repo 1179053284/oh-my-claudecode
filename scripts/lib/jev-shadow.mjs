@@ -110,7 +110,7 @@ function updateSweepMarker(markerPath) {
   }
 }
 
-function createSweepLock(lockPath) {
+function createSweepLockFile(lockPath) {
   const flags =
     constants.O_WRONLY |
     constants.O_CREAT |
@@ -138,35 +138,6 @@ function createSweepLock(lockPath) {
   }
 }
 
-function acquireSweepLock(markerPath) {
-  if (!markerPath) return undefined;
-  const lockPath = `${markerPath}.lock`;
-  const lock = createSweepLock(lockPath);
-  if (lock) return lock;
-
-  try {
-    const staleLock = lstatSync(lockPath);
-    if (
-      !isOwnedMarkerFile(staleLock) ||
-      Date.now() - staleLock.mtimeMs < SWEEP_THROTTLE_MS
-    ) {
-      return undefined;
-    }
-    const currentLock = lstatSync(lockPath);
-    if (
-      currentLock.dev !== staleLock.dev ||
-      currentLock.ino !== staleLock.ino
-    ) {
-      return undefined;
-    }
-    unlinkSync(lockPath);
-  } catch {
-    return undefined;
-  }
-
-  return createSweepLock(lockPath);
-}
-
 function releaseSweepLock(lock) {
   try {
     closeSync(lock.descriptor);
@@ -178,6 +149,62 @@ function releaseSweepLock(lock) {
     if (stats.dev === lock.dev && stats.ino === lock.ino) unlinkSync(lock.path);
   } catch {
     // Best effort
+  }
+}
+
+function recoveryLockExists(recoveryPath) {
+  try {
+    lstatSync(recoveryPath);
+    return true;
+  } catch (error) {
+    if (error?.code === "ENOENT") return false;
+    return true;
+  }
+}
+
+function acquireSweepLock(markerPath) {
+  if (!markerPath) return undefined;
+  const lockPath = `${markerPath}.lock`;
+  const recoveryPath = `${lockPath}.recovery`;
+  if (recoveryLockExists(recoveryPath)) return undefined;
+
+  const lock = createSweepLockFile(lockPath);
+  if (lock) {
+    if (!recoveryLockExists(recoveryPath)) return lock;
+    releaseSweepLock(lock);
+    return undefined;
+  }
+
+  const recoveryLock = createSweepLockFile(recoveryPath);
+  if (!recoveryLock) return undefined;
+  try {
+    const staleLock = lstatSync(lockPath);
+    if (
+      !isOwnedMarkerFile(staleLock) ||
+      Date.now() - staleLock.mtimeMs < SWEEP_THROTTLE_MS
+    ) {
+      return undefined;
+    }
+
+    // The exclusive recovery lock prevents another hook from replacing the stale
+    // lock between the identity check and unlink. New lockers recheck this claim.
+    const currentLock = lstatSync(lockPath);
+    if (
+      currentLock.dev !== staleLock.dev ||
+      currentLock.ino !== staleLock.ino
+    ) {
+      return undefined;
+    }
+    unlinkSync(lockPath);
+
+    const recoveredLock = createSweepLockFile(lockPath);
+    if (!recoveredLock) return undefined;
+    releaseSweepLock(recoveryLock);
+    return recoveredLock;
+  } catch {
+    return undefined;
+  } finally {
+    releaseSweepLock(recoveryLock);
   }
 }
 
