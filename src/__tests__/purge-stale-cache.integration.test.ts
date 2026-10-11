@@ -141,10 +141,18 @@ describe('purgeStalePluginCacheVersions on a real filesystem', () => {
     }
   });
 
-  it('preserves a stale root when the registered target redirects through it', () => {
+  it.each(['root', 'descendant'])('preserves a stale root when the registered target redirects through its %s', (targetShape) => {
     const stale = writeVersion(STALE);
+    let redirectTarget = stale;
+    if (targetShape === 'descendant') {
+      redirectTarget = join(stale, 'nested');
+      mkdirSync(join(redirectTarget, 'scripts'), { recursive: true });
+      writeFileSync(join(redirectTarget, 'scripts', 'run.cjs'), '// nested plugin root\n');
+      mkdirSync(join(redirectTarget, 'hooks'), { recursive: true });
+      writeFileSync(join(redirectTarget, 'hooks', 'hooks.json'), '{}\n');
+    }
     const redirect = join(pluginDir, LEGACY[0]);
-    symlinkSync(stale, redirect, 'dir');
+    symlinkSync(redirectTarget, redirect, 'dir');
     makeStale(stale);
     installedPlugins(redirect);
 
@@ -154,7 +162,7 @@ describe('purgeStalePluginCacheVersions on a real filesystem', () => {
     expect(result.errors).toHaveLength(1);
     expect(lstatSync(stale).isDirectory()).toBe(true);
     expect(hookResolves(STALE)).toBe(true);
-    expect(readlinkSync(redirect)).toBe(stale);
+    expect(readlinkSync(redirect)).toBe(redirectTarget);
     expect(readdirSync(pluginDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
   });
 
@@ -177,6 +185,27 @@ describe('purgeStalePluginCacheVersions on a real filesystem', () => {
     expect(result.symlinkPaths).toContain(stale);
     expect(readlinkSync(stale)).toBe(active);
     expect(existsSync(join(stale, 'README.md'))).toBe(true);
+  });
+
+  it('preserves generic plugin payload when the registered active target is empty', () => {
+    const genericDir = join(configDir, 'plugins', 'cache', 'official', 'hookify');
+    const active = join(genericDir, ACTIVE);
+    const stale = join(genericDir, STALE);
+    mkdirSync(active, { recursive: true });
+    mkdirSync(stale, { recursive: true });
+    writeFileSync(join(stale, 'README.md'), 'old plugin payload');
+    makeStale(stale);
+    writeFileSync(join(configDir, 'plugins', 'installed_plugins.json'), JSON.stringify({
+      version: 2, plugins: { 'hookify@official': [{ installPath: active }] },
+    }));
+
+    const result = purgeStalePluginCacheVersions();
+
+    expect(result.symlinked).toBe(0);
+    expect(result.errors).toHaveLength(1);
+    expect(lstatSync(stale).isDirectory()).toBe(true);
+    expect(existsSync(join(stale, 'README.md'))).toBe(true);
+    expect(readdirSync(genericDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
   });
 
   it('demotes a stale version to a redirect and keeps every pinned path resolving', () => {

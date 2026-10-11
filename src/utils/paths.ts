@@ -662,11 +662,21 @@ export function purgeStalePluginCacheVersions(options?: { skipGracePeriod?: bool
             ),
           )[0];
           try {
-            const targetResolvesToStaleVersion = lstatSync(target).isSymbolicLink() &&
-              comparisonPath(realpathSync(target)) === comparisonPath(realpathSync(versionDir));
-            if (!statSync(target).isDirectory() || targetResolvesToStaleVersion ||
-                (pluginName.toLowerCase() === 'oh-my-claudecode' && !isUsableVersionPath(target))) {
-              throw new Error('Registered active plugin target is unusable or resolves to the stale version');
+            if (!statSync(target).isDirectory()) {
+              throw new Error('Registered active plugin target is not a directory');
+            }
+            let targetResolvesIntoStaleVersion = false;
+            if (lstatSync(target).isSymbolicLink()) {
+              const resolvedTarget = comparisonPath(realpathSync(target));
+              const resolvedStaleVersion = comparisonPath(realpathSync(versionDir));
+              targetResolvesIntoStaleVersion = resolvedTarget === resolvedStaleVersion ||
+                resolvedTarget.startsWith(`${resolvedStaleVersion}/`);
+            }
+            const targetHasUsablePayload = pluginName.toLowerCase() === 'oh-my-claudecode'
+              ? isUsableVersionPath(target)
+              : readdirSync(target).length > 0;
+            if (targetResolvesIntoStaleVersion || !targetHasUsablePayload) {
+              throw new Error('Registered active plugin target is unusable or resolves inside the stale version');
             }
             relinkStaleVersionDir(versionDir, target);
             result.symlinked++;

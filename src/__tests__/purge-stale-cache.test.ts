@@ -140,6 +140,7 @@ describe('purgeStalePluginCacheVersions', () => {
       if (ps === cacheDir) return [dirent('my-marketplace')] as any;
       if (ps.endsWith('my-marketplace')) return [dirent('my-plugin')] as any;
       if (ps.endsWith('my-plugin')) return [dirent('1.0.0'), dirent('2.0.0')] as any;
+      if (ps === activeVersion) return ['README.md'] as any;
       return [] as any;
     });
 
@@ -186,6 +187,7 @@ describe('purgeStalePluginCacheVersions', () => {
       if (ps === cacheDir) return [dirent('official'), dirent('omc')] as any;
       if (ps.endsWith('official')) return [dirent('hookify')] as any;
       if (ps.endsWith('hookify')) return [dirent('aa11'), dirent('bb22'), dirent('cc33')] as any;
+      if (ps === active1) return ['README.md'] as any;
       if (ps.endsWith('omc')) return [dirent('oh-my-claudecode')] as any;
       if (ps.endsWith('oh-my-claudecode')) return [dirent('4.3.0')] as any;
       return [] as any;
