@@ -26,8 +26,16 @@ vi.mock('../../features/rate-limit-wait/tmux-detector.js', async importOriginal 
 import { pollLoop, shouldResumeBlockedPanesOnStatusChange } from '../../features/rate-limit-wait/daemon.js';
 
 function currentUsageProfileHash(): string {
+  const oauthToken = process.env.CLAUDE_CODE_OAUTH_TOKEN?.trim();
+  const credentialIdentity = oauthToken
+    ? createHash('sha256').update(oauthToken).digest('hex')
+    : null;
   return createHash('sha256')
-    .update(JSON.stringify([process.env.CLAUDE_CONFIG_DIR ?? null, getClaudeConfigDir()]))
+    .update(JSON.stringify([
+      process.env.CLAUDE_CONFIG_DIR ?? null,
+      getClaudeConfigDir(),
+      credentialIdentity,
+    ]))
     .digest('hex');
 }
 
@@ -59,6 +67,7 @@ describe('confirmed quota transitions in the actual daemon polling loop', () => 
   let config: Required<DaemonConfig>;
   let listeners: Map<'SIGINT' | 'SIGTERM' | 'exit', unknown[]>;
   let originalConfigDir: string | undefined;
+  let originalOAuthToken: string | undefined;
   beforeEach(() => {
     vi.useFakeTimers();
     boundary.check.mockReset();
@@ -68,6 +77,7 @@ describe('confirmed quota transitions in the actual daemon polling loop', () => 
     boundary.revalidate.mockReset();
     boundary.revalidate.mockReturnValue([blockedPane()]);
     originalConfigDir = process.env.CLAUDE_CONFIG_DIR;
+    originalOAuthToken = process.env.CLAUDE_CODE_OAUTH_TOKEN;
     root = mkdtempSync(join(tmpdir(), 'omc-quota-confirmation-'));
     config = { pollIntervalMs: 1000, paneLinesToCapture: 15, verbose: false,
       stateFilePath: join(root, 'state.json'), pidFilePath: join(root, 'pid'), logFilePath: join(root, 'log') };
@@ -81,6 +91,8 @@ describe('confirmed quota transitions in the actual daemon polling loop', () => 
     vi.useRealTimers();
     if (originalConfigDir === undefined) delete process.env.CLAUDE_CONFIG_DIR;
     else process.env.CLAUDE_CONFIG_DIR = originalConfigDir;
+    if (originalOAuthToken === undefined) delete process.env.CLAUDE_CODE_OAUTH_TOKEN;
+    else process.env.CLAUDE_CODE_OAUTH_TOKEN = originalOAuthToken;
     for (const [event, original] of listeners) {
       for (const listener of (event === 'exit' ? process.listeners('exit') : process.listeners(event))) {
         if (!original.includes(listener)) process.removeListener(event, listener);
@@ -177,6 +189,16 @@ describe('confirmed quota transitions in the actual daemon polling loop', () => 
   it('does not carry quota state across Claude config profiles', async () => {
     seed(status(true));
     process.env.CLAUDE_CONFIG_DIR = `${process.env.CLAUDE_CONFIG_DIR ?? ''}-other-profile`;
+    await start(status(false));
+    expect(boundary.resume).not.toHaveBeenCalled();
+    expect(observed().lastConfirmedLimited).toBe(false);
+    expect(observed().blockedPanes).toEqual([]);
+    expect(observed().usageProfileHash).toBe(currentUsageProfileHash());
+  });
+  it('does not carry quota state across direct OAuth credential changes', async () => {
+    process.env.CLAUDE_CODE_OAUTH_TOKEN = 'profile-a-token';
+    seed(status(true));
+    process.env.CLAUDE_CODE_OAUTH_TOKEN = 'profile-b-token';
     await start(status(false));
     expect(boundary.resume).not.toHaveBeenCalled();
     expect(observed().lastConfirmedLimited).toBe(false);

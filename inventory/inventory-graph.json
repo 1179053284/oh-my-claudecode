@@ -5,15 +5,15 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "466999eb76e4c4bf203796006cc91297cb88914d",
-    "sourceSha256": "8d8c90a8a9633bc7a3679145f0388397ef1dfd1bbd3f9c19ef45cf112cd78335",
+    "head": "cc7e0d0a4f2f2eb37dfe895ac60a57e827ddbda5",
+    "sourceSha256": "db99cfd55837753d3a1785b3951f405ec728dcb35a37ac74f6f12155e65bdbd7",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "466999eb76e4c4bf203796006cc91297cb88914d",
-  "sourceSha256": "8d8c90a8a9633bc7a3679145f0388397ef1dfd1bbd3f9c19ef45cf112cd78335",
+  "head": "cc7e0d0a4f2f2eb37dfe895ac60a57e827ddbda5",
+  "sourceSha256": "db99cfd55837753d3a1785b3951f405ec728dcb35a37ac74f6f12155e65bdbd7",
   "counts": {
     "public": {
       "skills": 47,
@@ -28,8 +28,8 @@
       "toolFiles": 61,
       "libFiles": 48,
       "templateHooks": 23,
-      "srcFiles": 1447,
-      "total": 1470
+      "srcFiles": 1448,
+      "total": 1471
     },
     "generated": {
       "distFiles": 5611,
@@ -39924,6 +39924,11 @@
         "path": "src/cli/commands/__tests__/ultragoal.test.ts"
       },
       {
+        "id": "src/cli/commands/__tests__/wait.test.ts",
+        "kind": "src",
+        "path": "src/cli/commands/__tests__/wait.test.ts"
+      },
+      {
         "id": "src/cli/commands/alias-retirement.ts",
         "kind": "src",
         "path": "src/cli/commands/alias-retirement.ts"
@@ -57558,6 +57563,16 @@
       {
         "from": "src/cli/commands/__tests__/ultragoal.test.ts",
         "to": "src/cli/commands/ultragoal.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/cli/commands/__tests__/wait.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/cli/commands/__tests__/wait.test.ts",
+        "to": "src/cli/commands/wait.ts",
         "kind": "imports"
       },
       {
@@ -87342,12 +87357,12 @@
       }
     ],
     "stats": {
-      "nodeCount": 7708,
-      "edgeCount": 8340,
-      "importEdgeCount": 6902,
+      "nodeCount": 7709,
+      "edgeCount": 8342,
+      "importEdgeCount": 6904,
       "registerEdgeCount": 68
     }
   },
-  "inventorySha256": "70e379208932bdc398c31243afb7f890e11b4c8fdc0a4372332789000d187c8c",
-  "manifestSha256": "63bfbb214f7f894f0016b115d2752c111cdc851d7ccfb764505d8265754446dd"
+  "inventorySha256": "fb6e928b220abff2cfd0308409f591f3312b6eadf55d1a2db441c155f9026b37",
+  "manifestSha256": "1ada51e8c2d79668ee2c7a83e0c3e548f85f638662229f19f6a44ed21063bd43"
 }

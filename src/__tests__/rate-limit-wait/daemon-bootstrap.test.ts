@@ -14,7 +14,7 @@ const { mockSpawn, mockResolveDaemonModulePath, mockIsTmuxAvailable } = vi.hoist
 
 function currentUsageProfileHash(): string {
   return createHash('sha256')
-    .update(JSON.stringify([process.env.CLAUDE_CONFIG_DIR ?? null, getClaudeConfigDir()]))
+    .update(JSON.stringify([process.env.CLAUDE_CONFIG_DIR ?? null, getClaudeConfigDir(), null]))
     .digest('hex');
 }
 

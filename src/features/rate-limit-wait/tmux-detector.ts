@@ -171,9 +171,11 @@ const WAITING_PATTERNS = [
 
 /** The first menu option must still offer an actionable continuation. */
 const LIVE_RESUME_OPTION_PATTERN =
-  /^\s*(?:❯\s*)?(?:\[1\]|1[.)]?)\s+(?:continue|resume|retry|try again)\b/im;
-const LIVE_PROMPT_LINE_PATTERN =
-  /^\s*(?:❯\s*)?(?:\[\d+\]|\d+[.)])\s+\S|^\s*(?:press enter|select an option|continue\?)/i;
+  /^\s*(?:❯\s*)?(?:\[1\]|1[.)]?)\s+(?:continue|resume|retry|try again|stop and wait)\b/im;
+const LIVE_SELECTED_RESUME_OPTION_PATTERN =
+  /^\s*❯\s*(?:\[1\]|1[.)]?)\s+(?:continue|resume|retry|try again|stop and wait)\b/i;
+const LIVE_CONFIRMATION_PROMPT_PATTERN =
+  /^\s*(?:enter to confirm|press enter|select an option|continue\?)/i;
 
 /**
  * Check if tmux is installed and available.
@@ -457,10 +459,12 @@ export function revalidateBlockedPanes(
       .slice(-5)
       .join('\n');
     const lastLine = recentLines.split('\n').at(-1) ?? '';
+    const hasLivePrompt = LIVE_SELECTED_RESUME_OPTION_PATTERN.test(lastLine) ||
+      LIVE_CONFIRMATION_PROMPT_PATTERN.test(lastLine);
     if (
       !analysis.isBlocked ||
       !LIVE_RESUME_OPTION_PATTERN.test(recentLines) ||
-      !LIVE_PROMPT_LINE_PATTERN.test(lastLine)
+      !hasLivePrompt
     ) continue;
 
     resumable.push({

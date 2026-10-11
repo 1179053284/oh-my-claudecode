@@ -308,15 +308,28 @@ function createInitialState(): DaemonState {
  * The raw value matters because credential lookup distinguishes explicit profile
  * paths from the default even when both resolve to the same directory.
  */
-function getUsageProfileHash(): string {
+function getUsageProfileHash(includeDirectOAuthToken = true): string {
+  const oauthToken = includeDirectOAuthToken
+    ? process.env.CLAUDE_CODE_OAUTH_TOKEN?.trim()
+    : undefined;
+  const credentialIdentity = oauthToken
+    ? createHash('sha256').update(oauthToken).digest('hex')
+    : null;
   return createHash('sha256')
-    .update(JSON.stringify([process.env.CLAUDE_CONFIG_DIR ?? null, getClaudeConfigDir()]))
+    .update(JSON.stringify([
+      process.env.CLAUDE_CONFIG_DIR ?? null,
+      getClaudeConfigDir(),
+      credentialIdentity,
+    ]))
     .digest('hex');
 }
 
 /** Do not carry quota or pane state between Claude profiles sharing OMC state. */
-function scopeStateToCurrentUsageProfile(state: DaemonState): DaemonState {
-  const usageProfileHash = getUsageProfileHash();
+function scopeStateToCurrentUsageProfile(
+  state: DaemonState,
+  includeDirectOAuthToken = true,
+): DaemonState {
+  const usageProfileHash = getUsageProfileHash(includeDirectOAuthToken);
   if (state.usageProfileHash !== usageProfileHash) {
     state.lastPollAt = null;
     state.rateLimitStatus = null;
@@ -583,7 +596,11 @@ export function startDaemon(config?: DaemonConfig): DaemonResponse {
     if (pid) {
       writePidFile(pid, cfg);
 
-      const state = scopeStateToCurrentUsageProfile(readDaemonState(cfg) || createInitialState());
+      // Detached children intentionally omit direct OAuth tokens from their environment.
+      const state = scopeStateToCurrentUsageProfile(
+        readDaemonState(cfg) || createInitialState(),
+        false,
+      );
       state.isRunning = true;
       state.pid = pid;
       state.startedAt = new Date();

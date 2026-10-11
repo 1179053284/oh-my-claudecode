@@ -503,6 +503,18 @@ describe('tmux-detector', () => {
       "You've reached your rate limit. Please wait for the limit to reset.",
       '[1] Continue when ready',
       '[2] Exit',
+      'Enter to confirm',
+    ].join('\n');
+    const selectedResumePrompt = [
+      'Claude Code v1.2.3',
+      "You've reached your rate limit. Please wait for the limit to reset.",
+      '❯ 1. Continue when ready',
+    ].join('\n');
+    const stopAndWaitPrompt = [
+      'Claude Code',
+      "You've hit your limit · resets Feb 17 at 2pm",
+      '❯ 1. Stop and wait',
+      'Enter to confirm',
     ].join('\n');
 
     function makeTmuxAvailable(): void {
@@ -527,6 +539,28 @@ describe('tmux-detector', () => {
       ]);
     });
 
+    it('recognizes a cursor-selected continuation option', () => {
+      makeTmuxAvailable();
+      vi.mocked(tmuxExec)
+        .mockReturnValueOnce(paneList)
+        .mockReturnValueOnce(selectedResumePrompt);
+
+      expect(revalidateBlockedPanes([trackedPane])).toMatchObject([
+        { id: '%0', session: 'main', windowName: 'dev' },
+      ]);
+    });
+
+    it('recognizes the live stop-and-wait confirmation prompt', () => {
+      makeTmuxAvailable();
+      vi.mocked(tmuxExec)
+        .mockReturnValueOnce(paneList)
+        .mockReturnValueOnce(stopAndWaitPrompt);
+
+      expect(revalidateBlockedPanes([trackedPane])).toMatchObject([
+        { id: '%0', session: 'main', windowName: 'dev' },
+      ]);
+    });
+
     it('rejects old rate-limit text after the pane has resumed into a conversation', () => {
       makeTmuxAvailable();
       const activeConversation = [
@@ -534,7 +568,23 @@ describe('tmux-detector', () => {
         "You've reached your rate limit. Please wait for the limit to reset.",
         '[1] Continue when ready',
         '[2] Exit',
-        '❯ How can I help?',
+        '1. Run the tests',
+      ].join('\n');
+      vi.mocked(tmuxExec)
+        .mockReturnValueOnce(paneList)
+        .mockReturnValueOnce(activeConversation);
+
+      expect(revalidateBlockedPanes([trackedPane])).toEqual([]);
+    });
+
+    it('rejects a cursor-prefixed conversation line after an old menu', () => {
+      makeTmuxAvailable();
+      const activeConversation = [
+        'Claude Code v1.2.3',
+        "You've reached your rate limit. Please wait for the limit to reset.",
+        '[1] Continue when ready',
+        '[2] Exit',
+        '❯ 1. Run the tests',
       ].join('\n');
       vi.mocked(tmuxExec)
         .mockReturnValueOnce(paneList)
