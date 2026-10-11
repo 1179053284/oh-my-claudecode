@@ -889,7 +889,7 @@ import type {
   WebhookIntegrationConfig,
   CliIntegrationConfig,
 } from "./types.js";
-import { interpolateTemplate } from "./template-engine.js";
+import { interpolateTemplate, interpolateJsonTemplate } from "./template-engine.js";
 import { getCustomIntegrationsForEvent } from "./config.js";
 
 const execFileAsync = promisify(execFile);
@@ -906,7 +906,6 @@ export async function sendCustomWebhook(
   try {
     // Interpolate template variables
     const url = interpolateTemplate(config.url, payload);
-    const body = interpolateTemplate(config.bodyTemplate, payload);
     
     // Prepare headers
     const headers: Record<string, string> = {};
@@ -914,6 +913,12 @@ export async function sendCustomWebhook(
       headers[key] = interpolateTemplate(value, payload);
     }
     
+    const contentType = Object.entries(headers).find(([key]) => key.toLowerCase() === "content-type")?.[1] ?? "";
+    const isJsonBody = /^application\/(?:json|[^\s;]+\+json)(?:\s*;|$)/i.test(contentType.trim());
+    const body = isJsonBody
+      ? interpolateJsonTemplate(config.bodyTemplate, payload)
+      : interpolateTemplate(config.bodyTemplate, payload);
+
     // Use native fetch (Node.js 18+)
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), config.timeout);

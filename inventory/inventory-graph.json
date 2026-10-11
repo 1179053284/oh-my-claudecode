@@ -5,15 +5,15 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "506b6548d9c392bbd23588e504e1d6a121c25c0d",
-    "sourceSha256": "867e5fb21d87aa2ea9dc365e204c8be250d758297190f38e45d8ab3035b32b0d",
+    "head": "a720eabd02a9816cf22d5f3ce74edbeaaaa92f45",
+    "sourceSha256": "8fa27e4e8e6623c29431817d4d8b48063bdaf477aec2cd5818c400a06387dcb5",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "506b6548d9c392bbd23588e504e1d6a121c25c0d",
-  "sourceSha256": "867e5fb21d87aa2ea9dc365e204c8be250d758297190f38e45d8ab3035b32b0d",
+  "head": "a720eabd02a9816cf22d5f3ce74edbeaaaa92f45",
+  "sourceSha256": "8fa27e4e8e6623c29431817d4d8b48063bdaf477aec2cd5818c400a06387dcb5",
   "counts": {
     "public": {
       "skills": 47,
@@ -28,8 +28,8 @@
       "toolFiles": 61,
       "libFiles": 48,
       "templateHooks": 23,
-      "srcFiles": 1446,
-      "total": 1469
+      "srcFiles": 1447,
+      "total": 1470
     },
     "generated": {
       "distFiles": 5611,
@@ -43329,6 +43329,11 @@
         "path": "src/notifications/__tests__/custom-integration.test.ts"
       },
       {
+        "id": "src/notifications/__tests__/custom-webhook-body.test.ts",
+        "kind": "src",
+        "path": "src/notifications/__tests__/custom-webhook-body.test.ts"
+      },
+      {
         "id": "src/notifications/__tests__/dispatcher.test.ts",
         "kind": "src",
         "path": "src/notifications/__tests__/dispatcher.test.ts"
@@ -74696,6 +74701,21 @@
         "kind": "imports"
       },
       {
+        "from": "src/notifications/__tests__/custom-webhook-body.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/custom-webhook-body.test.ts",
+        "to": "src/notifications/dispatcher.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/custom-webhook-body.test.ts",
+        "to": "src/notifications/types.ts",
+        "kind": "type-imports"
+      },
+      {
         "from": "src/notifications/__tests__/dispatcher.test.ts",
         "to": "external:events",
         "kind": "imports"
@@ -87277,12 +87297,12 @@
       }
     ],
     "stats": {
-      "nodeCount": 7707,
-      "edgeCount": 8328,
-      "importEdgeCount": 6891,
+      "nodeCount": 7708,
+      "edgeCount": 8331,
+      "importEdgeCount": 6893,
       "registerEdgeCount": 68
     }
   },
-  "inventorySha256": "68c854b413f1396b5cba321f0de6ac876579513b781bbe60b2ef6895c4a9cdf8",
-  "manifestSha256": "4f7475859dd7389c0498f504215edc379ce378ac8b9d3e5776a55ac2b19aaf73"
+  "inventorySha256": "e2aefd43c3f3aca4ca13796b6140f2beb05d1cd5b2091fcfd8cdd9dd42592355",
+  "manifestSha256": "b0209ac5691f1817f2ebc0e70d8a115a18a3e22b8ee0cb531dceca1aa6025653"
 }

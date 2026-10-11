@@ -220,6 +220,33 @@ export function interpolateTemplate(
   return result;
 }
 
+/** Interpolate JSON string values without injecting payload text into JSON syntax. */
+export function interpolateJsonTemplate(
+  template: string,
+  payload: NotificationPayload,
+): string {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(template);
+  } catch {
+    // Raw numeric placeholders and other non-JSON templates retain text interpolation.
+    return interpolateTemplate(template, payload);
+  }
+  const vars = computeTemplateVariables(payload);
+  const interpolateString = (value: string): string =>
+    replaceVariables(processConditionals(value, vars), vars);
+  const interpolate = (value: unknown): unknown => {
+    if (typeof value === "string") return interpolateString(value);
+    if (Array.isArray(value)) return value.map(interpolate);
+    if (value !== null && typeof value === "object") {
+      return Object.fromEntries(Object.entries(value).map(([key, item]) =>
+        [interpolateString(key), interpolate(item)]));
+    }
+    return value;
+  };
+  return JSON.stringify(interpolate(parsed));
+}
+
 /**
  * Validate a template string for unknown variables.
  * Returns { valid, unknownVars }.
