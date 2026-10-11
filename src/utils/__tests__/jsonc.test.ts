@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
 import { describe, it, expect } from 'vitest';
 import { parseJsonc, stripJsoncComments } from '../jsonc.js';
 
@@ -103,4 +105,21 @@ describe('parseJsonc - block comment boundaries', () => {
     expect(parseJsonc(input)).toEqual({ x: true });
     expect(JSON.parse(runtime.stripJsoncComments(input))).toEqual({ x: true });
   });
+});
+
+describe('workflow runtime JSONC parser parity', () => {
+  it.each(['scripts/lib/workflow-profile-runtime.mjs', 'templates/hooks/lib/workflow-profile-runtime.mjs'])(
+    'preserves trailing commas and comment boundaries in %s', (path) => {
+      const source = readFileSync(path, 'utf8');
+      const parserSource = source.split('\n').find(line => line.startsWith('function stripJsonc('));
+      expect(parserSource).toBeDefined();
+      const strip: (content: string) => string = runInNewContext(`${parserSource}; stripJsonc`);
+      expect(JSON.parse(strip('{"version":1,}'))).toEqual({ version: 1 });
+      expect(JSON.parse(strip('["ralplan","execution",]'))).toEqual(['ralplan', 'execution']);
+      expect(JSON.parse(strip('{/*comment*/"version":1,}'))).toEqual({ version: 1 });
+      for (const input of ['{"version":1e/*comment*/0}', '{"version":1}/*unterminated']) {
+        expect(() => JSON.parse(strip(input))).toThrow();
+      }
+    },
+  );
 });
