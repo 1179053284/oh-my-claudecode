@@ -446,7 +446,7 @@ describe('Builtin Skills', () => {
       expect(raw).toContain('session-start.sh');
       expect(raw).toContain('stop-continuation.sh');
       expect(raw).toContain('`bash ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/silent-auto-update.sh`');
-      expect(raw).toContain('If a listed script exists, call it a duplicate only when the active plugin provides the matching event');
+      expect(raw).toContain('If a listed script exists, call it a duplicate only when the active plugin provides the payload\'s canonical or specifically verified equivalent handler under the registration\'s event');
       expect(raw).toContain('standalone Node hook registrations under the active config directory');
       expect(raw).toContain('`keyword-detector`, `persistent-mode`, `session-start`, `session-end`, `pre-tool-use`, `post-tool-use`, `post-tool-use-failure`, `code-simplifier`, or `stop-continuation`');
       expect(raw).toContain('`.cjs` and `.js` variants are legacy too');
@@ -475,6 +475,9 @@ describe('Builtin Skills', () => {
       expect(raw).toContain('A cached plugin version is insufficient');
       expect(raw).toContain('compare its bytes or SHA-256 with the shipped OMC payload for that exact filename');
       expect(raw).toContain('A matching name or path alone does not prove ownership');
+      expect(raw).toContain('| `session-start` | `SessionStart` |');
+      expect(raw).toContain('The active plugin must provide the canonical or specifically verified equivalent handler under the registration\'s event, and that handler must replace the payload\'s behavior');
+      expect(raw).toContain('a `session-start` script registered under `Stop` is not a duplicate even if the active plugin defines unrelated `Stop` handlers');
       expect(raw).toContain('The tracked historical OMC Bash-hook payload fingerprints (SHA-256) are');
       expect(raw).toContain('keyword-detector.sh`: `abe4dd5e4b16231060166264d271a51e781f08a31c6aa402b26976f9c40d424e`');
       expect(raw).toContain('persistent-mode.sh`: `c131c6846573f0f69b6e39aed1e6db8f05279131a8976f604c1511a46f564ce5`');
@@ -501,6 +504,12 @@ describe('Builtin Skills', () => {
       expect(raw).toContain('If removing matched objects leaves a matcher group with no hooks, remove that now-empty group');
       expect(raw).toContain('remove an event key when no groups remain and remove the top-level `"hooks"` key when no events remain');
       expect(raw).toContain('For each affected profile-level, project-level, or project-local settings file');
+      expect(raw).toContain('Before deleting any script, inspect active session-scoped hook references in skill and subagent frontmatter as well as settings sources');
+      expect(raw).toContain('Skill frontmatter hooks remain active for the rest of the session after invocation; subagent frontmatter hooks remain active while that subagent runs');
+      expect(raw).toContain('If active skill/subagent sources cannot be conclusively enumerated or read, leave the script in place');
+      expect(raw).toContain('If an active hook references the script, keep it until that skill or subagent is no longer active, then repeat the reference check');
+      expect(raw).toContain('The canonical event and equivalent-handler requirements from Step 2 also gate script deletion; an unrelated plugin handler under the same event cannot justify deleting a standalone payload');
+      expect(raw).toContain('The settings scan alone does not establish that no references remain; the active skill/subagent scan above must also be complete and clean before deleting the target');
       expect(raw).toContain('If any applicable project-local path, main checkout root, managed source, or command-line source cannot be resolved or inspected, if any source references the script, the user declined the relevant settings change, a file could not be updated, no shipped payload exists, or verification is inconclusive, leave the corresponding script in place');
       expect(raw).toContain('re-check `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json`, the primary working directory\'s `.claude/settings.json`, every applicable project-local `.claude/settings.local.json` path resolved above (main-checkout, Windows side-by-side, and legacy starting-directory paths where applicable)');
       expect(raw).toContain('Never edit managed settings or MDM/server policy');
