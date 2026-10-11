@@ -16,7 +16,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { homedir, tmpdir } from "node:os";
-import { join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseJevEnv } from "../jev-resolve.mjs";
 
@@ -152,59 +152,33 @@ function releaseSweepLock(lock) {
   }
 }
 
-function recoveryLockExists(recoveryPath) {
-  try {
-    lstatSync(recoveryPath);
-    return true;
-  } catch (error) {
-    if (error?.code === "ENOENT") return false;
-    return true;
-  }
+function acquireSweepLock(markerPath, now = Date.now()) {
+  if (!markerPath) return undefined;
+  const bucket = Math.floor(now / SWEEP_THROTTLE_MS);
+  return createSweepLockFile(`${markerPath}.lock-${bucket}`);
 }
 
-function acquireSweepLock(markerPath) {
-  if (!markerPath) return undefined;
-  const lockPath = `${markerPath}.lock`;
-  const recoveryPath = `${lockPath}.recovery`;
-  if (recoveryLockExists(recoveryPath)) return undefined;
-
-  const lock = createSweepLockFile(lockPath);
-  if (lock) {
-    if (!recoveryLockExists(recoveryPath)) return lock;
-    releaseSweepLock(lock);
-    return undefined;
-  }
-
-  const recoveryLock = createSweepLockFile(recoveryPath);
-  if (!recoveryLock) return undefined;
+function removeExpiredSweepLocks(markerPath, now = Date.now()) {
+  if (!markerPath) return;
+  const currentBucket = Math.floor(now / SWEEP_THROTTLE_MS);
+  const lockPrefix = `${basename(markerPath)}.lock-`;
   try {
-    const staleLock = lstatSync(lockPath);
-    if (
-      !isOwnedMarkerFile(staleLock) ||
-      Date.now() - staleLock.mtimeMs < SWEEP_THROTTLE_MS
-    ) {
-      return undefined;
-    }
+    for (const entry of readdirSync(dirname(markerPath))) {
+      if (!entry.startsWith(lockPrefix)) continue;
+      const bucket = Number(entry.slice(lockPrefix.length));
+      if (!Number.isSafeInteger(bucket) || bucket >= currentBucket - 1)
+        continue;
 
-    // The exclusive recovery lock prevents another hook from replacing the stale
-    // lock between the identity check and unlink. New lockers recheck this claim.
-    const currentLock = lstatSync(lockPath);
-    if (
-      currentLock.dev !== staleLock.dev ||
-      currentLock.ino !== staleLock.ino
-    ) {
-      return undefined;
+      const lockPath = join(dirname(markerPath), entry);
+      try {
+        const stats = lstatSync(lockPath);
+        if (isOwnedMarkerFile(stats)) unlinkSync(lockPath);
+      } catch {
+        // Best effort: ignore missing or inaccessible old lock files.
+      }
     }
-    unlinkSync(lockPath);
-
-    const recoveredLock = createSweepLockFile(lockPath);
-    if (!recoveredLock) return undefined;
-    releaseSweepLock(recoveryLock);
-    return recoveredLock;
   } catch {
-    return undefined;
-  } finally {
-    releaseSweepLock(recoveryLock);
+    // Best effort: old lock cleanup must not block sweep or judgment recording.
   }
 }
 
@@ -289,6 +263,7 @@ export function recordJevShadow({ point, state, questions, heuristic }) {
   const markerPath = getSweepThrottleMarkerPath();
   try {
     if (shouldRunSweep(markerPath)) {
+      removeExpiredSweepLocks(markerPath);
       const lock = acquireSweepLock(markerPath);
       if (lock) {
         try {
