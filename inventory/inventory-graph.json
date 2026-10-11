@@ -5,15 +5,15 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "272292ef63ab78a1f053dd8cb22fd1029444f459",
-    "sourceSha256": "a876d3a5245121d55b483d1683976b4a53182a79611c4931d25320028581c51b",
+    "head": "c9e5ddca8fd27e1aa5518f0d22b23be27fcf4998",
+    "sourceSha256": "a85184e14a072fd298dd8e406bdaaaa75f40c9de8f437e6fb4aaf29407085d38",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "272292ef63ab78a1f053dd8cb22fd1029444f459",
-  "sourceSha256": "a876d3a5245121d55b483d1683976b4a53182a79611c4931d25320028581c51b",
+  "head": "c9e5ddca8fd27e1aa5518f0d22b23be27fcf4998",
+  "sourceSha256": "a85184e14a072fd298dd8e406bdaaaa75f40c9de8f437e6fb4aaf29407085d38",
   "counts": {
     "public": {
       "skills": 47,
@@ -53232,6 +53232,11 @@
       },
       {
         "from": "src/__tests__/rate-limit-wait/daemon-bootstrap.test.ts",
+        "to": "external:node:crypto",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/daemon-bootstrap.test.ts",
         "to": "external:os",
         "kind": "imports"
       },
@@ -53254,6 +53259,11 @@
         "from": "src/__tests__/rate-limit-wait/daemon-bootstrap.test.ts",
         "to": "src/features/rate-limit-wait/types.ts",
         "kind": "type-imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/daemon-bootstrap.test.ts",
+        "to": "src/utils/config-dir.ts",
+        "kind": "imports"
       },
       {
         "from": "src/__tests__/rate-limit-wait/daemon-cache-context.test.ts",
@@ -53392,6 +53402,11 @@
       },
       {
         "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
+        "to": "external:node:crypto",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
         "to": "external:node:fs",
         "kind": "imports"
       },
@@ -53419,6 +53434,11 @@
         "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
         "to": "src/features/rate-limit-wait/types.ts",
         "kind": "type-imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
+        "to": "src/utils/config-dir.ts",
+        "kind": "imports"
       },
       {
         "from": "src/__tests__/rate-limit-wait/rate-limit-monitor.test.ts",
@@ -60287,6 +60307,11 @@
       },
       {
         "from": "src/features/rate-limit-wait/daemon.ts",
+        "to": "external:node:crypto",
+        "kind": "imports"
+      },
+      {
+        "from": "src/features/rate-limit-wait/daemon.ts",
         "to": "external:path",
         "kind": "imports"
       },
@@ -60313,6 +60338,11 @@
       {
         "from": "src/features/rate-limit-wait/daemon.ts",
         "to": "src/platform/index.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/features/rate-limit-wait/daemon.ts",
+        "to": "src/utils/config-dir.ts",
         "kind": "imports"
       },
       {
@@ -87313,11 +87343,11 @@
     ],
     "stats": {
       "nodeCount": 7708,
-      "edgeCount": 8334,
-      "importEdgeCount": 6896,
+      "edgeCount": 8340,
+      "importEdgeCount": 6902,
       "registerEdgeCount": 68
     }
   },
   "inventorySha256": "70e379208932bdc398c31243afb7f890e11b4c8fdc0a4372332789000d187c8c",
-  "manifestSha256": "e300e453790ed7eb72b3cf3964230836da09d8e7b45f897e673a819f8b45d819"
+  "manifestSha256": "ef19b68b9eb8e98cf8fc1e4a7d06bacc79df36e60f181eaa0080028caf67f28d"
 }

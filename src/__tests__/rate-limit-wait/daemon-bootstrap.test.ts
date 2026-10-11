@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
+import { getClaudeConfigDir } from '../../utils/config-dir.js';
 import type { DaemonConfig } from '../../features/rate-limit-wait/types.js';
 
 const { mockSpawn, mockResolveDaemonModulePath, mockIsTmuxAvailable } = vi.hoisted(() => ({
@@ -9,6 +11,12 @@ const { mockSpawn, mockResolveDaemonModulePath, mockIsTmuxAvailable } = vi.hoist
   mockResolveDaemonModulePath: vi.fn(),
   mockIsTmuxAvailable: vi.fn(() => true),
 }));
+
+function currentUsageProfileHash(): string {
+  return createHash('sha256')
+    .update(JSON.stringify([process.env.CLAUDE_CONFIG_DIR ?? null, getClaudeConfigDir()]))
+    .digest('hex');
+}
 
 vi.mock('child_process', async () => {
   const actual = await vi.importActual<typeof import('child_process')>('child_process');
@@ -137,9 +145,10 @@ describe('daemon bootstrap', () => {
     expect(daemonScript).not.toContain('\\features\\rate-limit-wait\\daemon.js');
   });
 
-  it('preserves quota recovery state when starting the detached daemon', () => {
+  it('preserves quota recovery only for the profile that recorded it', () => {
     const unref = vi.fn();
     mockSpawn.mockReturnValue({ pid: 4244, unref } as any);
+    process.env.CLAUDE_CONFIG_DIR = '/tmp/omc-profile-a';
 
     const config: DaemonConfig = {
       stateFilePath: join(testDir, 'state.json'),
@@ -165,6 +174,7 @@ describe('daemon bootstrap', () => {
         lastCheckedAt: new Date('2026-01-01T00:00:00.000Z'),
       },
       lastConfirmedLimited: true,
+      usageProfileHash: currentUsageProfileHash(),
       blockedPanes: [{
         id: '%test',
         session: 'test',
@@ -196,6 +206,20 @@ describe('daemon bootstrap', () => {
     expect(persistedState.lastConfirmedLimited).toBe(true);
     expect(persistedState.blockedPanes).toMatchObject([{ id: '%test' }]);
     expect(unref).toHaveBeenCalledOnce();
+
+    rmSync(config.pidFilePath!, { force: true });
+    process.env.CLAUDE_CONFIG_DIR = '/tmp/omc-profile-b';
+    mockSpawn.mockReturnValue({ pid: 4245, unref: vi.fn() } as any);
+
+    const switchedProfile = startDaemon(config);
+
+    expect(switchedProfile.state).toMatchObject({
+      lastConfirmedLimited: false,
+      usageProfileHash: currentUsageProfileHash(),
+      rateLimitStatus: null,
+      blockedPanes: [],
+      resumedPaneIds: [],
+    });
   });
 
   it('returns already running when config pid file points to a live process', () => {

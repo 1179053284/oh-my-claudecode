@@ -1,20 +1,29 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createHash } from 'node:crypto';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import type { DaemonConfig, DaemonState, RateLimitStatus } from '../../features/rate-limit-wait/types.js';
+import { getClaudeConfigDir } from '../../utils/config-dir.js';
+import type { BlockedPane, DaemonConfig, DaemonState, RateLimitStatus } from '../../features/rate-limit-wait/types.js';
 
-const boundary = vi.hoisted(() => ({ check: vi.fn(), resume: vi.fn(() => true) }));
+const boundary = vi.hoisted(() => ({ check: vi.fn(), resume: vi.fn(() => true), scan: vi.fn() }));
 vi.mock('../../features/rate-limit-wait/rate-limit-monitor.js', async importOriginal => ({
   ...await importOriginal<typeof import('../../features/rate-limit-wait/rate-limit-monitor.js')>(),
   checkRateLimitStatus: boundary.check,
 }));
 vi.mock('../../features/rate-limit-wait/tmux-detector.js', async importOriginal => ({
   ...await importOriginal<typeof import('../../features/rate-limit-wait/tmux-detector.js')>(),
-  isTmuxAvailable: () => false,
+  isTmuxAvailable: () => true,
+  scanForBlockedPanes: boundary.scan,
   sendResumeSequence: boundary.resume,
 }));
 import { pollLoop, shouldResumeBlockedPanesOnStatusChange } from '../../features/rate-limit-wait/daemon.js';
+
+function currentUsageProfileHash(): string {
+  return createHash('sha256')
+    .update(JSON.stringify([process.env.CLAUDE_CONFIG_DIR ?? null, getClaudeConfigDir()]))
+    .digest('hex');
+}
 
 function status(limited: boolean, degraded = false): RateLimitStatus {
   return {
@@ -29,14 +38,28 @@ function staleNetworkStatus(limited: boolean): RateLimitStatus {
   return { ...status(limited), apiErrorReason: 'network', usingStaleData: true };
 }
 
+function blockedPane(overrides: Partial<BlockedPane> = {}): BlockedPane {
+  return {
+    id: '%test', session: 'isolated', windowIndex: 0, windowName: 'test', paneIndex: 0,
+    isActive: false, firstDetectedAt: new Date(),
+    analysis: { hasClaudeCode: true, hasRateLimitMessage: true, isBlocked: true, confidence: 1 },
+    resumeAttempted: false,
+    ...overrides,
+  };
+}
+
 describe('confirmed quota transitions in the actual daemon polling loop', () => {
   let root: string;
   let config: Required<DaemonConfig>;
   let listeners: Map<'SIGINT' | 'SIGTERM' | 'exit', unknown[]>;
+  let originalConfigDir: string | undefined;
   beforeEach(() => {
     vi.useFakeTimers();
     boundary.check.mockReset();
     boundary.resume.mockClear();
+    boundary.scan.mockReset();
+    boundary.scan.mockReturnValue([blockedPane()]);
+    originalConfigDir = process.env.CLAUDE_CONFIG_DIR;
     root = mkdtempSync(join(tmpdir(), 'omc-quota-confirmation-'));
     config = { pollIntervalMs: 1000, paneLinesToCapture: 15, verbose: false,
       stateFilePath: join(root, 'state.json'), pidFilePath: join(root, 'pid'), logFilePath: join(root, 'log') };
@@ -48,6 +71,8 @@ describe('confirmed quota transitions in the actual daemon polling loop', () => 
   afterEach(() => {
     vi.clearAllTimers();
     vi.useRealTimers();
+    if (originalConfigDir === undefined) delete process.env.CLAUDE_CONFIG_DIR;
+    else process.env.CLAUDE_CONFIG_DIR = originalConfigDir;
     for (const [event, original] of listeners) {
       for (const listener of (event === 'exit' ? process.listeners('exit') : process.listeners(event))) {
         if (!original.includes(listener)) process.removeListener(event, listener);
@@ -62,6 +87,7 @@ describe('confirmed quota transitions in the actual daemon polling loop', () => 
         analysis: { hasClaudeCode: true, hasRateLimitMessage: true, isBlocked: true, confidence: 1 },
         resumeAttempted: false }], resumedPaneIds: [], totalResumeAttempts: 0,
       successfulResumes: 0, errorCount: 0,
+      usageProfileHash: currentUsageProfileHash(),
       ...(flag === undefined ? {} : { lastConfirmedLimited: flag }) };
     writeFileSync(config.stateFilePath, JSON.stringify(state));
   }
@@ -120,6 +146,23 @@ describe('confirmed quota transitions in the actual daemon polling loop', () => 
     expect(observed().rateLimitStatus?.usingStaleData).toBe(true);
     await next(status(false));
     expect(boundary.resume).toHaveBeenCalledExactlyOnceWith('%test');
+  });
+  it('does not resume a restored pane after its saved location has changed', async () => {
+    seed(status(true));
+    await start(null);
+    boundary.scan.mockReturnValue([blockedPane({ session: 'reused-session' })]);
+    await next(status(false));
+    expect(boundary.resume).not.toHaveBeenCalled();
+    expect(observed().successfulResumes).toBe(0);
+  });
+  it('does not carry quota state across Claude config profiles', async () => {
+    seed(status(true));
+    process.env.CLAUDE_CONFIG_DIR = `${process.env.CLAUDE_CONFIG_DIR ?? ''}-other-profile`;
+    await start(status(false));
+    expect(boundary.resume).not.toHaveBeenCalled();
+    expect(observed().lastConfirmedLimited).toBe(false);
+    expect(observed().blockedPanes).toEqual([]);
+    expect(observed().usageProfileHash).toBe(currentUsageProfileHash());
   });
   it('recovers through an initially stale limited sample', async () => {
     seed(null, false);

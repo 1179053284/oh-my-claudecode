@@ -13,10 +13,12 @@
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync, chmodSync, statSync, appendFileSync, renameSync } from 'fs';
+import { createHash } from 'node:crypto';
 import { join, dirname } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { spawn } from 'child_process';
 import { resolveDaemonModulePath } from '../../utils/daemon-module-path.js';
+import { getClaudeConfigDir } from '../../utils/config-dir.js';
 import { getGlobalOmcStatePath } from '../../utils/paths.js';
 import {
   checkRateLimitStatus,
@@ -300,6 +302,35 @@ function createInitialState(): DaemonState {
 }
 
 /**
+ * Fingerprint the active Claude profile without persisting its path in global state.
+ * The raw value matters because credential lookup distinguishes explicit profile
+ * paths from the default even when both resolve to the same directory.
+ */
+function getUsageProfileHash(): string {
+  return createHash('sha256')
+    .update(JSON.stringify([process.env.CLAUDE_CONFIG_DIR ?? null, getClaudeConfigDir()]))
+    .digest('hex');
+}
+
+/** Do not carry quota or pane state between Claude profiles sharing OMC state. */
+function scopeStateToCurrentUsageProfile(state: DaemonState): DaemonState {
+  const usageProfileHash = getUsageProfileHash();
+  if (state.usageProfileHash !== usageProfileHash) {
+    state.lastPollAt = null;
+    state.rateLimitStatus = null;
+    state.lastConfirmedLimited = false;
+    state.blockedPanes = [];
+    state.resumedPaneIds = [];
+    state.totalResumeAttempts = 0;
+    state.successfulResumes = 0;
+    state.errorCount = 0;
+    state.lastError = undefined;
+  }
+  state.usageProfileHash = usageProfileHash;
+  return state;
+}
+
+/**
  * Only a confirmed transition out of quota exhaustion should trigger pane resume.
  * Degraded/stale usage-api 429 responses are visible to users but must not act
  * like a real all-clear signal for blocked panes.
@@ -345,9 +376,10 @@ function registerDaemonCleanup(config: Required<DaemonConfig>): void {
  * Main daemon polling loop
  */
 async function pollLoop(config: Required<DaemonConfig>): Promise<void> {
-  const state = readDaemonState(config) || createInitialState();
+  const state = scopeStateToCurrentUsageProfile(readDaemonState(config) || createInitialState());
   state.isRunning = true;
   state.pid = process.pid;
+  state.startedAt = new Date();
   let lastConfirmedLimited = typeof state.lastConfirmedLimited === 'boolean'
     ? state.lastConfirmedLimited
     : !!state.rateLimitStatus?.isLimited;
@@ -414,10 +446,25 @@ async function pollLoop(config: Required<DaemonConfig>): Promise<void> {
       // If rate limit just cleared (was limited, now not), attempt resume
       if (shouldResumeBlockedPanes && state.blockedPanes.length > 0) {
         log('Rate limit cleared! Attempting to resume blocked panes', config);
+        const currentlyBlockedPanes = isTmuxAvailable()
+          ? scanForBlockedPanes(config.paneLinesToCapture)
+          : [];
 
         for (const pane of state.blockedPanes) {
           if (state.resumedPaneIds.includes(pane.id)) {
             log(`Skipping already resumed pane: ${pane.id}`, config);
+            continue;
+          }
+
+          const currentPane = currentlyBlockedPanes.find((current) =>
+            current.id === pane.id &&
+            current.session === pane.session &&
+            current.windowIndex === pane.windowIndex &&
+            current.windowName === pane.windowName &&
+            current.paneIndex === pane.paneIndex
+          );
+          if (!currentPane) {
+            log(`Skipping pane no longer blocked at its saved location: ${pane.id}`, config);
             continue;
           }
 
@@ -523,7 +570,7 @@ export function startDaemon(config?: DaemonConfig): DaemonResponse {
     if (pid) {
       writePidFile(pid, cfg);
 
-      const state = readDaemonState(cfg) || createInitialState();
+      const state = scopeStateToCurrentUsageProfile(readDaemonState(cfg) || createInitialState());
       state.isRunning = true;
       state.pid = pid;
       state.startedAt = new Date();
