@@ -580,6 +580,17 @@ describe("sendTelegram", () => {
     ["http://api.telegram.org:80", false],
     ["https://api.telegram.org:443", true],
     ["https://api.telegram.org:8443", false],
+    ["https://api.telegram.org", true],
+    ["http://api.telegram.org/path", true],
+    ["https://api.telegram.org/path:80", true],
+    ["http://api.telegram.org:80/path", false],
+    ["https://api.telegram.org:443/path", true],
+    ["http://" + "fixture:80@" + "api.telegram.org", true],
+    ["http://" + "fixture:80@" + "api.telegram.org:80", false],
+    ["http://api.telegram.org?value=:80", true],
+    [String.raw`http://api.telegram.org:80\path`, false],
+    [String.raw`http://api.telegram.org\path:80`, true],
+    [String.raw`https://api.telegram.org:443\path`, true],
   ])("honors the NO_PROXY port in %s", async (entry, bypass) => {
     vi.stubEnv("HTTPS_PROXY", "http://proxy.example:8080");
     vi.stubEnv("NO_PROXY", entry);
