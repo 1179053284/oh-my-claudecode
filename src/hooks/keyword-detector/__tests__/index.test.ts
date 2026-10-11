@@ -208,6 +208,14 @@ Final draft.`);
       expect(result).toContain('visible');
     });
 
+    it('should not scan across repeated malformed closing tags', { timeout: 5000 }, () => {
+      const closers = '</pasted_content '.repeat(64_000);
+      const result = sanitizeForKeywordDetection(
+        `<pasted_content>anti-slop</pasted_content ${closers}`,
+      );
+      expect(result).toContain('anti-slop');
+    });
+
     it('should strip nested matching XML tags', () => {
       const result = sanitizeForKeywordDetection('<outer>some <inner>text</inner> ralph</outer> visible');
       expect(result).not.toContain('ralph');

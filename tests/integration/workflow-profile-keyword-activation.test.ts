@@ -92,6 +92,18 @@ describe.each(hooks)('keyword detector pasted-content filtering (%s)', hook => {
       '[MAGIC KEYWORD: AI-SLOP-CLEANER]',
     );
   });
+
+  it('bounds scanning across repeated malformed closing tags', { timeout: 5000 }, async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'keyword-malformed-paste-'));
+    created.push(directory);
+    const prompt = `<pasted_content>article mentions anti-slop</pasted_content ${'</pasted_content '.repeat(64_000)}`;
+
+    const output = await invoke(hook, directory, prompt);
+
+    expect(JSON.parse(output).hookSpecificOutput.additionalContext).toContain(
+      '[MAGIC KEYWORD: AI-SLOP-CLEANER]',
+    );
+  });
 });
 
 describe.each(hooks)('keyword autopilot activation fence (%s)', hook => {
