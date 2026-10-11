@@ -495,6 +495,28 @@ function hasAncestorWithIdentity(path: string, identity: Stats): boolean {
   }
 }
 
+function hasResolvableGenericPluginSymlinks(directory: string, ancestors: Stats[] = []): boolean {
+  const directoryStats = statSync(directory);
+  if (ancestors.some(identity => sameFileSystemIdentity(directoryStats, identity))) return false;
+  const branch = [...ancestors, directoryStats];
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const entryPath = join(directory, entry.name);
+    if (entry.isSymbolicLink()) {
+      const entryStats = statSync(entryPath);
+      if (entryStats.isDirectory() && branch.some(identity => sameFileSystemIdentity(entryStats, identity))) {
+        return false;
+      }
+    } else if (entry.isDirectory() && !hasResolvableGenericPluginSymlinks(entryPath, branch)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function isUsableGenericPluginTarget(target: string): boolean {
+  return readdirSync(target, { withFileTypes: true }).length > 0 && hasResolvableGenericPluginSymlinks(target);
+}
+
 const OMC_PLUGIN_CACHE_IDENTITIES = new Set([
   'oh-my-claudecode@omc',
   'oh-my-claudecode@oh-my-claudecode',
@@ -705,7 +727,7 @@ export function purgeStalePluginCacheVersions(options?: { skipGracePeriod?: bool
             const pluginIdentity = `${pluginName}@${marketplace}`.toLowerCase();
             const isOmcPlugin = OMC_PLUGIN_CACHE_IDENTITIES.has(pluginIdentity);
             const isTargetUsable = () => statSync(target).isDirectory() &&
-              (isOmcPlugin ? isUsableVersionPath(target) : readdirSync(target).length > 0);
+              (isOmcPlugin ? isUsableVersionPath(target) : isUsableGenericPluginTarget(target));
             if (targetOverlapsStaleVersion || !isTargetUsable()) {
               throw new Error('Registered active plugin target is unusable or overlaps the stale version tree');
             }
