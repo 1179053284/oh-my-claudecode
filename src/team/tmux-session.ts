@@ -395,30 +395,28 @@ function encodeTmuxServerIdentity(identity: TmuxServerIdentity): string {
 }
 
 /**
- * Verify if real tmux is running by checking the TMUX environment variable
- * and attempting to confirm with tmux list-servers.
+ * Distinguish a POSIX tmux session from native psmux on Windows. psmux also
+ * exports TMUX, but identifies its socket namespace under `/tmp/psmux-*`.
  * @internal Exported for testing only.
  */
-export function isRealTmuxAvailable(): boolean {
-  // TMUX env var is set by real tmux but NOT by PSMUX
-  if (!process.env.TMUX) {
-    return false;
-  }
-  // Verify the tmux socket path is valid
-  try {
-    // Extract socket from TMUX value: typically "/path/to/socket,pid,index"
-    const parts = process.env.TMUX.split(',');
-    return !!(parts.length === 3 && parts[0] && /^[0-9]+$/.test(parts[1]));
-  } catch {
-    return false;
-  }
+export function isPosixTmuxSession(): boolean {
+  const tmuxValue = process.env.TMUX;
+  if (!tmuxValue) return false;
+
+  const parts = tmuxValue.split(',');
+  if (parts.length !== 3 || !parts[0] || !/^[0-9]+$/.test(parts[1]!)) return false;
+
+  // Native psmux exports TMUX too, using `/tmp/psmux-<pid>/<namespace>`;
+  // the presence of TMUX alone therefore cannot identify a POSIX shell.
+  const socketPath = parts[0]!.replace(/\\/g, '/');
+  return !/^\/tmp\/psmux-[^/]+(?:\/|$)/i.test(socketPath);
 }
 
 /**
  * Generate the tmux server identity guard condition for the native shell.
- * On Windows with native PowerShell, generates PowerShell syntax.
- * On Windows in Git Bash without real TMUX (likely PSMUX), generates PowerShell syntax.
- * On POSIX systems or Git Bash with real tmux, generates POSIX shell syntax.
+ * On native Windows and native psmux, generates PowerShell syntax even when
+ * OMC's parent process runs under MSYS/Git Bash; psmux independently chooses
+ * PowerShell for its `if-shell` implementation. POSIX tmux uses POSIX syntax.
  * @internal Exported for testing only.
  */
 export function tmuxServerGuardCondition(identity: TmuxServerIdentity): string {
@@ -436,9 +434,9 @@ export function tmuxServerGuardCondition(identity: TmuxServerIdentity): string {
     );
   }
 
-  // On Windows in Git Bash: check if we have real tmux
-  // If TMUX is not set or invalid, likely using PSMUX which needs PowerShell
-  if (process.platform === 'win32' && isUnixLikeOnWindows() && !isRealTmuxAvailable()) {
+  // MSYS tmux runs POSIX commands; native psmux uses PowerShell even when
+  // the parent process has MSYS variables and psmux sets a valid TMUX value.
+  if (process.platform === 'win32' && isUnixLikeOnWindows() && !isPosixTmuxSession()) {
     return tmuxServerGuardConditionPowerShell(
       nodePath,
       runtimePath,
@@ -493,8 +491,10 @@ export function tmuxServerGuardConditionPowerShell(
   runtimePath: string,
   encodedIdentity: string,
 ): string {
-  // Use the call operator (&) with properly quoted arguments.
-  // Wrap in a subshell that clears problematic Node startup variables.
+  // Use the call operator (&) with properly quoted arguments. The outer
+  // PowerShell process otherwise exits successfully even when a native child
+  // exits nonzero, so explicitly propagate the guard's verdict and fail
+  // closed if Node cannot be started.
   // Note: `#{pid}` is preserved as literal text for tmux format expansion.
   return [
     '&',
@@ -510,6 +510,9 @@ export function tmuxServerGuardConditionPowerShell(
     powershellQuote('--tmux-server-identity-guard'),
     powershellQuote(encodedIdentity),
     powershellQuote('#{pid}'),
+    ';',
+    'if ($LASTEXITCODE -eq 0) { exit 0 }',
+    'exit 1',
     '}',
   ].join(' ');
 }
@@ -567,6 +570,27 @@ async function runGuardedNativeTmuxCommand(
       stderr: isTmuxServerNotFoundError(error) ? 'tmux_server_unavailable' : redactBoundedDiagnostic(error),
     };
   }
+}
+
+async function runGuardedNativeTmuxCreationCommand(
+  identity: TmuxServerIdentity,
+  nativeCommand: string,
+  resourceFields: 3 | 4,
+): ReturnType<typeof runGuardedNativeTmuxCommand> {
+  const result = await runGuardedNativeTmuxCommand(identity, nativeCommand);
+  if (result.outcome !== 'unknown' || result.stderr.trim()) return result;
+
+  // psmux can return a successful `-P -F` creation record while omitting a
+  // following `display-message -p` marker. Accept only a well-formed record
+  // bound to the already-captured server incarnation as proof of execution.
+  const record = parseTmuxCreationRecord(
+    result.stdout,
+    resourceFields,
+    currentStrictProcessStartIdentity,
+    identity,
+  );
+  if (!record || !sameTmuxServerIdentity(record.identity, identity)) return result;
+  return { ...result, outcome: 'executed' };
 }
 
 function isTmuxServerNotFoundError(error: unknown): boolean {
@@ -1634,10 +1658,11 @@ async function runPaneCreationCommand(
   identity: TmuxServerIdentity,
   nativeCommand: string,
   paneShell: WorkerPaneShell,
+  resourceFields: 3 | 4,
 ): ReturnType<typeof runGuardedNativeTmuxCommand> {
   let result: Awaited<ReturnType<typeof runGuardedNativeTmuxCommand>>;
   try {
-    result = await runGuardedNativeTmuxCommand(identity, nativeCommand);
+    result = await runGuardedNativeTmuxCreationCommand(identity, nativeCommand, resourceFields);
   } catch (error) {
     discardPaneEnvFile(paneShell.envFile);
     throw error;
@@ -2118,10 +2143,10 @@ export async function splitTeamWorkerPaneWithEvidence(
       '-c', cwd,
       ...splitPaneShell.args,
     ];
-    const splitResult = await runPaneCreationCommand(
+    const splitResult = await runGuardedNativeTmuxCreationCommand(
           identity,
           tmuxCommandString(splitArgs, ['#{pane_id}\t#{socket_path}\t#{pid}']),
-          splitPaneShell,
+          3,
         );
     const parsed = splitResult.outcome === 'executed'
       ? parseTmuxCreationRecord(
@@ -2303,6 +2328,7 @@ export async function createTeamSession(
           existingDetachedIdentity,
           tmuxCommandString(detachedArgs, [detachedFormat]),
           detachedPaneShell,
+          4,
         );
       } catch (error) {
         const cleaned = await cleanupDetachedSession();
@@ -2350,6 +2376,7 @@ export async function createTeamSession(
           tmuxServerIdentity,
           tmuxCommandString(detachedArgs, [detachedFormat]),
           detachedPaneShell,
+          4,
         );
       } catch (error) {
         // Reached only when bootstrap failed before new-session ran or the
@@ -2527,6 +2554,7 @@ export async function createTeamSession(
           tmuxServerIdentity!,
           tmuxCommandString(newWindowArgs, ['#S:#I\t#{pane_id}\t#{socket_path}\t#{pid}']),
           newWindowPaneShell,
+          4,
         );
     } catch (error) {
       const creationError = new TeamSessionCreationError(
@@ -2727,6 +2755,7 @@ export async function createTeamSession(
           tmuxServerIdentity!,
           tmuxCommandString(splitArgs, ['#{pane_id}\t#{socket_path}\t#{pid}']),
           splitPaneShell,
+          3,
         );
     if (splitResult.outcome !== 'executed') {
       const creationError = new TeamSessionCreationError(

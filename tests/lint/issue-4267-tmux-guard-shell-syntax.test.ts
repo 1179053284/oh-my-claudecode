@@ -1,4 +1,9 @@
 import { describe, expect, it, beforeEach, afterEach } from 'vitest';
+import { spawnSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // Test fix for issue #4267: tmuxServerGuardCondition() should emit
 // shell-appropriate syntax based on platform:
@@ -15,7 +20,10 @@ describe('issue #4267 - tmux guard shell syntax platform compatibility', () => {
   });
 
   afterEach(() => {
-    // Restore original environment
+    // Remove keys added by this test before restoring the original snapshot.
+    for (const key of Object.keys(process.env)) {
+      if (!(key in originalEnv)) delete process.env[key];
+    }
     for (const [key, value] of Object.entries(originalEnv)) {
       if (value === undefined) {
         delete process.env[key];
@@ -121,6 +129,8 @@ describe('issue #4267 - tmux guard shell syntax platform compatibility', () => {
     // Should have the proper arguments in PowerShell format
     expect(condition).toContain('--tmux-server-identity-guard');
     expect(condition).toContain('#{pid}'); // Format placeholder for tmux
+    expect(condition).toContain('if ($LASTEXITCODE -eq 0) { exit 0 }');
+    expect(condition).toContain('exit 1');
   });
 
   it('Windows with MSYS2/Cygwin in real tmux: guard condition uses POSIX syntax', async () => {
@@ -349,27 +359,32 @@ describe('issue #4267 - tmux guard shell syntax platform compatibility', () => {
     }
   });
 
-  it('isRealTmuxAvailable detects real tmux vs PSMUX', async () => {
+  it('isPosixTmuxSession distinguishes real tmux from PSMUX', async () => {
     mockPlatform('win32');
-    const { isRealTmuxAvailable } = await import(
+    const { isPosixTmuxSession } = await import(
       '../../src/team/tmux-session.js'
     );
 
     // No TMUX var: should return false (PSMUX or no multiplexer)
     delete process.env.TMUX;
-    expect(isRealTmuxAvailable()).toBe(false);
+    expect(isPosixTmuxSession()).toBe(false);
 
     // Invalid TMUX format: should return false
     process.env.TMUX = 'invalid';
-    expect(isRealTmuxAvailable()).toBe(false);
+    expect(isPosixTmuxSession()).toBe(false);
 
     // Valid TMUX format: should return true
     process.env.TMUX = '/tmp/tmux-1000/default,1234,0';
-    expect(isRealTmuxAvailable()).toBe(true);
+    expect(isPosixTmuxSession()).toBe(true);
 
     // Valid TMUX with different socket path
     process.env.TMUX = '/var/folders/something/tmux-socket,9999,2';
-    expect(isRealTmuxAvailable()).toBe(true);
+    expect(isPosixTmuxSession()).toBe(true);
+
+    // Native psmux exports TMUX too, but its socket namespace is distinctive.
+    process.env.TMUX = '/tmp/psmux-30336/default,30336,0';
+    process.env.PSMUX_SESSION = 'psmux-session-30336';
+    expect(isPosixTmuxSession()).toBe(false);
   });
 
   it('Git Bash with valid TMUX: should use POSIX syntax', async () => {
@@ -407,4 +422,76 @@ describe('issue #4267 - tmux guard shell syntax platform compatibility', () => {
     // Invalid TMUX should fall back to PowerShell (PSMUX)
     expect(condition.trim()).toMatch(/^&\s+\{/);
   });
+
+  it('Git Bash with native psmux session: uses PowerShell despite its TMUX value', async () => {
+    mockPlatform('win32');
+    process.env.MSYSTEM = 'MINGW64';
+    process.env.TMUX = '/tmp/psmux-30336/default,30336,0';
+    process.env.PSMUX_SESSION = 'psmux-session-30336';
+
+    const { tmuxServerGuardCondition } = await import(
+      '../../src/team/tmux-session.js'
+    );
+
+    const condition = tmuxServerGuardCondition(buildTestIdentity());
+
+    expect(condition.trim()).toMatch(/^&\s+\{/);
+    expect(condition).not.toContain('/usr/bin/env');
+    expect(condition).not.toContain('/dev/null');
+  });
+
+  it.skipIf(process.platform !== 'win32')(
+    'PowerShell propagates matching, mismatched, and failed native guard invocations',
+    async () => {
+      const powershell = ['pwsh', 'powershell.exe'].find((candidate) => {
+        const probe = spawnSync(candidate, [
+          '-NoProfile', '-NonInteractive', '-Command', 'exit 0',
+        ], { encoding: 'utf8', timeout: 5_000, windowsHide: true });
+        return !probe.error && probe.status === 0;
+      });
+      expect(powershell).toBeDefined();
+      if (!powershell) throw new Error('PowerShell is unavailable');
+
+      const runtimePath = fileURLToPath(new URL('../../bridge/runtime-cli.cjs', import.meta.url));
+      expect(existsSync(runtimePath)).toBe(true);
+
+      const { currentStrictProcessStartIdentity } = await import(
+        '../../src/team/team-owner-epoch.js'
+      );
+      const { powershellQuote, tmuxServerGuardConditionPowerShell } = await import(
+        '../../src/team/tmux-session.js'
+      );
+      const processStartedAt = currentStrictProcessStartIdentity(process.pid);
+      expect(processStartedAt).toMatch(/^win32:[1-9]\d*$/);
+      if (!processStartedAt) throw new Error('Current process identity is unavailable');
+
+      const identity = {
+        socket_path: join(tmpdir(), `omc-guard-${process.pid}.sock`),
+        server_pid: process.pid,
+        process_started_at: processStartedAt,
+      };
+      const runGuard = (nodePath: string, expectedIdentity: typeof identity): number | null => {
+        const encoded = Buffer.from(JSON.stringify(expectedIdentity), 'utf8').toString('base64url');
+        const condition = tmuxServerGuardConditionPowerShell(nodePath, runtimePath, encoded)
+          .replace("'#{pid}'", powershellQuote(String(process.pid)));
+        const result = spawnSync(powershell, [
+          '-NoProfile', '-NonInteractive', '-Command', condition,
+        ], { encoding: 'utf8', timeout: 10_000, windowsHide: true });
+        expect(result.error).toBeUndefined();
+        return result.status;
+      };
+
+      expect(runGuard(process.execPath, identity)).toBe(0);
+
+      const [, ticks] = processStartedAt.split(':');
+      const mismatchedIdentity = {
+        ...identity,
+        process_started_at: `win32:${BigInt(ticks!) + 1n}`,
+      };
+      expect(runGuard(process.execPath, mismatchedIdentity)).toBe(1);
+
+      const missingNode = join(tmpdir(), `omc-missing-node-${process.pid}-${Date.now()}.exe`);
+      expect(runGuard(missingNode, identity)).toBe(1);
+    },
+  );
 });
