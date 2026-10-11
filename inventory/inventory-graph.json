@@ -5,15 +5,15 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "5b9d3e35f1229e223c5adc6e243a690afc7341d0",
-    "sourceSha256": "020d724aa04bcfa21be13a62c1b8bdfcbb6b00ee38f29234b8d8c5d566ad23f3",
+    "head": "44c86a97312e630c356d43a6ab73dc0c84e65046",
+    "sourceSha256": "3091a9a9f086968aae824b0b676101cb72159fa11006b1c2819c0d50dde33c00",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "5b9d3e35f1229e223c5adc6e243a690afc7341d0",
-  "sourceSha256": "020d724aa04bcfa21be13a62c1b8bdfcbb6b00ee38f29234b8d8c5d566ad23f3",
+  "head": "44c86a97312e630c356d43a6ab73dc0c84e65046",
+  "sourceSha256": "3091a9a9f086968aae824b0b676101cb72159fa11006b1c2819c0d50dde33c00",
   "counts": {
     "public": {
       "skills": 47,
@@ -24,12 +24,12 @@
     },
     "internal": {
       "hookFiles": 339,
-      "featureFiles": 84,
+      "featureFiles": 85,
       "toolFiles": 61,
       "libFiles": 48,
       "templateHooks": 23,
-      "srcFiles": 1448,
-      "total": 1471
+      "srcFiles": 1449,
+      "total": 1472
     },
     "generated": {
       "distFiles": 5611,
@@ -561,6 +561,7 @@
       "src/features/notepad-wisdom/extractor.ts",
       "src/features/notepad-wisdom/index.ts",
       "src/features/notepad-wisdom/types.ts",
+      "src/features/rate-limit-wait/daemon-state.ts",
       "src/features/rate-limit-wait/daemon.ts",
       "src/features/rate-limit-wait/index.ts",
       "src/features/rate-limit-wait/pane-fresh-capture.ts",
@@ -7013,6 +7014,7 @@
       "src/features/notepad-wisdom/extractor.ts",
       "src/features/notepad-wisdom/index.ts",
       "src/features/notepad-wisdom/types.ts",
+      "src/features/rate-limit-wait/daemon-state.ts",
       "src/features/rate-limit-wait/daemon.ts",
       "src/features/rate-limit-wait/index.ts",
       "src/features/rate-limit-wait/pane-fresh-capture.ts",
@@ -40509,6 +40511,11 @@
         "path": "src/features/notepad-wisdom/types.ts"
       },
       {
+        "id": "src/features/rate-limit-wait/daemon-state.ts",
+        "kind": "feature",
+        "path": "src/features/rate-limit-wait/daemon-state.ts"
+      },
+      {
         "id": "src/features/rate-limit-wait/daemon.ts",
         "kind": "feature",
         "path": "src/features/rate-limit-wait/daemon.ts"
@@ -60304,6 +60311,31 @@
         "from": "src/features/notepad-wisdom/index.ts",
         "to": "src/features/notepad-wisdom/types.ts",
         "kind": "type-imports"
+      },
+      {
+        "from": "src/features/rate-limit-wait/daemon-state.ts",
+        "to": "external:node:crypto",
+        "kind": "imports"
+      },
+      {
+        "from": "src/features/rate-limit-wait/daemon-state.ts",
+        "to": "src/features/rate-limit-wait/rate-limit-monitor.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/features/rate-limit-wait/daemon-state.ts",
+        "to": "src/features/rate-limit-wait/types.ts",
+        "kind": "type-imports"
+      },
+      {
+        "from": "src/features/rate-limit-wait/daemon-state.ts",
+        "to": "src/hud/usage-api.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/features/rate-limit-wait/daemon-state.ts",
+        "to": "src/utils/config-dir.ts",
+        "kind": "imports"
       },
       {
         "from": "src/features/rate-limit-wait/daemon.ts",
@@ -87347,12 +87379,12 @@
       }
     ],
     "stats": {
-      "nodeCount": 7709,
-      "edgeCount": 8340,
-      "importEdgeCount": 6903,
+      "nodeCount": 7710,
+      "edgeCount": 8345,
+      "importEdgeCount": 6907,
       "registerEdgeCount": 68
     }
   },
-  "inventorySha256": "fb6e928b220abff2cfd0308409f591f3312b6eadf55d1a2db441c155f9026b37",
-  "manifestSha256": "385f85164f395280b3fc0853ae06fc4d39e4bc89eaf70fc4f2428c88796a3d29"
+  "inventorySha256": "66daac59c9beaf17d07f6573f54ad3cbaa587734bb9bafd56a93e4ba567b444d",
+  "manifestSha256": "73876a258d24ab7aab871d41d8fefe0443cad3aa46245e8e6abc5b5a51a22a69"
 }

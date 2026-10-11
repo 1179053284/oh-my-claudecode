@@ -55,6 +55,8 @@ const TOKEN_REFRESH_URL_PATH = '/v1/oauth/token';
  * This is the production value; can be overridden via CLAUDE_CODE_OAUTH_CLIENT_ID env var.
  */
 const DEFAULT_OAUTH_CLIENT_ID = '9d1c250a-e61b-44d9-88ed-5944d1962f5e';
+const OMC_USAGE_PROFILE_ID_FIELD = 'omcUsageProfileId';
+const OMC_USAGE_PROFILE_TOKEN_HASH_FIELD = 'omcUsageProfileTokenHash';
 
 interface RateLimitBackoff {
   timestamp: number;
@@ -90,7 +92,7 @@ interface OAuthCredentials {
   accessToken: string;
   expiresAt?: number;
   refreshToken?: string;
-  /** Hash of stable account metadata when the credential store provides it. */
+  /** Hash of stable account metadata or a persisted legacy credential identity. */
   profileIdentity?: string;
   /** Where the credentials were read from, needed for write-back */
   source?: 'keychain' | 'file' | 'env';
@@ -587,19 +589,32 @@ function getOAuthAccountProfileIdentity(credentials: Record<string, unknown>): s
     account.emailAddress,
     account.email,
   );
-  if (!accountId && !emailAddress) return undefined;
+  if (accountId || emailAddress) {
+    const organizationId = firstString(
+      credentials.organizationUuid,
+      credentials.organizationUUID,
+      account.organizationUuid,
+      account.organizationUUID,
+    );
+    return hashCredentialIdentity(JSON.stringify([
+      accountId ?? null,
+      emailAddress ?? null,
+      organizationId ?? null,
+    ]));
+  }
 
-  const organizationId = firstString(
-    credentials.organizationUuid,
-    credentials.organizationUUID,
-    account.organizationUuid,
-    account.organizationUUID,
-  );
-  return hashCredentialIdentity(JSON.stringify([
-    accountId ?? null,
-    emailAddress ?? null,
-    organizationId ?? null,
-  ]));
+  // Legacy credential records may lack account metadata. Carry an opaque ID
+  // across token rotation, but bind it to the stored token to detect account swaps.
+  const storedProfileIdentity = firstString(credentials[OMC_USAGE_PROFILE_ID_FIELD]);
+  const storedTokenHash = firstString(credentials[OMC_USAGE_PROFILE_TOKEN_HASH_FIELD]);
+  const tokenMaterial = firstString(credentials.refreshToken, credentials.accessToken);
+  if (
+    storedProfileIdentity && /^[a-f\d]{64}$/i.test(storedProfileIdentity) &&
+    tokenMaterial && storedTokenHash === hashCredentialIdentity(tokenMaterial)
+  ) {
+    return storedProfileIdentity;
+  }
+  return undefined;
 }
 
 function isCacheForCredential(cache: UsageCache | null, credentialIdentity?: string): boolean {
@@ -1346,14 +1361,10 @@ function writeKeychainCredentials(creds: OAuthCredentials): void {
     // Merge into the correct structure
     if (existing.claudeAiOauth && typeof existing.claudeAiOauth === 'object') {
       const inner = existing.claudeAiOauth as Record<string, unknown>;
-      inner.accessToken = creds.accessToken;
-      if (creds.expiresAt != null) inner.expiresAt = creds.expiresAt;
-      if (creds.refreshToken) inner.refreshToken = creds.refreshToken;
+      updateStoredOAuthCredentialFields(inner, creds);
     } else {
       // Flat structure or empty
-      (existing as Record<string, unknown>).accessToken = creds.accessToken;
-      if (creds.expiresAt != null) (existing as Record<string, unknown>).expiresAt = creds.expiresAt;
-      if (creds.refreshToken) (existing as Record<string, unknown>).refreshToken = creds.refreshToken;
+      updateStoredOAuthCredentialFields(existing, creds);
     }
 
     const newJson = JSON.stringify(existing);
@@ -1374,12 +1385,24 @@ function writeKeychainCredentials(creds: OAuthCredentials): void {
   }
 }
 
+function updateStoredOAuthCredentialFields(record: Record<string, unknown>, creds: OAuthCredentials): void {
+  record.accessToken = creds.accessToken;
+  if (creds.expiresAt != null) record.expiresAt = creds.expiresAt;
+  if (creds.refreshToken) record.refreshToken = creds.refreshToken;
+  if (creds.profileIdentity) {
+    record[OMC_USAGE_PROFILE_ID_FIELD] = creds.profileIdentity;
+    record[OMC_USAGE_PROFILE_TOKEN_HASH_FIELD] = hashCredentialIdentity(
+      creds.refreshToken ?? creds.accessToken,
+    );
+  }
+}
+
 /**
  * Persist refreshed credentials back to the credential store.
  * When the credentials originated from Keychain, writes back to Keychain.
  * When they originated from file, updates ~/.claude/.credentials.json.
  * Environment-provided credentials are process-owned and are never persisted.
- * Updates only the OAuth token fields, preserving other data.
+ * Updates OAuth tokens and their OMC profile marker, preserving other data.
  */
 function writeBackCredentials(creds: OAuthCredentials): void {
   if (creds.source === 'keychain') {
@@ -1397,22 +1420,10 @@ function writeBackCredentials(creds: OAuthCredentials): void {
 
     // Update the nested structure
     if (parsed.claudeAiOauth) {
-      parsed.claudeAiOauth.accessToken = creds.accessToken;
-      if (creds.expiresAt != null) {
-        parsed.claudeAiOauth.expiresAt = creds.expiresAt;
-      }
-      if (creds.refreshToken) {
-        parsed.claudeAiOauth.refreshToken = creds.refreshToken;
-      }
+      updateStoredOAuthCredentialFields(parsed.claudeAiOauth, creds);
     } else {
       // Flat structure
-      parsed.accessToken = creds.accessToken;
-      if (creds.expiresAt != null) {
-        parsed.expiresAt = creds.expiresAt;
-      }
-      if (creds.refreshToken) {
-        parsed.refreshToken = creds.refreshToken;
-      }
+      updateStoredOAuthCredentialFields(parsed, creds);
     }
 
     // Atomic write: write to tmp file, then rename (atomic on POSIX, best-effort on Windows)
@@ -2372,7 +2383,13 @@ export async function getUsage(opts?: { clientVersion?: string }): Promise<Usage
           if (creds.refreshToken) {
             const refreshed = await refreshAccessToken(creds.refreshToken);
             if (refreshed) {
-              creds = { ...creds, ...refreshed };
+              creds = {
+                ...creds,
+                ...refreshed,
+                profileIdentity: creds.profileIdentity ?? hashCredentialIdentity(
+                  creds.refreshToken ?? creds.accessToken,
+                ),
+              };
               writeBackCredentials(creds);
               if (creds.source !== 'env') rememberStoredCredentials(creds);
             } else {

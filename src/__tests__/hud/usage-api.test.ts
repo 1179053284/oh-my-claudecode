@@ -578,6 +578,37 @@ describe('getUsage routing', () => {
     expect(cacheContent).not.toContain('stored-refresh-b');
   });
 
+  it('does not trust a persisted profile identity after the credential token changes', () => {
+    const credentialsPath = '/tmp/test-claude/.credentials.json';
+    const oldTokenHash = createHash('sha256').update('legacy-refresh-a').digest('hex');
+    let credentialsContent = JSON.stringify({
+      claudeAiOauth: {
+        accessToken: 'legacy-access-a',
+        refreshToken: 'legacy-refresh-a',
+        omcUsageProfileId: oldTokenHash,
+        omcUsageProfileTokenHash: oldTokenHash,
+      },
+    });
+
+    process.env.CLAUDE_CONFIG_DIR = '/tmp/test-claude';
+    vi.mocked(fs.existsSync).mockImplementation(path => String(path) === credentialsPath);
+    vi.mocked(fs.readFileSync).mockImplementation(path =>
+      String(path) === credentialsPath ? credentialsContent : '{}',
+    );
+
+    const originalIdentity = getUsageCredentialIdentity(false, true);
+    credentialsContent = JSON.stringify({
+      claudeAiOauth: {
+        accessToken: 'legacy-access-b',
+        refreshToken: 'legacy-refresh-b',
+        omcUsageProfileId: oldTokenHash,
+        omcUsageProfileTokenHash: oldTokenHash,
+      },
+    });
+
+    expect(getUsageCredentialIdentity(false, true)).not.toBe(originalIdentity);
+  });
+
   it('fingerprints the selected third-party provider and API key', () => {
     process.env.ANTHROPIC_BASE_URL = 'https://api.minimax.io/anthropic';
     process.env.MINIMAX_API_KEY = 'minimax-account-a';
@@ -2181,6 +2212,12 @@ describe('writeBackCredentials — Keychain vs file refresh', () => {
     const inner = written.claudeAiOauth ?? written;
     expect(inner.accessToken).toBe('new-access-token');
     expect(inner.refreshToken).toBe('new-refresh-token');
+    expect(inner.omcUsageProfileId).toBe(
+      createHash('sha256').update('valid-refresh-token').digest('hex'),
+    );
+    expect(inner.omcUsageProfileTokenHash).toBe(
+      createHash('sha256').update('new-refresh-token').digest('hex'),
+    );
 
     // File credential store should NOT have been written
     const fileWriteCall = vi.mocked(fs.writeFileSync).mock.calls.find(
@@ -2195,6 +2232,13 @@ describe('writeBackCredentials — Keychain vs file refresh', () => {
     const mockedExistsSync = vi.mocked(fs.existsSync);
     const mockedReadFileSync = vi.mocked(fs.readFileSync);
     const httpsModule = await import('https') as unknown as { default: { request: ReturnType<typeof vi.fn> } };
+    let credentialsContent = JSON.stringify({
+      claudeAiOauth: {
+        accessToken: 'expired-file-token',
+        refreshToken: 'file-refresh-token',
+        expiresAt: oneHourAgo,
+      },
+    });
 
     // Keychain has no entry — only file credentials
     execFileMock.mockImplementation(() => { throw new Error('mock: no keychain'); });
@@ -2202,16 +2246,12 @@ describe('writeBackCredentials — Keychain vs file refresh', () => {
     mockedExistsSync.mockImplementation((path) => String(path).endsWith('.credentials.json'));
     mockedReadFileSync.mockImplementation((path) => {
       if (String(path).endsWith('.credentials.json')) {
-        return JSON.stringify({
-          claudeAiOauth: {
-            accessToken: 'expired-file-token',
-            refreshToken: 'file-refresh-token',
-            expiresAt: oneHourAgo,
-          },
-        });
+        return credentialsContent;
       }
       return '{}';
     });
+    process.env.CLAUDE_CONFIG_DIR = '/tmp/test-claude';
+    const originalProfileIdentity = getUsageCredentialIdentity(false, true);
 
     // Token refresh returns new tokens
     httpsModule.default.request.mockImplementationOnce((_options: unknown, callback: (res: EventEmitter & { statusCode?: number }) => void) => {
@@ -2261,6 +2301,14 @@ describe('writeBackCredentials — Keychain vs file refresh', () => {
     const written = JSON.parse(String(fileWriteCall![1]));
     expect(written.claudeAiOauth.accessToken).toBe('new-file-access-token');
     expect(written.claudeAiOauth.refreshToken).toBe('new-file-refresh-token');
+    expect(written.claudeAiOauth.omcUsageProfileId).toBe(
+      createHash('sha256').update('file-refresh-token').digest('hex'),
+    );
+    expect(written.claudeAiOauth.omcUsageProfileTokenHash).toBe(
+      createHash('sha256').update('new-file-refresh-token').digest('hex'),
+    );
+    credentialsContent = JSON.stringify(written);
+    expect(getUsageCredentialIdentity(false, true)).toBe(originalProfileIdentity);
 
     // Keychain write-back should NOT have been called with add-generic-password
     const keychainWriteCall = execFileMock.mock.calls.find(

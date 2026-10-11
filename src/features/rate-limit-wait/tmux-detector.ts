@@ -465,7 +465,7 @@ export function revalidateBlockedPanes(
     const lastLine = recentLines.split('\n').at(-1) ?? '';
     const hasLivePrompt = LIVE_SELECTED_RESUME_OPTION_PATTERN.test(lastLine) ||
       LIVE_CONFIRMATION_PROMPT_PATTERN.test(lastLine) ||
-      LIVE_WAIT_AND_CONTINUE_PROMPT_PATTERN.test(recentLines);
+      (lastLine.trim() === '>' && LIVE_WAIT_AND_CONTINUE_PROMPT_PATTERN.test(recentLines));
     if (
       !analysis.isBlocked ||
       !LIVE_RESUME_OPTION_PATTERN.test(recentLines) ||
