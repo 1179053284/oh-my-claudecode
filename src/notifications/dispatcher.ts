@@ -57,7 +57,9 @@ function normalizeNoProxyEntry(entry: string): string {
     return entry;
   }
   try {
-    return new URL(entry).host.toLowerCase();
+    const url = new URL(entry);
+    const port = url.port || (url.protocol === "https:" ? "443" : "80");
+    return `${url.hostname.toLowerCase()}:${port}`;
   } catch {
     return entry;
   }
@@ -68,7 +70,6 @@ function shouldBypassProxy(hostname: string, port: number): boolean {
   if (!noProxy) return false;
 
   const host = hostname.toLowerCase();
-  const hostWithPort = `${host}:${port}`;
 
   return noProxy.split(",").some((rawEntry) => {
     const entry = rawEntry.trim().toLowerCase();
@@ -76,16 +77,11 @@ function shouldBypassProxy(hostname: string, port: number): boolean {
     if (entry === "*") return true;
 
     const normalizedEntry = normalizeNoProxyEntry(entry);
-    const entryHost = normalizedEntry.startsWith(".")
-      ? normalizedEntry.slice(1)
-      : normalizedEntry.split(":")[0];
+    const match = /^(.*?)(?::(\d+))?$/.exec(normalizedEntry);
+    if (!match || (match[2] && Number(match[2]) !== port)) return false;
+    const entryHost = match[1].startsWith(".") ? match[1].slice(1) : match[1];
 
-    return (
-      host === normalizedEntry ||
-      hostWithPort === normalizedEntry ||
-      host === entryHost ||
-      host.endsWith(`.${entryHost}`)
-    );
+    return host === entryHost || host.endsWith(`.${entryHost}`);
   });
 }
 
