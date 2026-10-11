@@ -353,6 +353,35 @@ describe('purgeStalePluginCacheVersions on a real filesystem', () => {
     expect(readdirSync(genericDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
   });
 
+  it('preserves generic payload when a resolvable link aliases stale data', () => {
+    const genericDir = join(configDir, 'plugins', 'cache', 'official', 'hookify');
+    const active = join(genericDir, ACTIVE);
+    const stale = join(genericDir, STALE);
+    const activePayload = join(active, 'payload');
+    const stalePayload = join(stale, 'payload');
+    const legacyPayload = join(active, 'legacy');
+    mkdirSync(activePayload, { recursive: true });
+    writeFileSync(join(activePayload, 'current-command.js'), 'current payload');
+    mkdirSync(stalePayload, { recursive: true });
+    writeFileSync(join(stalePayload, 'legacy-command.js'), 'only stale payload');
+    writeFileSync(join(active, 'README.md'), 'active generic payload');
+    writeFileSync(join(stale, 'README.md'), 'old generic payload');
+    symlinkSync(stalePayload, legacyPayload, 'dir');
+    makeStale(stale);
+    writeFileSync(join(configDir, 'plugins', 'installed_plugins.json'), JSON.stringify({
+      version: 2, plugins: { 'hookify@official': [{ installPath: active }] },
+    }));
+
+    const result = purgeStalePluginCacheVersions();
+
+    expect(result.symlinked).toBe(0);
+    expect(result.errors).toHaveLength(1);
+    expect(lstatSync(stale).isDirectory()).toBe(true);
+    expect(existsSync(join(legacyPayload, 'legacy-command.js'))).toBe(true);
+    expect(readlinkSync(legacyPayload)).toBe(stalePayload);
+    expect(readdirSync(genericDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
+  });
+
   it('restores generic payload when a directory symlink contains a stale-version link', () => {
     const genericDir = join(configDir, 'plugins', 'cache', 'official', 'hookify');
     const active = join(genericDir, ACTIVE);

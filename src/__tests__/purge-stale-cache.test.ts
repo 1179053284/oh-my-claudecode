@@ -303,6 +303,44 @@ describe('purgeStalePluginCacheVersions', () => {
     }
   });
 
+  it('rolls back when a generic active root empties between validation scans', () => {
+    const cacheDir = '/mock/.claude/plugins/cache';
+    const active = join(cacheDir, 'official/hookify/aa11');
+    const stale = join(cacheDir, 'official/hookify/bb22');
+    const activeEntries = [
+      [fileDirent('README.md')],
+      [],
+      [fileDirent('README.md')],
+      [fileDirent('README.md')],
+    ];
+    let activeReads = 0;
+
+    mockedExistsSync.mockImplementation((p) => {
+      const ps = String(p);
+      return ps.includes('installed_plugins.json') || ps === cacheDir || ps === active || ps === stale;
+    });
+    mockedReadFileSync.mockReturnValue(JSON.stringify({
+      version: 2,
+      plugins: { 'hookify@official': [{ installPath: active }] },
+    }));
+    mockedReaddirSync.mockImplementation((p, _opts?) => {
+      const ps = String(p);
+      if (ps === cacheDir) return [dirent('official')] as any;
+      if (ps.endsWith('official')) return [dirent('hookify')] as any;
+      if (ps.endsWith('hookify')) return [dirent('aa11'), dirent('bb22')] as any;
+      if (ps === active) return activeEntries[Math.min(activeReads++, activeEntries.length - 1)] as any;
+      return [] as any;
+    });
+
+    const result = purgeStalePluginCacheVersions();
+
+    expect(activeReads).toBe(2);
+    expect(result.symlinked).toBe(0);
+    expect(result.errors).toHaveLength(1);
+    expect(mockedRenameSync).toHaveBeenCalledWith(stale, expect.stringContaining(`${stale}.omc-stale-`));
+    expect(mockedRenameSync).toHaveBeenCalledWith(expect.stringContaining(`${stale}.omc-stale-`), stale);
+  });
+
   it('does nothing when all cache versions are active', () => {
     const cacheDir = '/mock/.claude/plugins/cache';
     const active = join(cacheDir, 'omc/oh-my-claudecode/4.3.0');
