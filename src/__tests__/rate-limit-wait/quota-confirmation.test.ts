@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHash } from 'node:crypto';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { getUsageCredentialIdentity } from '../../hud/usage-api.js';
 import { getClaudeConfigDir } from '../../utils/config-dir.js';
 import type { BlockedPane, DaemonConfig, DaemonState, RateLimitStatus } from '../../features/rate-limit-wait/types.js';
 
@@ -26,15 +27,11 @@ vi.mock('../../features/rate-limit-wait/tmux-detector.js', async importOriginal 
 import { pollLoop, shouldResumeBlockedPanesOnStatusChange } from '../../features/rate-limit-wait/daemon.js';
 
 function currentUsageProfileHash(): string {
-  const oauthToken = process.env.CLAUDE_CODE_OAUTH_TOKEN?.trim();
-  const credentialIdentity = oauthToken
-    ? createHash('sha256').update(oauthToken).digest('hex')
-    : null;
   return createHash('sha256')
     .update(JSON.stringify([
       process.env.CLAUDE_CONFIG_DIR ?? null,
       getClaudeConfigDir(),
-      credentialIdentity,
+      getUsageCredentialIdentity(),
     ]))
     .digest('hex');
 }
@@ -113,6 +110,20 @@ describe('confirmed quota transitions in the actual daemon polling loop', () => 
   }
   function observed(): DaemonState {
     return JSON.parse(readFileSync(config.stateFilePath, 'utf8'));
+  }
+  function setStoredOAuthCredentials(accountId: string, accessToken: string, refreshToken: string): void {
+    const profileDir = join(root, 'claude-profile');
+    mkdirSync(profileDir, { recursive: true });
+    process.env.CLAUDE_CONFIG_DIR = profileDir;
+    delete process.env.CLAUDE_CODE_OAUTH_TOKEN;
+    writeFileSync(join(profileDir, '.credentials.json'), JSON.stringify({
+      claudeAiOauth: {
+        accessToken,
+        refreshToken,
+        expiresAt: Date.now() + 60_000,
+        oauthAccount: { uuid: accountId, emailAddress: `${accountId}@example.test` },
+      },
+    }));
   }
   async function start(sample: RateLimitStatus | null): Promise<void> {
     boundary.check.mockResolvedValue(sample);
@@ -214,6 +225,30 @@ describe('confirmed quota transitions in the actual daemon polling loop', () => 
     expect(observed().lastConfirmedLimited).toBe(false);
     expect(observed().blockedPanes).toEqual([]);
     expect(observed().usageProfileHash).toBe(currentUsageProfileHash());
+  });
+  it('discards saved quota state when the stored OAuth account changes during polling', async () => {
+    setStoredOAuthCredentials('account-a', 'access-a', 'refresh-a');
+    seed(status(true));
+    await start(null);
+    expect(observed().lastConfirmedLimited).toBe(true);
+
+    setStoredOAuthCredentials('account-b', 'access-b', 'refresh-b');
+    await next(status(false));
+
+    expect(boundary.resume).not.toHaveBeenCalled();
+    expect(observed().lastConfirmedLimited).toBe(false);
+    expect(observed().blockedPanes).toEqual([]);
+    expect(observed().usageProfileHash).toBe(currentUsageProfileHash());
+  });
+  it('preserves quota state when stored OAuth tokens rotate for the same account', async () => {
+    setStoredOAuthCredentials('account-a', 'access-a', 'refresh-a');
+    seed(status(true));
+    await start(null);
+
+    setStoredOAuthCredentials('account-a', 'access-a-rotated', 'refresh-a-rotated');
+    await next(status(false));
+
+    expect(boundary.resume).toHaveBeenCalledExactlyOnceWith('%test');
   });
   it('recovers through an initially stale limited sample', async () => {
     seed(null, false);

@@ -80,7 +80,7 @@ interface UsageCache {
   lastSuccessAt?: number;
   /** User-Agent identity that received a rate-limit response (Anthropic only) */
   rateLimitIdentity?: string;
-  /** Non-reversible OAuth credential identity (env-token sessions only) */
+  /** Non-reversible identity of the OAuth account associated with this cache. */
   credentialIdentity?: string;
   /** Active Anthropic rate-limit backoffs keyed by User-Agent identity */
   rateLimitBackoffs?: Record<string, RateLimitBackoff>;
@@ -90,6 +90,8 @@ interface OAuthCredentials {
   accessToken: string;
   expiresAt?: number;
   refreshToken?: string;
+  /** Hash of stable account metadata when the credential store provides it. */
+  profileIdentity?: string;
   /** Where the credentials were read from, needed for write-back */
   source?: 'keychain' | 'file' | 'env';
   /** Keychain account name used when reading (null = service-only lookup) */
@@ -414,7 +416,7 @@ interface WriteCacheOptions {
   lastSuccessAt?: number;
   /** User-Agent identity associated with an Anthropic rate-limit response */
   rateLimitIdentity?: string;
-  /** Non-reversible OAuth credential identity (env-token sessions only) */
+  /** Non-reversible identity of the OAuth account associated with this cache. */
   credentialIdentity?: string;
   /** Active Anthropic rate-limit backoffs keyed by User-Agent identity */
   rateLimitBackoffs?: Record<string, RateLimitBackoff>;
@@ -531,12 +533,54 @@ function clearRateLimitBackoff(
   return Object.keys(backoffs).length > 0 ? backoffs : undefined;
 }
 
-/**
- * Derive a cache-only identity for an environment-provided OAuth token.
- * The token itself must never be persisted alongside usage data.
- */
-function getCredentialCacheIdentity(accessToken: string): string {
-  return createHash('sha256').update(accessToken).digest('hex');
+/** Hash credential material without persisting the credential itself. */
+function hashCredentialIdentity(identity: string): string {
+  return createHash('sha256').update(identity).digest('hex');
+}
+
+function getOAuthAccountProfileIdentity(credentials: Record<string, unknown>): string | undefined {
+  const nestedAccount = credentials.oauthAccount;
+  const account = typeof nestedAccount === 'object' && nestedAccount !== null && !Array.isArray(nestedAccount)
+    ? nestedAccount as Record<string, unknown>
+    : {};
+  const firstString = (...values: unknown[]): string | undefined => {
+    for (const value of values) {
+      if (typeof value === 'string' && value.trim()) return value.trim();
+    }
+    return undefined;
+  };
+  const accountId = firstString(
+    credentials.accountUuid,
+    credentials.accountUUID,
+    credentials.accountId,
+    credentials.userId,
+    credentials.userID,
+    account.uuid,
+    account.accountUuid,
+    account.accountUUID,
+    account.accountId,
+    account.userId,
+    account.userID,
+  );
+  const emailAddress = firstString(
+    credentials.emailAddress,
+    credentials.email,
+    account.emailAddress,
+    account.email,
+  );
+  if (!accountId && !emailAddress) return undefined;
+
+  const organizationId = firstString(
+    credentials.organizationUuid,
+    credentials.organizationUUID,
+    account.organizationUuid,
+    account.organizationUUID,
+  );
+  return hashCredentialIdentity(JSON.stringify([
+    accountId ?? null,
+    emailAddress ?? null,
+    organizationId ?? null,
+  ]));
 }
 
 function isCacheForCredential(cache: UsageCache | null, credentialIdentity?: string): boolean {
@@ -694,6 +738,7 @@ function readKeychainCredential(serviceName: string, account?: string): OAuthCre
       accessToken: creds.accessToken,
       expiresAt: creds.expiresAt,
       refreshToken: creds.refreshToken,
+      profileIdentity: getOAuthAccountProfileIdentity(creds),
       source: 'keychain' as const,
       keychainAccount: account ?? null,
       subscriptionType: creds.subscriptionType,
@@ -759,6 +804,7 @@ function readFileCredentials(): OAuthCredentials | null {
         accessToken: creds.accessToken,
         expiresAt: creds.expiresAt,
         refreshToken: creds.refreshToken,
+        profileIdentity: getOAuthAccountProfileIdentity(creds),
         source: 'file' as const,
         subscriptionType: creds.subscriptionType,
         rateLimitTier: creds.rateLimitTier,
@@ -774,6 +820,15 @@ function readFileCredentials(): OAuthCredentials | null {
 /**
  * Get OAuth credentials (Keychain first, then file fallback)
  */
+function getStoredCredentials(): OAuthCredentials | null {
+  // Try Keychain first (macOS)
+  const keychainCreds = readKeychainCredentials();
+  if (keychainCreds) return keychainCreds;
+
+  // Fall back to file
+  return readFileCredentials();
+}
+
 function getCredentials(): OAuthCredentials | null {
   // Respect an explicit CLAUDE_CODE_OAUTH_TOKEN override, matching how Claude Code itself
   // authenticates. Multi-account setups launch each session with a per-account token via this
@@ -786,12 +841,17 @@ function getCredentials(): OAuthCredentials | null {
     return { accessToken: envToken, source: 'env' };
   }
 
-  // Try Keychain first (macOS)
-  const keychainCreds = readKeychainCredentials();
-  if (keychainCreds) return keychainCreds;
+  return getStoredCredentials();
+}
 
-  // Fall back to file
-  return readFileCredentials();
+/** Return a non-reversible identity for the credential used by the usage API. */
+export function getUsageCredentialIdentity(includeDirectOAuthToken = true): string | null {
+  const credentials = includeDirectOAuthToken ? getCredentials() : getStoredCredentials();
+  if (!credentials) return null;
+
+  return credentials.profileIdentity ?? hashCredentialIdentity(
+    credentials.refreshToken ?? credentials.accessToken,
+  );
 }
 
 /**
@@ -2129,9 +2189,9 @@ export async function getUsage(opts?: { clientVersion?: string }): Promise<Usage
     process.env.KIMI_API_KEY || process.env.ANTHROPIC_API_KEY || authToken;
   const currentSource: UsageSource =
     isMinimax ? 'minimax' : isKimi ? 'kimi' : isZai && authToken ? 'zai' : 'anthropic';
-  const envToken = process.env.CLAUDE_CODE_OAUTH_TOKEN?.trim();
-  const credentialIdentity = currentSource === 'anthropic' && envToken
-    ? getCredentialCacheIdentity(envToken)
+  const credentials = currentSource === 'anthropic' ? getCredentials() : null;
+  const credentialIdentity = credentials
+    ? credentials.profileIdentity ?? hashCredentialIdentity(credentials.refreshToken ?? credentials.accessToken)
     : undefined;
   const pollIntervalMs = getUsagePollIntervalMs();
   const rateLimitIdentity = currentSource === 'anthropic'
@@ -2207,7 +2267,7 @@ export async function getUsage(opts?: { clientVersion?: string }): Promise<Usage
       }
 
       // Anthropic OAuth path (official Claude Code support)
-      let creds = getCredentials();
+      let creds = credentials;
       if (creds) {
         if (!validateCredentials(creds)) {
           if (creds.refreshToken) {

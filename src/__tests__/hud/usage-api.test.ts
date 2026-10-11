@@ -8,7 +8,7 @@ import * as fs from 'fs';
 import * as childProcess from 'child_process';
 import * as os from 'os';
 import { EventEmitter } from 'events';
-import { isZaiHost, parseZaiResponse, isMinimaxHost, parseMinimaxResponse, isKimiHost, parseKimiResponse, getUsage, parseUsageResponse } from '../../hud/usage-api.js';
+import { isZaiHost, parseZaiResponse, isMinimaxHost, parseMinimaxResponse, isKimiHost, parseKimiResponse, getUsage, getUsageCredentialIdentity, parseUsageResponse } from '../../hud/usage-api.js';
 import { renderRateLimits, renderRateLimitsCompact, renderRateLimitsWithBar } from '../../hud/elements/limits.js';
 
 function stripAnsi(value: string): string {
@@ -507,6 +507,75 @@ describe('getUsage routing', () => {
     expect(capturedAuth).toEqual(['Bearer env-token-one', 'Bearer env-token-two']);
     expect(cacheContent).not.toContain('env-token-one');
     expect(cacheContent).not.toContain('env-token-two');
+  });
+
+  it('does not reuse Anthropic usage cache data across stored OAuth accounts', async () => {
+    const cachePath = '/tmp/test-claude/plugins/oh-my-claudecode/.usage-cache-anthropic.json';
+    const credentialsPath = '/tmp/test-claude/.credentials.json';
+    let cacheContent = '{}';
+    let credentialsContent = JSON.stringify({
+      claudeAiOauth: {
+        accessToken: 'stored-access-a',
+        refreshToken: 'stored-refresh-a',
+        expiresAt: Date.now() + 60 * 60 * 1000,
+        oauthAccount: { uuid: 'account-a', emailAddress: 'a@example.test' },
+      },
+    });
+    const capturedAuth: string[] = [];
+
+    process.env.CLAUDE_CONFIG_DIR = '/tmp/test-claude';
+    vi.mocked(fs.existsSync).mockImplementation(path =>
+      String(path) === cachePath || String(path) === credentialsPath,
+    );
+    vi.mocked(fs.readFileSync).mockImplementation(path => {
+      if (String(path) === cachePath) return cacheContent;
+      if (String(path) === credentialsPath) return credentialsContent;
+      return '{}';
+    });
+    vi.mocked(fs.writeFileSync).mockImplementation((path, content) => {
+      if (String(path) === cachePath) cacheContent = String(content);
+    });
+
+    const mockUsageResponse = (fiveHourPercent: number) => {
+      httpsModule.default.request.mockImplementationOnce((options, callback) => {
+        capturedAuth.push((options as { headers?: Record<string, string> }).headers?.Authorization ?? '');
+        const req = new EventEmitter() as EventEmitter & { end: () => void; destroy: () => void; on: typeof EventEmitter.prototype.on };
+        req.destroy = vi.fn();
+        req.end = () => {
+          const res = new EventEmitter() as EventEmitter & { statusCode?: number };
+          res.statusCode = 200;
+          callback(res);
+          res.emit('data', JSON.stringify({ five_hour: { utilization: fiveHourPercent } }));
+          res.emit('end');
+        };
+        return req;
+      });
+    };
+
+    mockUsageResponse(10);
+    const firstIdentity = getUsageCredentialIdentity();
+    const first = await getUsage();
+
+    credentialsContent = JSON.stringify({
+      claudeAiOauth: {
+        accessToken: 'stored-access-b',
+        refreshToken: 'stored-refresh-b',
+        expiresAt: Date.now() + 60 * 60 * 1000,
+        oauthAccount: { uuid: 'account-b', emailAddress: 'b@example.test' },
+      },
+    });
+    mockUsageResponse(80);
+    const secondIdentity = getUsageCredentialIdentity();
+    const second = await getUsage();
+
+    expect(firstIdentity).not.toBe(secondIdentity);
+    expect(first.rateLimits?.fiveHourPercent).toBe(10);
+    expect(second.rateLimits?.fiveHourPercent).toBe(80);
+    expect(capturedAuth).toEqual(['Bearer stored-access-a', 'Bearer stored-access-b']);
+    expect(cacheContent).not.toContain('stored-access-a');
+    expect(cacheContent).not.toContain('stored-access-b');
+    expect(cacheContent).not.toContain('stored-refresh-a');
+    expect(cacheContent).not.toContain('stored-refresh-b');
   });
 
   it('uses the raw ~-prefixed CLAUDE_CONFIG_DIR value for Keychain service lookup', async () => {

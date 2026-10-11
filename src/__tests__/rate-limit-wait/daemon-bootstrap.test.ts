@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
+import { getUsageCredentialIdentity } from '../../hud/usage-api.js';
 import { getClaudeConfigDir } from '../../utils/config-dir.js';
 import type { DaemonConfig } from '../../features/rate-limit-wait/types.js';
 
@@ -14,7 +15,11 @@ const { mockSpawn, mockResolveDaemonModulePath, mockIsTmuxAvailable } = vi.hoist
 
 function currentUsageProfileHash(): string {
   return createHash('sha256')
-    .update(JSON.stringify([process.env.CLAUDE_CONFIG_DIR ?? null, getClaudeConfigDir(), null]))
+    .update(JSON.stringify([
+      process.env.CLAUDE_CONFIG_DIR ?? null,
+      getClaudeConfigDir(),
+      getUsageCredentialIdentity(false),
+    ]))
     .digest('hex');
 }
 

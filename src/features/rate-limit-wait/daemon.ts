@@ -17,6 +17,7 @@ import { createHash } from 'node:crypto';
 import { join, dirname } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { spawn } from 'child_process';
+import { getUsageCredentialIdentity } from '../../hud/usage-api.js';
 import { resolveDaemonModulePath } from '../../utils/daemon-module-path.js';
 import { getClaudeConfigDir } from '../../utils/config-dir.js';
 import { getGlobalOmcStatePath } from '../../utils/paths.js';
@@ -309,12 +310,7 @@ function createInitialState(): DaemonState {
  * paths from the default even when both resolve to the same directory.
  */
 function getUsageProfileHash(includeDirectOAuthToken = true): string {
-  const oauthToken = includeDirectOAuthToken
-    ? process.env.CLAUDE_CODE_OAUTH_TOKEN?.trim()
-    : undefined;
-  const credentialIdentity = oauthToken
-    ? createHash('sha256').update(oauthToken).digest('hex')
-    : null;
+  const credentialIdentity = getUsageCredentialIdentity(includeDirectOAuthToken);
   return createHash('sha256')
     .update(JSON.stringify([
       process.env.CLAUDE_CONFIG_DIR ?? null,
@@ -407,6 +403,13 @@ async function pollLoop(config: Required<DaemonConfig>): Promise<void> {
 
   while (state.isRunning) {
     try {
+      const previousProfileHash = state.usageProfileHash;
+      scopeStateToCurrentUsageProfile(state);
+      if (state.usageProfileHash !== previousProfileHash) {
+        lastConfirmedLimited = state.lastConfirmedLimited === true;
+        log('Claude usage profile changed; discarded saved quota and pane state', config);
+      }
+
       state.lastPollAt = new Date();
 
       // Check rate limit status with a 30s timeout to prevent poll loop stalls

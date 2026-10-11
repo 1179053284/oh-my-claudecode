@@ -5,15 +5,15 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "d9c6e7ba1cf4a1c4022292ce9fdd47a21e24f394",
-    "sourceSha256": "ce82b5e72254a0d8845aa686ce7875308a533283e1d7389761ad9a1c4762b981",
+    "head": "71a26e3bbf8cbdca6c56ea2630a3a0023019a3ed",
+    "sourceSha256": "c043494ab57bde22559d248883bd51509c461488e935e895e0df3a80da184fce",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "d9c6e7ba1cf4a1c4022292ce9fdd47a21e24f394",
-  "sourceSha256": "ce82b5e72254a0d8845aa686ce7875308a533283e1d7389761ad9a1c4762b981",
+  "head": "71a26e3bbf8cbdca6c56ea2630a3a0023019a3ed",
+  "sourceSha256": "c043494ab57bde22559d248883bd51509c461488e935e895e0df3a80da184fce",
   "counts": {
     "public": {
       "skills": 47,
@@ -53267,6 +53267,11 @@
       },
       {
         "from": "src/__tests__/rate-limit-wait/daemon-bootstrap.test.ts",
+        "to": "src/hud/usage-api.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/daemon-bootstrap.test.ts",
         "to": "src/utils/config-dir.ts",
         "kind": "imports"
       },
@@ -53439,6 +53444,11 @@
         "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
         "to": "src/features/rate-limit-wait/types.ts",
         "kind": "type-imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
+        "to": "src/hud/usage-api.ts",
+        "kind": "imports"
       },
       {
         "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
@@ -60349,6 +60359,11 @@
         "from": "src/features/rate-limit-wait/daemon.ts",
         "to": "src/features/rate-limit-wait/types.ts",
         "kind": "type-imports"
+      },
+      {
+        "from": "src/features/rate-limit-wait/daemon.ts",
+        "to": "src/hud/usage-api.ts",
+        "kind": "imports"
       },
       {
         "from": "src/features/rate-limit-wait/daemon.ts",
@@ -87358,11 +87373,11 @@
     ],
     "stats": {
       "nodeCount": 7709,
-      "edgeCount": 8342,
-      "importEdgeCount": 6904,
+      "edgeCount": 8345,
+      "importEdgeCount": 6907,
       "registerEdgeCount": 68
     }
   },
   "inventorySha256": "fb6e928b220abff2cfd0308409f591f3312b6eadf55d1a2db441c155f9026b37",
-  "manifestSha256": "c56a98a6e8007580486a6e7ab64001b1333dd17ae7b93d9252032bcdd9466998"
+  "manifestSha256": "4e5f898f7cceb1162f2b69ee6445bf2132d15f756ceba4d0f66cab433fb3610d"
 }
