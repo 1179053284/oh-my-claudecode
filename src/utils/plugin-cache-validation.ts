@@ -188,18 +188,20 @@ export function isUsableVersionPath(path: string, staleVersionIdentity?: Stats):
   );
 }
 
+interface PayloadScan {
+  found: boolean;
+}
+
 function hasResolvablePluginSymlinks(
   directory: string,
   staleVersionIdentity: Stats,
   ancestors: Stats[] = [],
-  requireNonEmpty = false,
+  payload?: PayloadScan,
 ): boolean {
   const directoryStats = statSync(directory);
   if (ancestors.some((identity) => sameFileSystemIdentity(directoryStats, identity))) return false;
   const branch = [...ancestors, directoryStats];
   const entries = readdirSync(directory, { withFileTypes: true });
-  if (requireNonEmpty && entries.length === 0) return false;
-  let hasPayload = false;
   for (const entry of entries) {
     const entryPath = join(directory, entry.name);
     if (entry.isSymbolicLink()) {
@@ -207,19 +209,20 @@ function hasResolvablePluginSymlinks(
       if (pathTraversesFileSystemIdentity(entryPath, staleVersionIdentity)) return false;
       if (entryStats.isDirectory()) {
         if (branch.some((identity) => sameFileSystemIdentity(entryStats, identity))) continue;
-        if (!hasResolvablePluginSymlinks(entryPath, staleVersionIdentity, branch)) return false;
+        if (!hasResolvablePluginSymlinks(entryPath, staleVersionIdentity, branch, payload)) return false;
+      } else if (payload) {
+        payload.found = true;
       }
-      hasPayload = true;
     } else if (entry.isDirectory()) {
-      if (!hasResolvablePluginSymlinks(entryPath, staleVersionIdentity, branch)) return false;
-      hasPayload = true;
-    } else {
-      hasPayload = true;
+      if (!hasResolvablePluginSymlinks(entryPath, staleVersionIdentity, branch, payload)) return false;
+    } else if (payload) {
+      payload.found = true;
     }
   }
-  return !requireNonEmpty || hasPayload;
+  return true;
 }
 
 export function isUsableGenericPluginTarget(target: string, staleVersionIdentity: Stats): boolean {
-  return hasResolvablePluginSymlinks(target, staleVersionIdentity, [], true);
+  const payload = { found: false };
+  return hasResolvablePluginSymlinks(target, staleVersionIdentity, [], payload) && payload.found;
 }
