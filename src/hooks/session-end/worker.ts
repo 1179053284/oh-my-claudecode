@@ -19,10 +19,7 @@ export function workerEnvironment(): NodeJS.ProcessEnv {
   // ANTHROPIC_* carries model provider auth/routing (API key, base URL, token);
   // without it worker-spawned sessions exit "Not logged in" immediately.
   const authPassthrough = Object.entries(process.env).filter(([key]) => key.startsWith('ANTHROPIC_'));
-  const afkSettingOptIn = process.env.OMC_AFK_INCLUDE_USER_SETTINGS === '1'
-    ? [['OMC_AFK_INCLUDE_USER_SETTINGS', '1'] as const]
-    : [];
-  return Object.fromEntries([...keys.flatMap((key) => process.env[key] === undefined ? [] : [[key, process.env[key]] as const]), ...authPassthrough, ...afkSettingOptIn]);
+  return Object.fromEntries([...keys.flatMap((key) => process.env[key] === undefined ? [] : [[key, process.env[key]] as const]), ...authPassthrough]);
 }
 export function spawnSessionEndWorker(payload: SessionEndWorkerPayload): boolean {
   try {

@@ -111,7 +111,7 @@ describe('SessionEnd action runner', () => {
     expect(child.unref).toHaveBeenCalledOnce();
   });
 
-  it('passes model-provider auth and gh auth context through to every action runner', async () => {
+  it('passes model-provider auth and gh auth context to spawn-next without forwarding ambient AFK settings', async () => {
     const directory = mkdtempSync(join(tmpdir(), 'omc-action-runner-auth-'));
     directories.push(directory);
     const child = Object.assign(new EventEmitter(), { pid: 12350, unref: vi.fn() });
@@ -135,8 +135,10 @@ describe('SessionEnd action runner', () => {
       ANTHROPIC_API_KEY: 'test-key',
       ANTHROPIC_BASE_URL: 'https://example.invalid',
       OMC_HOOK_BRIDGE: '/tmp/bridge.js',
-      OMC_AFK_INCLUDE_USER_SETTINGS: '1',
     });
+    // The opt-in is stored in the durable chain ledger, not copied from the
+    // process that happens to recover this action.
+    expect(environment).not.toHaveProperty('OMC_AFK_INCLUDE_USER_SETTINGS');
     if (process.platform === 'win32') {
       expect(environment).toHaveProperty('APPDATA', process.env.APPDATA);
       expect(environment).toHaveProperty('LOCALAPPDATA', process.env.LOCALAPPDATA);

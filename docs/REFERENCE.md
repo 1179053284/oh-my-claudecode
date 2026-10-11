@@ -136,7 +136,7 @@ If both configurations exist, **project-scoped takes precedence** over global:
 
 #### Headless factory and AFK settings
 
-Factory chain links and `omc ralph afk` use Claude Code's `project,local` setting sources by default, so user-level settings and hooks do not run in these unattended sessions. Set `OMC_AFK_INCLUDE_USER_SETTINGS=1` in the environment that launches OMC to include the `user` source (`user,project,local`). This is opt-in because user-level settings may run arbitrary hooks in unattended sessions; enable it only when those hooks are trusted.
+Factory chain links and `omc ralph afk` use Claude Code's `project,local` setting sources by default, so user-level settings and hooks do not run in these unattended sessions. Set `OMC_AFK_INCLUDE_USER_SETTINGS=1` in the environment that launches OMC to include the `user` source (`user,project,local`). Factory chains capture this choice in the initial link ledger and carry it through later links and recovery, so a recovering process's environment cannot change the chain's setting sources. This is opt-in because user-level settings may run arbitrary hooks in unattended sessions; enable it only when those hooks are trusted.
 
 #### Host Load Gate
 
