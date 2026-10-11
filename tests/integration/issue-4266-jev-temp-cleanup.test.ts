@@ -1,7 +1,6 @@
 /** Temp directory cleanup for jev-shadow and jev-resolve (issue #4266). */
 import { describe, expect, it } from "vitest";
 import {
-  chmodSync,
   existsSync,
   lstatSync,
   mkdirSync,
@@ -211,7 +210,9 @@ describe("issue #4266: Jev temp directory cleanup", () => {
     const homeRoot = join(testRoot, "home");
     mkdirSync(tempRoot, { mode: 0o700 });
     mkdirSync(homeRoot, { mode: 0o700 });
-    chmodSync(homeRoot, 0o777);
+    const omcDir = join(homeRoot, ".omc");
+    mkdirSync(omcDir, { mode: 0o700 });
+    writeFileSync(join(omcDir, "state"), "not a directory");
     const staleDir = mkdtempSync(join(tempRoot, "omc-jev-"));
     writeFileSync(join(staleDir, "request.json"), "{}");
     const oldTime = new Date(Date.now() - 48 * 60 * 60 * 1000);
