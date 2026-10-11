@@ -299,12 +299,12 @@ function entriesEqual(left: unknown, right: unknown): boolean {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
-function codexEntriesEqual(left: UnifiedMcpRegistryEntry, right: UnifiedMcpRegistryEntry): boolean {
-  const leftCodexEntry = { ...left };
-  const rightCodexEntry = { ...right };
-  delete leftCodexEntry.type;
-  delete rightCodexEntry.type;
-  return isDeepStrictEqual(leftCodexEntry, rightCodexEntry);
+function codexEntriesEqual(codexEntry: UnifiedMcpRegistryEntry, registryEntry: UnifiedMcpRegistryEntry): boolean {
+  const comparableRegistryEntry = { ...registryEntry };
+  if (codexEntry.type === undefined) {
+    delete comparableRegistryEntry.type;
+  }
+  return isDeepStrictEqual(codexEntry, comparableRegistryEntry);
 }
 
 export function applyRegistryToClaudeSettings(

@@ -827,6 +827,7 @@ describe('unified MCP registry sync', () => {
       },
       deepwiki: { url: 'https://mcp.deepwiki.com/mcp', type: 'http' },
       changed: { command: 'python', args: ['server.py'], type: 'stdio' },
+      typeMismatch: { url: 'https://mcp.example.com', type: 'http' },
     };
 
     writeFileSync(getUnifiedMcpRegistryPath(), JSON.stringify(registry, null, 2));
@@ -843,12 +844,16 @@ describe('unified MCP registry sync', () => {
       'command = "node"',
       'args = ["server.py"]',
       '',
+      '[mcp_servers.typeMismatch]',
+      'url = "https://mcp.example.com"',
+      'type = "sse"',
+      '',
     ].join('\n'));
 
     const status = inspectUnifiedMcpRegistrySync();
 
     expect(status.codexMissing).toEqual([]);
-    expect(status.codexMismatched).toEqual(['changed']);
+    expect(status.codexMismatched).toEqual(['changed', 'typeMismatch']);
     expect(status.claudeMissing).toEqual([]);
     expect(status.claudeMismatched).toEqual([]);
   });
