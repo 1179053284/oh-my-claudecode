@@ -15,7 +15,7 @@ import { appendFileSync, mkdirSync, writeFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import { decideNextStage, type ChainDirective, type RouteTable } from '../hooks/session-end/routing.js';
 import { acquireChainSlot, releaseChainSlot } from '../hooks/session-end/guardrails.js';
-import { defaultSpawnFn, factoryLinkArgv, type SpawnContext, type SpawnNextTracker } from '../hooks/session-end/spawn-next.js';
+import { AFK_INCLUDE_USER_SETTINGS_ENV, defaultSpawnFn, factoryLinkArgv, type SpawnContext, type SpawnNextTracker } from '../hooks/session-end/spawn-next.js';
 import { DEFAULT_STALL_THRESHOLD_MS, detectStalledLinks, flagStall } from './watchdog.js';
 import { getOmcRoot } from '../lib/worktree-paths.js';
 
@@ -192,7 +192,8 @@ function spawnChainLink(req: ChainLinkRequest): EventResult {
   }
 
   const nextSessionId = randomUUID();
-  const args = factoryLinkArgv(req.prompt, nextSessionId);
+  const includeUserSettings = process.env[AFK_INCLUDE_USER_SETTINGS_ENV] === '1';
+  const args = factoryLinkArgv(req.prompt, nextSessionId, [], [], includeUserSettings);
   const spawnCtx = { cwd: req.config.cwd };
   try {
     // Pre-write the first chain ledger so the spawned session's SessionEnd
@@ -204,6 +205,7 @@ function spawnChainLink(req: ChainLinkRequest): EventResult {
       writeFileSync(join(factoryDir, `chain-${nextSessionId}.json`), JSON.stringify({
         intentId: req.intentId,
         stage: req.directive.stage,
+        includeUserSettings,
         ...(req.tracker ? { tracker: req.tracker } : {}),
       }, null, 2), 'utf8');
     } catch (error) {
