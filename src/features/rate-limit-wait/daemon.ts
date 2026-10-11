@@ -305,12 +305,12 @@ function createInitialState(): DaemonState {
  * like a real all-clear signal for blocked panes.
  */
 export function shouldResumeBlockedPanesOnStatusChange(
-  previousStatus: RateLimitStatus | null,
+  previousStatus: Pick<RateLimitStatus, 'isLimited'> | null,
   nextStatus: RateLimitStatus | null,
 ): boolean {
-  const wasLimited = shouldMonitorBlockedPanes(previousStatus);
+  const wasLimited = !!previousStatus?.isLimited;
   const isNowLimited = shouldMonitorBlockedPanes(nextStatus);
-  return wasLimited && !isNowLimited && !isRateLimitStatusDegraded(nextStatus);
+  return wasLimited && nextStatus !== null && !isNowLimited && !isRateLimitStatusDegraded(nextStatus);
 }
 
 /**
@@ -348,6 +348,9 @@ async function pollLoop(config: Required<DaemonConfig>): Promise<void> {
   const state = readDaemonState(config) || createInitialState();
   state.isRunning = true;
   state.pid = process.pid;
+  let lastConfirmedLimited = typeof state.lastConfirmedLimited === 'boolean'
+    ? state.lastConfirmedLimited
+    : !!state.rateLimitStatus?.isLimited && !isRateLimitStatusDegraded(state.rateLimitStatus);
 
   // Register cleanup handlers so PID/state files are cleaned up on exit
   registerDaemonCleanup(config);
@@ -367,11 +370,15 @@ async function pollLoop(config: Required<DaemonConfig>): Promise<void> {
       ]);
       const isNowLimited = shouldMonitorBlockedPanes(rateLimitStatus);
       const shouldResumeBlockedPanes = shouldResumeBlockedPanesOnStatusChange(
-        state.rateLimitStatus,
+        { isLimited: lastConfirmedLimited },
         rateLimitStatus,
       );
 
       state.rateLimitStatus = rateLimitStatus;
+      if (rateLimitStatus && !isRateLimitStatusDegraded(rateLimitStatus)) {
+        lastConfirmedLimited = rateLimitStatus.isLimited;
+      }
+      state.lastConfirmedLimited = lastConfirmedLimited;
 
       if (rateLimitStatus) {
         log(`Rate limit status: ${formatRateLimitStatus(rateLimitStatus)}`, config);

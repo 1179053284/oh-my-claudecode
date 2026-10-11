@@ -92,6 +92,8 @@ export interface DaemonState {
   lastPollAt: Date | null;
   /** Current rate limit status */
   rateLimitStatus: RateLimitStatus | null;
+  /** Last confirmed quota exhaustion; retained across unavailable/degraded observations */
+  lastConfirmedLimited?: boolean;
   /** Currently tracked blocked panes */
   blockedPanes: BlockedPane[];
   /** Panes that have been resumed (to avoid re-sending) */
