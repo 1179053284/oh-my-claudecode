@@ -175,7 +175,7 @@ const LIVE_RESUME_OPTION_PATTERN =
 const LIVE_SELECTED_RESUME_OPTION_PATTERN =
   /^\s*❯\s*(?:\[1\]|1[.)]?)\s+(?:continue|resume|retry|try again|stop and wait)\b/i;
 const LIVE_CONFIRMATION_PROMPT_PATTERN =
-  /^\s*(?:enter to confirm|press enter|select an option|continue\?)/i;
+  /^\s*(?:enter to confirm|enter choice:|press enter|select an option|continue\?)/i;
 
 /**
  * Check if tmux is installed and available.

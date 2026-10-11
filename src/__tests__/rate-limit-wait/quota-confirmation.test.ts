@@ -158,6 +158,16 @@ describe('confirmed quota transitions in the actual daemon polling loop', () => 
     await next(status(false));
     expect(boundary.resume).toHaveBeenCalledExactlyOnceWith('%test');
   });
+  it('retains restored pane candidates through a limited poll with no new pane output', async () => {
+    seed(status(true));
+    boundary.scan.mockReturnValueOnce([]);
+    await start(status(true));
+    expect(observed().blockedPanes).toMatchObject([{ id: '%test' }]);
+    expect(boundary.resume).not.toHaveBeenCalled();
+    await next(status(false));
+    expect(boundary.revalidate).toHaveBeenCalledOnce();
+    expect(boundary.resume).toHaveBeenCalledExactlyOnceWith('%test');
+  });
   it('does not resume on stale cached clear after a network failure', async () => {
     seed(status(true));
     await start(staleNetworkStatus(false));

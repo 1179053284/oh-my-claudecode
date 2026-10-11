@@ -456,10 +456,8 @@ async function pollLoop(config: Required<DaemonConfig>): Promise<void> {
           }
         }
 
-        // Remove panes that are no longer blocked
-        state.blockedPanes = state.blockedPanes.filter((tracked) =>
-          blockedPanes.some((current) => current.id === tracked.id)
-        );
+        // Keep prior candidates across limited polls: the stateDir scan only
+        // returns panes with new output. Fresh pane capture authorizes resumes.
       }
 
       // If rate limit just cleared (was limited, now not), attempt resume

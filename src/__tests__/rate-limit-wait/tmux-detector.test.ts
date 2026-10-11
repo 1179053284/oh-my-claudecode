@@ -516,6 +516,15 @@ describe('tmux-detector', () => {
       '❯ 1. Stop and wait',
       'Enter to confirm',
     ].join('\n');
+    const weeklyLimitChoicePrompt = [
+      'Claude Code v1.0.0',
+      'Weekly usage limit reached',
+      "You've used your weekly allocation of tokens.",
+      'Limit resets on Monday at 12:00 AM UTC.',
+      '[1] Continue when limit resets',
+      '[2] Exit',
+      'Enter choice:',
+    ].join('\n');
 
     function makeTmuxAvailable(): void {
       vi.mocked(tmuxSpawn).mockReturnValue({
@@ -555,6 +564,17 @@ describe('tmux-detector', () => {
       vi.mocked(tmuxExec)
         .mockReturnValueOnce(paneList)
         .mockReturnValueOnce(stopAndWaitPrompt);
+
+      expect(revalidateBlockedPanes([trackedPane])).toMatchObject([
+        { id: '%0', session: 'main', windowName: 'dev' },
+      ]);
+    });
+
+    it('recognizes the supported weekly-limit Enter choice prompt', () => {
+      makeTmuxAvailable();
+      vi.mocked(tmuxExec)
+        .mockReturnValueOnce(paneList)
+        .mockReturnValueOnce(weeklyLimitChoicePrompt);
 
       expect(revalidateBlockedPanes([trackedPane])).toMatchObject([
         { id: '%0', session: 'main', windowName: 'dev' },
