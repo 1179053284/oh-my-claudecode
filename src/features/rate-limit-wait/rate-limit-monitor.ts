@@ -36,7 +36,10 @@ export async function checkRateLimitStatus(): Promise<RateLimitStatus | null> {
     // throttles requests whose User-Agent does not name a Claude Code version
     // (see buildUserAgent in usage-api.ts). Reuse the version the HUD last
     // observed on stdin and cached; undefined when OMC has never seen one.
-    const result = await getUsage({ clientVersion: readCachedClientVersion() });
+    const result = await getUsage({
+      clientVersion: readCachedClientVersion(),
+      skipWarmCache: true,
+    });
 
     if (!result.rateLimits) {
       // No OAuth credentials or API unavailable

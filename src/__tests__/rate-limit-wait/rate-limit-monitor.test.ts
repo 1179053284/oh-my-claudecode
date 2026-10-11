@@ -38,7 +38,10 @@ describe('rate-limit-monitor', () => {
 
       await checkRateLimitStatus();
 
-      expect(getUsage).toHaveBeenCalledWith({ clientVersion: '2.1.232' });
+      expect(getUsage).toHaveBeenCalledWith({
+        clientVersion: '2.1.232',
+        skipWarmCache: true,
+      });
     });
 
     it('should return null when getUsage returns null rateLimits', async () => {

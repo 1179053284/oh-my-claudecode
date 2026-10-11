@@ -929,6 +929,74 @@ describe('getUsage routing', () => {
     expect(httpsModule.default.request).not.toHaveBeenCalled();
   });
 
+  it('does not serve a warm cache for stale config metadata after the stored account changes', async () => {
+    const configDir = '/tmp/test-claude';
+    const cachePath = `${configDir}/plugins/oh-my-claudecode/.usage-cache-anthropic.json`;
+    const claudeJsonPath = `${configDir}/.claude.json`;
+    const cacheAccountA = JSON.stringify({
+      claudeAiOauth: {
+        accessToken: 'account-a-access',
+        refreshToken: 'account-a-refresh',
+        expiresAt: Date.now() + 60 * 60 * 1000,
+        oauthAccount: { uuid: 'account-a' },
+      },
+    });
+    let storedCredentials = cacheAccountA;
+    let cacheContent = '{}';
+    process.env.CLAUDE_CONFIG_DIR = configDir;
+    vi.mocked(fs.existsSync).mockImplementation(path =>
+      String(path) === cachePath || String(path) === claudeJsonPath,
+    );
+    vi.mocked(fs.readFileSync).mockImplementation(path => {
+      if (String(path) === cachePath) return cacheContent;
+      if (String(path) === claudeJsonPath) {
+        return JSON.stringify({ oauthAccount: { accountUuid: 'account-a' } });
+      }
+      return '{}';
+    });
+    vi.mocked(childProcess.execFileSync).mockImplementation(() => storedCredentials);
+
+    const accountAIdentity = getUsageCredentialIdentity(false, true);
+    cacheContent = JSON.stringify({
+      timestamp: Date.now(),
+      lastSuccessAt: Date.now(),
+      source: 'anthropic',
+      credentialIdentity: accountAIdentity,
+      data: { fiveHourPercent: 25, weeklyPercent: 50 },
+    });
+    storedCredentials = JSON.stringify({
+      claudeAiOauth: {
+        accessToken: 'account-b-access',
+        refreshToken: 'account-b-refresh',
+        expiresAt: Date.now() + 60 * 60 * 1000,
+        oauthAccount: { uuid: 'account-b' },
+      },
+    });
+    const accountBIdentity = getUsageCredentialIdentity(false, true);
+    expect(accountBIdentity).not.toBe(accountAIdentity);
+
+    let capturedAuth: string | undefined;
+    httpsModule.default.request.mockImplementationOnce((options, callback) => {
+      capturedAuth = (options as { headers?: Record<string, string> })?.headers?.Authorization;
+      const req = new EventEmitter() as EventEmitter & { end: () => void; destroy: () => void };
+      req.destroy = vi.fn();
+      req.end = () => {
+        const res = new EventEmitter() as EventEmitter & { statusCode?: number };
+        res.statusCode = 200;
+        callback(res);
+        res.emit('data', JSON.stringify({ five_hour: { utilization: 80 }, seven_day: { utilization: 40 } }));
+        res.emit('end');
+      };
+      return req;
+    });
+
+    const result = await getUsage({ skipWarmCache: true });
+
+    expect(result.rateLimits?.fiveHourPercent).toBe(80);
+    expect(capturedAuth).toBe('Bearer account-b-access');
+    expect(httpsModule.default.request).toHaveBeenCalledOnce();
+  });
+
   it('skips Keychain on a warm OAuth cache hit in a fresh process', async () => {
     const configDir = '/tmp/test-claude';
     const cachePath = `${configDir}/plugins/oh-my-claudecode/.usage-cache-anthropic.json`;

@@ -2426,11 +2426,15 @@ function getWarmAnthropicUsageCache(
  * @param opts.clientVersion Claude Code version for the usage API User-Agent
  *   (see buildUserAgent). Optional: callers without a statusline payload omit it
  *   and the header is left off rather than guessed.
+ * @param opts.skipWarmCache Skip metadata-only cache hits when credential identity
+ *   must be verified before using the returned usage data.
  */
-export async function getUsage(opts?: { clientVersion?: string }): Promise<UsageResult> {
+export async function getUsage(opts?: { clientVersion?: string; skipWarmCache?: boolean }): Promise<UsageResult> {
   const pollIntervalMs = getUsagePollIntervalMs();
   const anthropicRateLimitIdentity = buildUserAgent(opts?.clientVersion) ?? 'anonymous';
-  const warmCachedUsage = getWarmAnthropicUsageCache(pollIntervalMs, anthropicRateLimitIdentity);
+  const warmCachedUsage = opts?.skipWarmCache
+    ? undefined
+    : getWarmAnthropicUsageCache(pollIntervalMs, anthropicRateLimitIdentity);
   if (warmCachedUsage) return warmCachedUsage;
 
   let profile = resolveUsageProfile();
