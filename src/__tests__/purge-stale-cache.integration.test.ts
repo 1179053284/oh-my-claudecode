@@ -116,6 +116,31 @@ describe('purgeStalePluginCacheVersions on a real filesystem', () => {
     expect(readdirSync(pluginDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
   });
 
+  it('recognizes a mixed-case OMC cache directory on Windows', () => {
+    const originalPlatform = process.platform;
+    Object.defineProperty(process, 'platform', { value: 'win32', configurable: true });
+    try {
+      rmSync(join(configDir, 'plugins', 'cache', 'omc'), { recursive: true, force: true });
+      pluginDir = join(configDir, 'plugins', 'cache', 'omc', 'Oh-My-ClaudeCode');
+      mkdirSync(pluginDir, { recursive: true });
+      const active = join(pluginDir, ACTIVE);
+      mkdirSync(active);
+      const stale = writeVersion(STALE);
+      makeStale(stale);
+      installedPlugins();
+
+      const result = purgeStalePluginCacheVersions();
+
+      expect(result.symlinked).toBe(0);
+      expect(result.errors).toHaveLength(1);
+      expect(lstatSync(stale).isDirectory()).toBe(true);
+      expect(hookResolves(STALE)).toBe(true);
+      expect(readdirSync(pluginDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
+    } finally {
+      Object.defineProperty(process, 'platform', { value: originalPlatform, configurable: true });
+    }
+  });
+
   it('retains support for other plugins without OMC hook entry points', () => {
     const genericDir = join(configDir, 'plugins', 'cache', 'official', 'hookify');
     const active = join(genericDir, ACTIVE);

@@ -663,7 +663,8 @@ export function purgeStalePluginCacheVersions(options?: { skipGracePeriod?: bool
           )[0];
           try {
             if (!statSync(target).isDirectory() ||
-                (pluginName === 'oh-my-claudecode' && !isUsableVersionPath(target))) {
+                (comparisonPath(pluginName) === comparisonPath('oh-my-claudecode') &&
+                  !isUsableVersionPath(target))) {
               throw new Error('Registered active plugin target is missing or incomplete');
             }
             relinkStaleVersionDir(versionDir, target);
