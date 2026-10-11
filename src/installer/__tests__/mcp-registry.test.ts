@@ -840,6 +840,7 @@ describe('unified MCP registry sync', () => {
       implicitStdio: { command: '/tools/implicit-stdio.sh' },
       implicitHttp: { url: 'https://mcp.example.com/implicit-http' },
       implicitTypeMismatch: { url: 'https://mcp.example.com/implicit-mismatch' },
+      multilineType: { url: 'https://mcp.example.com/multiline-type' },
     };
 
     writeFileSync(getUnifiedMcpRegistryPath(), JSON.stringify(registry, null, 2));
@@ -905,6 +906,10 @@ describe('unified MCP registry sync', () => {
       '[mcp_servers.implicitTypeMismatch]',
       'url = "https://mcp.example.com/implicit-mismatch"',
       'type = "sse"',
+      '',
+      '[mcp_servers.multilineType]',
+      'url = "https://mcp.example.com/multiline-type"',
+      'type = """http"""',
       '',
     ].join('\n'));
 

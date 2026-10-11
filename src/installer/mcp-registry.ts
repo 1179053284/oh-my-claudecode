@@ -470,6 +470,11 @@ function isValidTomlLiteralContent(content: string): boolean {
 function parseTomlQuotedString(value: string): string | undefined {
   const trimmed = value.trim();
 
+  const multilineBasicMatch = trimmed.match(/^"""([\s\S]*?)"""\s*(?:#.*)?$/);
+  if (multilineBasicMatch) {
+    return unescapeTomlString(multilineBasicMatch[1].replace(/^\r?\n/, ''));
+  }
+
   const basicMatch = trimmed.match(/^"((?:\\.|[^"\\])*)"\s*(?:#.*)?$/);
   if (basicMatch) {
     return unescapeTomlString(basicMatch[1]);
