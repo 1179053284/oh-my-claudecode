@@ -473,8 +473,15 @@ describe('Builtin Skills', () => {
       expect(raw).toContain('If removing matched objects leaves a matcher group with no hooks, remove that now-empty group');
       expect(raw).toContain('remove an event key when no groups remain and remove the top-level `"hooks"` key when no events remain');
       expect(raw).toContain('For each affected profile-level, project-level, or project-local settings file');
-      expect(raw).toContain('If the user declined the relevant settings change, a file could not be updated, any reference remains, no shipped payload exists, or verification is inconclusive, leave the corresponding script in place');
+      expect(raw).toContain('If any managed source references it, a managed or command-line source cannot be inspected, the user declined the relevant settings change, a file could not be updated, no shipped payload exists, or verification is inconclusive, leave the corresponding script in place');
       expect(raw).toContain('re-check `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json`, `./.claude/settings.json`, and `./.claude/settings.local.json`');
+      expect(raw).toContain('Never edit managed settings or MDM/server policy');
+      expect(raw).toContain('inspect managed hook sources read-only');
+      expect(raw).toContain('/etc/claude-code/managed-settings.json');
+      expect(raw).toContain('C:\\Program Files\\ClaudeCode\\managed-settings.json');
+      expect(raw).toContain('any applicable MDM, server-managed, or command-line `--settings` sources');
+      expect(raw).toContain('no configured hook references remain in any source');
+      expect(raw).toContain('If any managed source references it, a managed or command-line source cannot be inspected');
       expect(raw).not.toContain('Remove the `"hooks"` section');
     });
 
