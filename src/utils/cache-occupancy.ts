@@ -151,8 +151,9 @@ export function readOccupiedPluginRoots(configDir = getClaudeConfigDir(), option
     let content: string;
     try { content = readFileSync(path, 'utf8'); }
     catch (error) {
-      // An unreadable record may pin a live session; do not discard uncertainty.
-      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') unavailable = true;
+      // A directory cannot be a record; other read errors may hide a live session.
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code !== 'ENOENT' && code !== 'EISDIR') unavailable = true;
       continue;
     }
     try { record = JSON.parse(content); } catch { try { unlinkSync(path); } catch { /* best effort */ } continue; }

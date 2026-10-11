@@ -57,8 +57,8 @@ export function readOccupiedPluginRoots(configDir, options = {}) {
   for (const name of names) { const path = join(dir, name); let record; let content;
     try { content = readFileSync(path, 'utf8'); }
     catch (error) {
-      // An unreadable record may pin a live session; do not discard uncertainty.
-      if (error?.code !== 'ENOENT') unavailable = true;
+      // A directory cannot be a record; other read errors may hide a live session.
+      if (error?.code !== 'ENOENT' && error?.code !== 'EISDIR') unavailable = true;
       continue;
     }
     try { record = JSON.parse(content); } catch { try { unlinkSync(path); } catch { /* best effort */ } continue; } const age = Date.now() - Date.parse(record?.updatedAt); if (record?.version !== 1 || !Number.isSafeInteger(record?.pid) || !record?.processStartIdentity || !record?.pluginRoot || !Number.isFinite(Date.parse(record?.updatedAt)) || age < -300000 || !alive(record.pid)) { try { unlinkSync(path); } catch {} continue; } records.push({ path, record }); }

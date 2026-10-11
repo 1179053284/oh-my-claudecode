@@ -100,8 +100,8 @@ export function readOccupiedPluginRoots(configDir, options = {}) {
     let content;
     try { content = readFileSync(path, 'utf8'); }
     catch (error) {
-      // An unreadable record may pin a live session; do not discard uncertainty.
-      if (error?.code !== 'ENOENT') unavailable = true;
+      // A directory cannot be a record; other read errors may hide a live session.
+      if (error?.code !== 'ENOENT' && error?.code !== 'EISDIR') unavailable = true;
       continue;
     }
     try { record = JSON.parse(content); } catch { try { unlinkSync(path); } catch { /* best effort */ } continue; }

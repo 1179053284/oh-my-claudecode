@@ -43,6 +43,25 @@ describe('cache occupancy registry', () => {
     expect(read(dir).roots).toEqual(new Set([root]));
   });
 
+  it.each([
+    ['typescript', null],
+    ['script', '../../../scripts/lib/cache-occupancy.mjs'],
+    ['template', '../../../templates/hooks/lib/cache-occupancy.mjs'],
+  ])('ignores directory entries in the occupancy registry for %s', async (_name, path) => {
+    const read = path ? (await import(path)).readOccupiedPluginRoots : readOccupiedPluginRoots;
+    const registry = join(dir, '.omc', 'cache-occupancy');
+    mkdirSync(registry, { recursive: true });
+    const entryPath = join(registry, `${'a'.repeat(64)}.json`);
+    mkdirSync(entryPath);
+    readFailures.set(entryPath, 'EISDIR');
+
+    const result = read(dir);
+
+    expect(result.unavailable).toBe(false);
+    expect(result.roots.size).toBe(0);
+    expect(existsSync(entryPath)).toBe(true);
+  });
+
   it.each(['EACCES', 'EIO'])('preserves a live pinned cache version when its record reports %s', async code => {
     vi.stubEnv('CLAUDE_CONFIG_DIR', dir);
     const root = join(dir, 'plugins', 'cache', 'omc', 'oh-my-claudecode', '1.0.0');
