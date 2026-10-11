@@ -581,6 +581,22 @@ describe('tmux-detector', () => {
       ]);
     });
 
+    it('ignores live OMC HUD footer lines when checking the prompt', () => {
+      makeTmuxAvailable();
+      const livePromptWithHud = [
+        livePrompt,
+        '[OMC#4.15.1L] | Model: Opus 4.8 | 5h:100% wk:14% | thinking | session:80m | ctx:14%',
+        '⏵⏵ auto mode on (shift+tab to cycle) · ← for agents',
+      ].join('\n');
+      vi.mocked(tmuxExec)
+        .mockReturnValueOnce(paneList)
+        .mockReturnValueOnce(livePromptWithHud);
+
+      expect(revalidateBlockedPanes([trackedPane])).toMatchObject([
+        { id: '%0', session: 'main', windowName: 'dev' },
+      ]);
+    });
+
     it('rejects old rate-limit text after the pane has resumed into a conversation', () => {
       makeTmuxAvailable();
       const activeConversation = [

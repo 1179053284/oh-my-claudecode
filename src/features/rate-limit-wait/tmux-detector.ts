@@ -455,7 +455,9 @@ export function revalidateBlockedPanes(
     const analysis = analyzePaneContent(content);
     const recentLines = content
       .split(/\r?\n/)
-      .filter((line) => line.trim())
+      .filter((line) => line.trim() &&
+        !OMC_HUD_STATUS_LINE_PATTERN.test(line) &&
+        !OMC_HUD_MODE_LINE_PATTERN.test(line))
       .slice(-5)
       .join('\n');
     const lastLine = recentLines.split('\n').at(-1) ?? '';
