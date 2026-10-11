@@ -63,8 +63,17 @@ describe('usage JSONL record recovery', () => {
 
     const report = generateUsageReport(root, 'fractional');
     expect(report.taskCount).toBe(2);
-    expect(report.totalWallClockMs).toBe(0.1 + 0.2);
-    expect(report.workers[0].totalWallClockMs).toBe(0.1 + 0.2);
+    expect(report.totalWallClockMs).toBe(0.3);
+    expect(report.workers[0].totalWallClockMs).toBe(0.3);
+  });
+  it('retains ordinary decimal durations with different fractional precision', () => {
+    recordTaskUsage(root, 'decimal', { ...valid, wallClockMs: 0.01 });
+    recordTaskUsage(root, 'decimal', { ...valid, taskId: 'task-2', wallClockMs: 0.1 });
+
+    const report = generateUsageReport(root, 'decimal');
+    expect(report.taskCount).toBe(2);
+    expect(report.totalWallClockMs).toBe(0.11);
+    expect(report.workers[0].totalWallClockMs).toBe(0.11);
   });
   it('skips finite but unsafe counters and overflow-prone durations without poisoning valid siblings', () => {
     recordTaskUsage(root, 'large', valid);

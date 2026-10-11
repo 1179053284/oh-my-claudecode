@@ -106,14 +106,90 @@ const taskUsageRecordSchema: z.ZodType<TaskUsageRecord> = z.object({
   responseChars: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
 });
 
-function durationAdditionLosesPrecision(previousTotal: number, duration: number, nextTotal: number): boolean {
-  if (duration === 0) return false;
+/** Base-10 representation used to sum JSON duration values without intermediate binary rounding. */
+interface ExactDecimal {
+  coefficient: bigint;
+  scale: number;
+}
 
-  const tolerance = 2 * Number.EPSILON;
-  const appliedDuration = nextTotal - previousTotal;
-  const recoveredPreviousTotal = nextTotal - duration;
-  return Math.abs(appliedDuration - duration) > tolerance * duration
-    || Math.abs(recoveredPreviousTotal - previousTotal) > tolerance * previousTotal;
+const ZERO_DURATION: ExactDecimal = { coefficient: 0n, scale: 0 };
+const MAX_SAFE_DURATION: ExactDecimal = { coefficient: BigInt(Number.MAX_SAFE_INTEGER), scale: 0 };
+// Public report fields are Numbers; reject projections that distort either addend by more than 1e-12.
+const DURATION_RELATIVE_TOLERANCE: ExactDecimal = { coefficient: 1n, scale: 12 };
+
+function exactDecimalFromNumber(value: number): ExactDecimal {
+  const [mantissa, exponentText] = value.toString().toLowerCase().split('e');
+  const [whole, fraction = ''] = mantissa.split('.');
+  let coefficient = BigInt(`${whole}${fraction}`);
+  let scale = fraction.length - Number(exponentText ?? 0);
+  if (scale < 0) {
+    coefficient *= 10n ** BigInt(-scale);
+    scale = 0;
+  }
+  return { coefficient, scale };
+}
+
+function alignExactDecimals(left: ExactDecimal, right: ExactDecimal): [bigint, bigint, number] {
+  const scale = Math.max(left.scale, right.scale);
+  return [
+    left.coefficient * 10n ** BigInt(scale - left.scale),
+    right.coefficient * 10n ** BigInt(scale - right.scale),
+    scale,
+  ];
+}
+
+function addExactDecimals(left: ExactDecimal, right: ExactDecimal): ExactDecimal {
+  const [leftCoefficient, rightCoefficient, scale] = alignExactDecimals(left, right);
+  return { coefficient: leftCoefficient + rightCoefficient, scale };
+}
+
+function subtractExactDecimals(left: ExactDecimal, right: ExactDecimal): ExactDecimal {
+  const [leftCoefficient, rightCoefficient, scale] = alignExactDecimals(left, right);
+  return { coefficient: leftCoefficient - rightCoefficient, scale };
+}
+
+function absoluteExactDecimal(value: ExactDecimal): ExactDecimal {
+  return { coefficient: value.coefficient < 0n ? -value.coefficient : value.coefficient, scale: value.scale };
+}
+
+function multiplyExactDecimals(left: ExactDecimal, right: ExactDecimal): ExactDecimal {
+  return { coefficient: left.coefficient * right.coefficient, scale: left.scale + right.scale };
+}
+
+function compareExactDecimals(left: ExactDecimal, right: ExactDecimal): number {
+  const [leftCoefficient, rightCoefficient] = alignExactDecimals(left, right);
+  return leftCoefficient < rightCoefficient ? -1 : leftCoefficient > rightCoefficient ? 1 : 0;
+}
+
+function exactDecimalToNumber(value: ExactDecimal): number {
+  const isNegative = value.coefficient < 0n;
+  const digits = (isNegative ? -value.coefficient : value.coefficient).toString();
+  const integerLength = digits.length - value.scale;
+  const magnitude = value.scale === 0
+    ? digits
+    : integerLength > 0
+      ? `${digits.slice(0, integerLength)}.${digits.slice(integerLength)}`
+      : `0.${'0'.repeat(-integerLength)}${digits}`;
+  return Number(isNegative ? `-${magnitude}` : magnitude);
+}
+
+function exceedsDurationRoundingTolerance(actual: ExactDecimal, expected: ExactDecimal): boolean {
+  const difference = absoluteExactDecimal(subtractExactDecimals(actual, expected));
+  const tolerance = multiplyExactDecimals(absoluteExactDecimal(expected), DURATION_RELATIVE_TOLERANCE);
+  return compareExactDecimals(difference, tolerance) > 0;
+}
+
+function durationAdditionLosesPrecision(
+  previousTotal: ExactDecimal,
+  duration: ExactDecimal,
+  nextTotal: ExactDecimal,
+  roundedNextTotal: number,
+): boolean {
+  const reportedTotal = exactDecimalFromNumber(roundedNextTotal);
+  const reportedDuration = subtractExactDecimals(reportedTotal, previousTotal);
+  const recoveredPreviousTotal = subtractExactDecimals(reportedTotal, duration);
+  return exceedsDurationRoundingTolerance(reportedDuration, duration)
+    || exceedsDurationRoundingTolerance(recoveredPreviousTotal, previousTotal);
 }
 
 /**
@@ -149,22 +225,33 @@ export function generateUsageReport(
 
   // Aggregate per worker
   const workerMap = new Map<string, WorkerUsageSummary>();
+  const workerDurationTotals = new Map<string, ExactDecimal>();
+  let totalWallClockMsExact = ZERO_DURATION;
   let totalWallClockMs = 0;
 
   for (const r of records) {
     const existing = workerMap.get(r.workerName);
-    const currentWallClockMs = existing?.totalWallClockMs ?? 0;
-    const nextWallClockMs = currentWallClockMs + r.wallClockMs;
+    const currentWallClockMsExact = workerDurationTotals.get(r.workerName) ?? ZERO_DURATION;
+    const durationExact = exactDecimalFromNumber(r.wallClockMs);
+    const nextWallClockMsExact = addExactDecimals(currentWallClockMsExact, durationExact);
     const nextPromptChars = (existing?.totalPromptChars ?? 0) + r.promptChars;
     const nextResponseChars = (existing?.totalResponseChars ?? 0) + r.responseChars;
-    const nextTotalWallClockMs = totalWallClockMs + r.wallClockMs;
-    const losesDurationPrecision = durationAdditionLosesPrecision(currentWallClockMs, r.wallClockMs, nextWallClockMs)
-      || durationAdditionLosesPrecision(totalWallClockMs, r.wallClockMs, nextTotalWallClockMs);
+    const nextTotalWallClockMsExact = addExactDecimals(totalWallClockMsExact, durationExact);
+    if (compareExactDecimals(nextWallClockMsExact, MAX_SAFE_DURATION) > 0
+      || compareExactDecimals(nextTotalWallClockMsExact, MAX_SAFE_DURATION) > 0) continue;
+    const nextWallClockMs = exactDecimalToNumber(nextWallClockMsExact);
+    const nextTotalWallClockMs = exactDecimalToNumber(nextTotalWallClockMsExact);
+    const losesDurationPrecision = durationAdditionLosesPrecision(
+      currentWallClockMsExact, durationExact, nextWallClockMsExact, nextWallClockMs,
+    ) || durationAdditionLosesPrecision(
+      totalWallClockMsExact, durationExact, nextTotalWallClockMsExact, nextTotalWallClockMs,
+    );
     // Skip the whole record if adding it would corrupt totals; retain later valid siblings.
     if (!Number.isFinite(nextWallClockMs) || !Number.isFinite(nextTotalWallClockMs)
-      || nextWallClockMs > Number.MAX_SAFE_INTEGER || nextTotalWallClockMs > Number.MAX_SAFE_INTEGER
       || losesDurationPrecision
       || !Number.isSafeInteger(nextPromptChars) || !Number.isSafeInteger(nextResponseChars)) continue;
+    workerDurationTotals.set(r.workerName, nextWallClockMsExact);
+    totalWallClockMsExact = nextTotalWallClockMsExact;
     totalWallClockMs = nextTotalWallClockMs;
     if (existing) {
       existing.taskCount++;
