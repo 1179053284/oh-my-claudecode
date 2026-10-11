@@ -6,7 +6,7 @@ function stripRefPrefix(ref: string): string {
 }
 
 export function isAzureDevOpsHost(host: string): boolean {
-  const normalized = host.toLowerCase();
+  const normalized = host.toLowerCase().replace(/\.$/, '');
   return normalized === 'dev.azure.com' || normalized === 'ssh.dev.azure.com' || normalized.endsWith('.visualstudio.com');
 }
 
@@ -17,7 +17,7 @@ export class AzureDevOpsProvider implements GitProvider {
   readonly prRefspec = null;
 
   detectFromRemote(url: string): boolean {
-    const host = url.match(/^(?:https?:\/\/(?:[^@/]+@)?|ssh:\/\/[^@]*@|[^@]+@)([^/:]+)/i)?.[1];
+    const host = url.match(/^(?:https?:\/\/(?:[^@/?#]+@)?|ssh:\/\/[^@/?#]*@|[^@/:?#]+@)([^/:?#]+)/i)?.[1];
     return !!host && isAzureDevOpsHost(host);
   }
 

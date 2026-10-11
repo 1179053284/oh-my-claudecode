@@ -226,3 +226,16 @@ describe('AzureDevOpsProvider', () => {
     });
   });
 });
+
+describe('Azure authority boundaries', () => {
+  it.each(['https://evil.invalid?x@dev.azure.com/org/project/_git/repo', 'https://evil.invalid#x@dev.azure.com/org/project/_git/repo'])(
+    'rejects Azure-looking text outside the authority: %s', url => {
+      expect(new AzureDevOpsProvider().detectFromRemote(url)).toBe(false);
+    },
+  );
+  it.each(['https://dev.azure.com./Org/Project/_git/Repo', 'git@ssh.dev.azure.com.:v3/Org/Project/Repo', 'https://Org.visualstudio.com./Project/_git/Repo'])(
+    'recognizes a single terminal DNS root dot: %s', url => {
+      expect(new AzureDevOpsProvider().detectFromRemote(url)).toBe(true);
+    },
+  );
+});

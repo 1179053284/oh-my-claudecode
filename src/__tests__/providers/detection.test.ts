@@ -241,3 +241,21 @@ describe('Azure provider hostname identity', () => {
     expect(parseRemoteUrl(url)?.provider).toBe('unknown');
   });
 });
+
+describe('HTTPS authority delimiters and Azure DNS root dots', () => {
+  it.each(['https://evil.invalid?x@github.com/org/repo', 'https://evil.invalid#x@dev.azure.com/org/project/_git/repo'])(
+    'does not consume query or fragment text as userinfo: %s', (url) => {
+      expect(detectProvider(url)).toBe('unknown');
+      expect(parseRemoteUrl(url)?.provider).not.toBe('github');
+      expect(parseRemoteUrl(url)?.provider).not.toBe('azure-devops');
+    },
+  );
+  it.each([
+    ['https://dev.azure.com./Org/Project/_git/Repo', 'Org/Project'],
+    ['git@ssh.dev.azure.com.:v3/Org/Project/Repo', 'Org/Project'],
+    ['https://Org.visualstudio.com./Project/_git/Repo', 'Org/Project'],
+  ])('recognizes Azure absolute DNS remote %s', (url, owner) => {
+    expect(detectProvider(url)).toBe('azure-devops');
+    expect(parseRemoteUrl(url)).toMatchObject({ provider: 'azure-devops', owner, repo: 'Repo' });
+  });
+});

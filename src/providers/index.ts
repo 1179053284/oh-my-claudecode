@@ -77,7 +77,7 @@ export function detectProvider(remoteUrl: string): ProviderName {
   const url = remoteUrl.toLowerCase();
 
   // Extract host portion for accurate matching (strip port if present)
-  const hostMatch = url.match(/^(?:https?:\/\/(?:[^@/]+@)?|ssh:\/\/[^@]*@|[^@]+@)([^/:]+)/);
+  const hostMatch = url.match(/^(?:https?:\/\/(?:[^@/?#]+@)?|ssh:\/\/[^@/?#]*@|[^@/:?#]+@)([^/:?#]+)/);
   const rawHost = hostMatch ? hostMatch[1].toLowerCase() : '';
   const host = rawHost.replace(/:\d+$/, ''); // strip port for matching
 
@@ -124,7 +124,7 @@ export function parseRemoteUrl(url: string): RemoteUrlInfo | null {
 
   // Azure DevOps HTTPS: https://dev.azure.com/{org}/{project}/_git/{repo}
   const azureHttpsMatch = trimmed.match(
-    /^https?:\/\/(?:[^/@]+@)?dev\.azure\.com\/([^/]+)\/([^/]+)\/_git\/([^/\s]+)$/i
+    /^https?:\/\/(?:[^/@?#]+@)?dev\.azure\.com\.?\/([^/]+)\/([^/]+)\/_git\/([^/\s]+)$/i
   );
   if (azureHttpsMatch) {
     return {
@@ -137,7 +137,7 @@ export function parseRemoteUrl(url: string): RemoteUrlInfo | null {
 
   // Azure DevOps SSH: git@ssh.dev.azure.com:v3/{org}/{project}/{repo}
   const azureSshMatch = trimmed.match(
-    /^git@ssh\.dev\.azure\.com:v3\/([^/]+)\/([^/]+)\/([^/\s]+)$/i
+    /^git@ssh\.dev\.azure\.com\.?:v3\/([^/]+)\/([^/]+)\/([^/\s]+)$/i
   );
   if (azureSshMatch) {
     return {
@@ -150,7 +150,7 @@ export function parseRemoteUrl(url: string): RemoteUrlInfo | null {
 
   // Azure DevOps legacy HTTPS: https://{org}.visualstudio.com/{project}/_git/{repo}
   const azureLegacyMatch = trimmed.match(
-    /^https?:\/\/(?:[^/@]+@)?([^.]+)\.visualstudio\.com\/([^/]+)\/_git\/([^/\s]+)$/i
+    /^https?:\/\/(?:[^/@?#]+@)?([^.]+)\.visualstudio\.com\.?\/([^/]+)\/_git\/([^/\s]+)$/i
   );
   if (azureLegacyMatch) {
     return {
