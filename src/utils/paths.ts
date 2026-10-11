@@ -6,7 +6,7 @@
  * (which work universally) and handle platform-specific directory conventions.
  */
 
-import { join, dirname, basename } from 'path';
+import { join, dirname, basename, isAbsolute } from 'path';
 import { existsSync, readFileSync, readdirSync, statSync, lstatSync, realpathSync, unlinkSync, rmSync, renameSync, symlinkSync, type Stats } from 'fs';
 import { homedir } from 'os';
 import { getClaudeConfigDir } from './config-dir.js';
@@ -496,6 +496,8 @@ function hasAncestorWithIdentity(path: string, identity: Stats): boolean {
 }
 
 function firstChildBelowDirectoryIdentity(path: string, directoryIdentity: Stats): string | undefined {
+  // Relative install paths retain the existing lexical-only matching semantics.
+  if (!isAbsolute(path)) return undefined;
   let currentPath = stripTrailing(path);
   while (true) {
     const parentPath = dirname(currentPath);
