@@ -299,9 +299,17 @@ function entriesEqual(left: unknown, right: unknown): boolean {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
-function codexEntriesEqual(codexEntry: UnifiedMcpRegistryEntry, registryEntry: UnifiedMcpRegistryEntry): boolean {
+function codexEntriesEqual(
+  codexEntry: UnifiedMcpRegistryEntry,
+  registryEntry: UnifiedMcpRegistryEntry,
+  typeFieldPresent: boolean,
+): boolean {
+  if (typeFieldPresent && codexEntry.type === undefined) {
+    return false;
+  }
+
   const comparableRegistryEntry = { ...registryEntry };
-  if (codexEntry.type === undefined) {
+  if (!typeFieldPresent) {
     delete comparableRegistryEntry.type;
   }
   return isDeepStrictEqual(codexEntry, comparableRegistryEntry);
@@ -433,7 +441,7 @@ function isValidTomlLiteralContent(content: string): boolean {
 function parseTomlQuotedString(value: string): string | undefined {
   const trimmed = value.trim();
 
-  const basicMatch = trimmed.match(/^"((?:\\.|[^"\\])*)"$/);
+  const basicMatch = trimmed.match(/^"((?:\\.|[^"\\])*)"\s*(?:#.*)?$/);
   if (basicMatch) {
     return unescapeTomlString(basicMatch[1]);
   }
@@ -441,7 +449,7 @@ function parseTomlQuotedString(value: string): string | undefined {
   // TOML literal string ('...'): single-line, no escape processing.
   // Reject raw CR/LF and multi-line; preserve every interior character verbatim.
   if (trimmed.startsWith("'") && !trimmed.includes('\n') && !trimmed.includes('\r')) {
-    const literalMatch = trimmed.match(/^'([^']*)'$/);
+    const literalMatch = trimmed.match(/^'([^']*)'\s*(?:#.*)?$/);
     if (literalMatch && isValidTomlLiteralContent(literalMatch[1])) {
       return literalMatch[1];
     }
@@ -749,8 +757,14 @@ export function syncCodexConfigToml(existingContent: string, registry: UnifiedMc
   };
 }
 
-function parseCodexMcpRegistryEntries(content: string): UnifiedMcpRegistry {
+interface ParsedCodexMcpRegistry {
+  entries: UnifiedMcpRegistry;
+  typeFieldsPresent: Set<string>;
+}
+
+function parseCodexMcpRegistryEntries(content: string): ParsedCodexMcpRegistry {
   const entries: UnifiedMcpRegistry = {};
+  const typeFieldsPresent = new Set<string>();
   const lines = content.split(/\r?\n/);
   let currentName: string | null = null;
   let currentEntry: UnifiedMcpRegistryEntry = {};
@@ -824,6 +838,7 @@ function parseCodexMcpRegistryEntries(content: string): UnifiedMcpRegistry {
       const parsed = parseTomlQuotedString(value);
       if (parsed) currentEntry.url = parsed;
     } else if (key === 'type') {
+      typeFieldsPresent.add(currentName);
       const parsed = parseTomlQuotedString(value);
       if (parsed) currentEntry.type = parsed;
     } else if (key === 'env') {
@@ -839,7 +854,10 @@ function parseCodexMcpRegistryEntries(content: string): UnifiedMcpRegistry {
   }
 
   flushCurrent();
-  return Object.fromEntries(Object.entries(entries).sort(([left], [right]) => left.localeCompare(right)));
+  return {
+    entries: Object.fromEntries(Object.entries(entries).sort(([left], [right]) => left.localeCompare(right))),
+    typeFieldsPresent,
+  };
 }
 
 export function syncUnifiedMcpRegistryTargets(
@@ -932,9 +950,10 @@ export function inspectUnifiedMcpRegistrySync(): UnifiedMcpRegistryStatus {
   const serverNames = Object.keys(registry);
   const claudeSettings = readJsonObject(claudeConfigPath);
   const claudeEntries = extractClaudeMcpRegistry(claudeSettings);
-  const codexEntries = existsSync(codexConfigPath)
+  const codexRegistry = existsSync(codexConfigPath)
     ? parseCodexMcpRegistryEntries(readFileSync(codexConfigPath, 'utf-8'))
-    : {};
+    : { entries: {}, typeFieldsPresent: new Set<string>() };
+  const codexEntries = codexRegistry.entries;
 
   const claudeMissing: string[] = [];
   const claudeMismatched: string[] = [];
@@ -950,7 +969,7 @@ export function inspectUnifiedMcpRegistrySync(): UnifiedMcpRegistryStatus {
 
     if (!codexEntries[name]) {
       codexMissing.push(name);
-    } else if (!codexEntriesEqual(codexEntries[name], entry)) {
+    } else if (!codexEntriesEqual(codexEntries[name], entry, codexRegistry.typeFieldsPresent.has(name))) {
       codexMismatched.push(name);
     }
   }

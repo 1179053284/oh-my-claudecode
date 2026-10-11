@@ -818,7 +818,7 @@ describe('unified MCP registry sync', () => {
     expect(status.codexMismatched).toEqual([]);
   });
 
-  it('ignores Codex-unrepresented MCP types and key order but reports real differences (issue #4294)', () => {
+  it('ignores omitted Codex MCP types and key order while reporting real differences (issue #4294)', () => {
     const registry = {
       context7: {
         command: '/tools/context7-mcp.sh',
@@ -828,6 +828,8 @@ describe('unified MCP registry sync', () => {
       deepwiki: { url: 'https://mcp.deepwiki.com/mcp', type: 'http' },
       changed: { command: 'python', args: ['server.py'], type: 'stdio' },
       typeMismatch: { url: 'https://mcp.example.com', type: 'http' },
+      typeComment: { url: 'https://mcp.example.com/comment', type: 'sse' },
+      unparsedType: { command: 'node', type: 'stdio' },
     };
 
     writeFileSync(getUnifiedMcpRegistryPath(), JSON.stringify(registry, null, 2));
@@ -846,14 +848,22 @@ describe('unified MCP registry sync', () => {
       '',
       '[mcp_servers.typeMismatch]',
       'url = "https://mcp.example.com"',
-      'type = "sse"',
+      'type = "sse" # transport',
+      '',
+      '[mcp_servers.typeComment]',
+      'url = "https://mcp.example.com/comment"',
+      'type = "sse" # transport',
+      '',
+      '[mcp_servers.unparsedType]',
+      'command = "node"',
+      'type = 17',
       '',
     ].join('\n'));
 
     const status = inspectUnifiedMcpRegistrySync();
 
     expect(status.codexMissing).toEqual([]);
-    expect(status.codexMismatched).toEqual(['changed', 'typeMismatch']);
+    expect(status.codexMismatched).toEqual(['changed', 'typeMismatch', 'unparsedType']);
     expect(status.claudeMissing).toEqual([]);
     expect(status.claudeMismatched).toEqual([]);
   });
