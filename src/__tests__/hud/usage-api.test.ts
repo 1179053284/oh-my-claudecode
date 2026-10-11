@@ -951,6 +951,110 @@ describe('getUsage routing', () => {
     expect(vi.mocked(freshChildProcess.execFileSync)).toHaveBeenCalled();
   });
 
+  it.each(['network failure', 'rate-limit backoff'] as const)(
+    'skips Keychain on a no-data %s cache hit in a fresh process',
+    async (outcome) => {
+      const configDir = '/tmp/test-claude';
+      const cachePath = `${configDir}/plugins/oh-my-claudecode/.usage-cache-anthropic.json`;
+      const claudeJsonPath = `${configDir}/.claude.json`;
+      const cachedCredentials = JSON.stringify({
+        claudeAiOauth: {
+          accessToken: 'warm-keychain-access',
+          refreshToken: 'warm-keychain-refresh',
+          expiresAt: Date.now() + 60 * 60 * 1000,
+          oauthAccount: { uuid: 'warm-keychain-account' },
+        },
+      });
+
+      process.env.CLAUDE_CONFIG_DIR = configDir;
+      vi.mocked(fs.existsSync).mockImplementation((path) => String(path) === claudeJsonPath);
+      vi.mocked(fs.readFileSync).mockImplementation((path) =>
+        String(path) === claudeJsonPath
+          ? JSON.stringify({ oauthAccount: { accountUuid: 'warm-keychain-account' } })
+          : '{}',
+      );
+      vi.mocked(childProcess.execFileSync).mockImplementation((_file, args) => {
+        const argsArray = args as string[];
+        if (argsArray.includes('find-generic-password') && argsArray.includes('-a')) {
+          return cachedCredentials;
+        }
+        throw new Error('The specified item could not be found in the keychain.');
+      });
+
+      const credentialIdentity = getUsageCredentialIdentity(false, true);
+      const timestamp = Date.now();
+      const rateLimitIdentity = 'anonymous';
+      const backoffUntil = timestamp + 60_000;
+      const cacheContent = JSON.stringify(
+        outcome === 'network failure'
+          ? {
+              timestamp,
+              source: 'anthropic',
+              credentialIdentity,
+              data: null,
+              error: true,
+              errorReason: 'network',
+            }
+          : {
+              timestamp,
+              source: 'anthropic',
+              credentialIdentity,
+              data: null,
+              error: false,
+              errorReason: 'rate_limited',
+              rateLimited: true,
+              rateLimitedCount: 1,
+              rateLimitedUntil: backoffUntil,
+              rateLimitIdentity,
+              rateLimitBackoffs: {
+                [rateLimitIdentity]: {
+                  timestamp,
+                  rateLimitedCount: 1,
+                  rateLimitedUntil: backoffUntil,
+                },
+              },
+            },
+      );
+      vi.mocked(fs.existsSync).mockImplementation(
+        (path) => String(path) === cachePath || String(path) === claudeJsonPath,
+      );
+      vi.mocked(fs.readFileSync).mockImplementation((path) =>
+        String(path) === cachePath
+          ? cacheContent
+          : String(path) === claudeJsonPath
+            ? JSON.stringify({ oauthAccount: { accountUuid: 'warm-keychain-account' } })
+            : '{}',
+      );
+
+      vi.resetModules();
+      const freshFs = await import('fs');
+      const freshChildProcess = await import('child_process');
+      const freshHttps = (await import('https')) as unknown as { default: { request: ReturnType<typeof vi.fn> } };
+      vi.mocked(freshFs.existsSync).mockImplementation(
+        (path) => String(path) === cachePath || String(path) === claudeJsonPath,
+      );
+      vi.mocked(freshFs.readFileSync).mockImplementation((path) =>
+        String(path) === cachePath
+          ? cacheContent
+          : String(path) === claudeJsonPath
+            ? JSON.stringify({ oauthAccount: { accountUuid: 'warm-keychain-account' } })
+            : '{}',
+      );
+      vi.mocked(freshChildProcess.execFileSync).mockClear();
+      vi.mocked(freshChildProcess.execFileSync).mockImplementation(() => {
+        throw new Error('no-data cache hit should not read Keychain');
+      });
+
+      const { getUsage: freshGetUsage } = await import('../../hud/usage-api.js');
+      const result = await freshGetUsage();
+
+      expect(result.rateLimits).toBeNull();
+      expect(result.error).toBe(outcome === 'network failure' ? 'network' : 'rate_limited');
+      expect(vi.mocked(freshChildProcess.execFileSync)).not.toHaveBeenCalled();
+      expect(freshHttps.default.request).not.toHaveBeenCalled();
+    },
+  );
+
   it('uses the raw ~-prefixed CLAUDE_CONFIG_DIR value for Keychain service lookup', async () => {
     process.env.CLAUDE_CONFIG_DIR = '~/.claude-personal';
 

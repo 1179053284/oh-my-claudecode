@@ -2374,8 +2374,11 @@ function getWarmAnthropicUsageCache(
   ]));
   migrateLegacyCache('anthropic');
   const cache = readCache('anthropic');
+  const hasCacheOutcome =
+    !!cache?.data || cache?.error === true || getRateLimitBackoff(cache, rateLimitIdentity) !== null;
   if (
-    !cache?.data ||
+    !cache ||
+    !hasCacheOutcome ||
     cache.source !== 'anthropic' ||
     !isCacheForCredential(cache, credentialIdentity) ||
     !isCacheValid(cache, pollIntervalMs, rateLimitIdentity)
