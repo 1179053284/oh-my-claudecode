@@ -101,6 +101,7 @@ describe('readRequestFile', () => {
     writeFileSync(path, JSON.stringify({ point: 'slop-warning', heuristic: true }), 'utf8');
     expect(readRequestFile(path)).toEqual({ point: 'slop-warning', heuristic: true });
     expect(existsSync(path)).toBe(false);
+    expect(existsSync(jevTmpDir)).toBe(false);
   });
 });
 

@@ -1,34 +1,47 @@
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync, rmSync, readdirSync, statSync, existsSync, utimesSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { closeSync, constants, fstatSync, futimesSync, lstatSync, mkdirSync, mkdtempSync, openSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { homedir, tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseJevEnv } from '../jev-resolve.mjs';
-import { resolveOmcStateRoot } from './state-root.mjs';
 
 const SWEEP_THROTTLE_MS = 60 * 60 * 1000; // 1 hour
 
 /**
  * Get the cross-process sweep throttle marker path.
- * Uses a predictable location in tmpdir for marker file persistence.
+ * Keep the marker below the user's private state directory, not shared tmp.
  */
 function getSweepThrottleMarkerPath() {
-  return join(tmpdir(), '.omc-jev-sweep-throttle');
+  const home = homedir();
+  const omcDir = join(home, '.omc');
+  const stateDir = join(omcDir, 'state');
+  try {
+    mkdirSync(stateDir, { recursive: true, mode: 0o700 });
+    for (const directory of [home, omcDir, stateDir]) {
+      const stats = lstatSync(directory);
+      if (!stats.isDirectory() || stats.isSymbolicLink()) return undefined;
+      if (typeof process.getuid === 'function' && (stats.uid !== process.getuid() || (stats.mode & 0o022) !== 0)) {
+        return undefined;
+      }
+    }
+    return join(stateDir, '.jev-sweep-throttle');
+  } catch {
+    return undefined;
+  }
+}
+
+function isOwnedMarkerFile(stats) {
+  return stats.isFile() && (typeof process.getuid !== 'function' || stats.uid === process.getuid());
 }
 
 /**
  * Check if sweep should run based on throttle marker mtime.
  */
 function shouldRunSweep(markerPath) {
-  const now = Date.now();
+  if (!markerPath) return true;
   try {
-    if (existsSync(markerPath)) {
-      const stats = statSync(markerPath);
-      if (now - stats.mtimeMs < SWEEP_THROTTLE_MS) {
-        return false; // Too soon, skip
-      }
-    }
-    return true;
+    const stats = lstatSync(markerPath);
+    return !isOwnedMarkerFile(stats) || Date.now() - stats.mtimeMs >= SWEEP_THROTTLE_MS;
   } catch {
     // If we can't read marker, allow sweep
     return true;
@@ -39,21 +52,36 @@ function shouldRunSweep(markerPath) {
  * Update sweep throttle marker mtime to now.
  */
 function updateSweepMarker(markerPath) {
+  if (!markerPath) return;
+
+  const noFollow = constants.O_NOFOLLOW ?? 0;
+  let descriptor;
   try {
-    const now = Date.now();
-    const nowSec = now / 1000;
-    if (existsSync(markerPath)) {
-      utimesSync(markerPath, nowSec, nowSec);
-    } else {
-      // Create marker file if it doesn't exist
-      try {
-        writeFileSync(markerPath, '', { encoding: 'utf8', mode: 0o644 });
-      } catch {
-        // Best effort: can't create marker, but sweep will still run
-      }
+    descriptor = openSync(markerPath, constants.O_WRONLY | noFollow);
+  } catch (error) {
+    if (error?.code !== 'ENOENT') return;
+  }
+
+  if (descriptor === undefined) {
+    try {
+      descriptor = openSync(
+        markerPath,
+        constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | noFollow,
+        0o600,
+      );
+    } catch {
+      return;
     }
+  }
+
+  try {
+    if (!isOwnedMarkerFile(fstatSync(descriptor))) return;
+    const now = new Date();
+    futimesSync(descriptor, now, now);
   } catch {
-    // Best effort: marker update failure doesn't block sweep
+    // Best effort: marker update failure doesn't block the sweep.
+  } finally {
+    closeSync(descriptor);
   }
 }
 
@@ -90,7 +118,7 @@ export function sweepStaleTempDirs(maxAgeMs = 24 * 60 * 60 * 1000) {
       
       const fullPath = join(tmpDir, entry);
       try {
-        const stats = statSync(fullPath);
+        const stats = lstatSync(fullPath);
         if (stats.isDirectory() && (now - stats.mtimeMs > maxAgeMs)) {
           rmSync(fullPath, { recursive: true, force: true });
           cleaned++;

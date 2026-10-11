@@ -1,253 +1,146 @@
 /** Temp directory cleanup for jev-shadow and jev-resolve (issue #4266). */
-import { afterEach, beforeEach, describe, it, expect } from "vitest";
-import { mkdtempSync, readdirSync, existsSync, rmSync, writeFileSync, readFileSync, utimesSync } from "node:fs";
+import { describe, expect, it } from "vitest";
+import {
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  rmSync,
+  symlinkSync,
+  utimesSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
 
 const PROJECT_ROOT = fileURLToPath(new URL("../../", import.meta.url));
 const JEVRESOLVE_PATH = join(PROJECT_ROOT, "scripts/jev-resolve.mjs");
+const JEV_SHADOW_URL = pathToFileURL(join(PROJECT_ROOT, "scripts/lib/jev-shadow.mjs")).href;
 
-describe("issue #4266: jev temp directory cleanup", () => {
-  let trackedTempDirs: string[] = [];
+function runResolver(requestFile: string) {
+  return spawnSync(process.execPath, [JEVRESOLVE_PATH, "--request-file", requestFile], {
+    env: { ...process.env, OMC_JEV: "off" },
+    encoding: "utf8",
+  });
+}
 
-  beforeEach(() => {
-    trackedTempDirs = [];
+function runActiveRecord(tempRoot: string, homeRoot: string) {
+  const script = `
+    import { recordJevShadow } from ${JSON.stringify(JEV_SHADOW_URL)};
+    const result = recordJevShadow({
+      point: "cleanup-test",
+      state: {},
+      questions: {},
+      heuristic: "test",
+    });
+    console.log(JSON.stringify({ result }));
+  `;
+  return spawnSync(process.execPath, ["--input-type=module", "-e", script], {
+    cwd: PROJECT_ROOT,
+    env: {
+      ...process.env,
+      HOME: homeRoot,
+      USERPROFILE: homeRoot,
+      TMPDIR: tempRoot,
+      TMP: tempRoot,
+      TEMP: tempRoot,
+      OMC_JEV: "cleanup-test:active",
+      TYPESAFE_API_KEY: "test-key",
+      OMC_JEV_ENDPOINT: "http://127.0.0.1:1",
+      OMC_JEV_TIMEOUT_MS: "100",
+      OMC_JEV_LOG_DIR: join(homeRoot, "logs"),
+    },
+    encoding: "utf8",
+    timeout: 5000,
+  });
+}
+
+describe("issue #4266: Jev temp directory cleanup", () => {
+  it("removes the generated temp directory after reading a request", () => {
+    const tempDir = mkdtempSync(join(tmpdir(), "omc-jev-"));
+    try {
+      const requestFile = join(tempDir, "request.json");
+      writeFileSync(requestFile, JSON.stringify({ point: "test", state: {}, questions: {} }));
+
+      const result = runResolver(requestFile);
+
+      expect(result.status).toBe(0);
+      expect(JSON.parse(result.stdout)).toMatchObject({ mode: "off" });
+      expect(existsSync(tempDir)).toBe(false);
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
   });
 
-  afterEach(() => {
-    // Clean up any tracked directories
-    for (const dir of trackedTempDirs) {
+  it("removes its temp directory after a request read or parse failure", () => {
+    for (const contents of [undefined, "invalid json"]) {
+      const tempDir = mkdtempSync(join(tmpdir(), "omc-jev-"));
       try {
-        if (existsSync(dir)) {
-          rmSync(dir, { recursive: true, force: true });
-        }
-      } catch {
-        // Best effort
+        const requestFile = join(tempDir, "request.json");
+        if (contents !== undefined) writeFileSync(requestFile, contents);
+
+        const result = runResolver(requestFile);
+
+        expect(result.status).toBe(0);
+        expect(existsSync(tempDir)).toBe(false);
+      } finally {
+        rmSync(tempDir, { recursive: true, force: true });
       }
     }
   });
 
-  describe("readRequestFile cleanup", () => {
-    it("removes temp directory after reading request file", () => {
-      // Create a temp directory with a request file
-      const tempDir = mkdtempSync(join(tmpdir(), "omc-jev-"));
-      trackedTempDirs.push(tempDir);
-      
-      const requestFile = join(tempDir, "request.json");
-      const testRequest = { point: "test", state: {}, questions: {}, heuristic: "test" };
-      writeFileSync(requestFile, JSON.stringify(testRequest), { encoding: "utf8" });
+  it("does not recursively remove a nested directory outside the temp root", () => {
+    const parent = mkdtempSync(join(tmpdir(), "issue-4266-parent-"));
+    const nested = join(parent, "omc-jev-cache");
+    mkdirSync(nested);
+    const requestFile = join(nested, "request.json");
+    writeFileSync(requestFile, JSON.stringify({ point: "test", state: {}, questions: {} }));
 
-      // Verify the directory exists
-      expect(existsSync(tempDir)).toBe(true);
+    try {
+      const result = runResolver(requestFile);
 
-      // Run jev-resolve with the request file
-      const result = spawnSync(process.execPath, [JEVRESOLVE_PATH, "--request-file", requestFile], {
-        env: {
-          ...process.env,
-          OMC_JEV: "off", // Disable Jev to avoid actual API calls
-        },
-      });
-
-      // Directory should be removed after processing
-      expect(existsSync(tempDir)).toBe(false);
-    });
-
-    it("cleans up directory even if file read fails", () => {
-      // Create a temp directory with an invalid request file
-      const tempDir = mkdtempSync(join(tmpdir(), "omc-jev-"));
-      trackedTempDirs.push(tempDir);
-      
-      const requestFile = join(tempDir, "request.json");
-      writeFileSync(requestFile, "invalid json", { encoding: "utf8" });
-
-      // Verify the directory exists
-      expect(existsSync(tempDir)).toBe(true);
-
-      // Run jev-resolve with the invalid request file
-      const result = spawnSync(process.execPath, [JEVRESOLVE_PATH, "--request-file", requestFile], {
-        env: {
-          ...process.env,
-          OMC_JEV: "off",
-        },
-      });
-
-      // Directory should still be removed even on parse error
-      expect(existsSync(tempDir)).toBe(false);
-    });
+      expect(result.status).toBe(0);
+      expect(existsSync(nested)).toBe(true);
+      expect(existsSync(requestFile)).toBe(true);
+    } finally {
+      rmSync(parent, { recursive: true, force: true });
+    }
   });
 
-  describe("recordJevShadow cleanup", () => {
-    it("removes temp directory in active mode after completion", () => {
-      // Use isolated temp root for this test to avoid interference
-      const isolatedTempRoot = mkdtempSync(join(tmpdir(), "jev-test-"));
-      trackedTempDirs.push(isolatedTempRoot);
-      
-      // Count existing temp dirs before test in our isolated root
-      const beforeDirs = readdirSync(isolatedTempRoot);
-      const existingDirs = beforeDirs.filter(d => d.startsWith("omc-jev-")).length;
+  it("sweeps stale dirs on an enabled active record without using shared tmp for its marker", () => {
+    const testRoot = mkdtempSync(join(tmpdir(), "issue-4266-"));
+    const tempRoot = join(testRoot, "tmp");
+    const homeRoot = join(testRoot, "home");
+    mkdirSync(tempRoot, { mode: 0o700 });
+    mkdirSync(homeRoot, { mode: 0o700 });
+    const staleDir = mkdtempSync(join(tempRoot, "omc-jev-"));
+    const oldTime = new Date(Date.now() - 48 * 60 * 60 * 1000);
+    utimesSync(staleDir, oldTime, oldTime);
 
-      // Create a test script that uses recordJevShadow in active mode
-      // Override tmpdir to use our isolated temp root
-      const testScript = `
-        import { recordJevShadow } from '${PROJECT_ROOT}scripts/lib/jev-shadow.mjs';
-        import { tmpdir as originalTmpdir } from 'node:os';
-        
-        // Patch tmpdir to use isolated test directory
-        import.meta.globals = import.meta.globals || {};
-        const originalTmpdir_fn = originalTmpdir;
-        
-        const result = recordJevShadow({
-          point: 'test-point',
-          state: {},
-          questions: {},
-          heuristic: 'test'
-        });
-        
-        console.log(JSON.stringify({ success: true, result }));
-      `;
+    const sharedTmpMarker = join(tempRoot, ".omc-jev-sweep-throttle");
+    const victimPath = join(homeRoot, "victim");
+    let createdSymlink = false;
+    if (process.platform !== "win32") {
+      symlinkSync(victimPath, sharedTmpMarker);
+      createdSymlink = true;
+    }
 
-      const scriptFile = join(isolatedTempRoot, "test-script.mjs");
-      writeFileSync(scriptFile, testScript, { encoding: "utf8" });
+    try {
+      const result = runActiveRecord(tempRoot, homeRoot);
+      const privateMarker = join(homeRoot, ".omc", "state", ".jev-sweep-throttle");
 
-      // Run the test script with active mode enabled
-      // (Jev disabled to avoid API calls, but active mode processing still runs)
-      const result = spawnSync(process.execPath, [scriptFile], {
-        cwd: PROJECT_ROOT,
-        env: {
-          ...process.env,
-          OMC_JEV: "test-point:active",
-          TYPESAFE_API_KEY: "", // Trigger degraded mode (no API key)
-          TMPDIR: isolatedTempRoot, // Force use of isolated temp root
-          TMP: isolatedTempRoot,
-        },
-      });
-
-      // Verify the script ran successfully
       expect(result.status).toBe(0);
-      
-      // After the script completes, no omc-jev-* temp directories
-      // should be left behind from active mode processing
-      const afterDirs = readdirSync(isolatedTempRoot);
-      const afterJevDirs = afterDirs.filter(d => d.startsWith("omc-jev-")).length;
-      
-      // Should have same or fewer jev dirs than before (not more)
-      expect(afterJevDirs).toBeLessThanOrEqual(existingDirs);
-    });
-  });
-
-  describe("sweepStaleTempDirs", () => {
-    it("removes directories older than threshold", async () => {
-      // Use isolated temp root for this test
-      const isolatedTempRoot = mkdtempSync(join(tmpdir(), "sweep-test-"));
-      trackedTempDirs.push(isolatedTempRoot);
-      
-      // This test verifies the sweep function can be called and cleans old dirs
-      // Create some old mock directories in isolated temp root
-      const oldTempDir1 = mkdtempSync(join(isolatedTempRoot, "omc-jev-"));
-      const oldTempDir2 = mkdtempSync(join(isolatedTempRoot, "omc-jev-"));
-      
-      trackedTempDirs.push(oldTempDir1, oldTempDir2);
-
-      // Create a test script that calls sweepStaleTempDirs
-      // The script needs to use the isolated temp root
-      const testScript = `
-        import { sweepStaleTempDirs } from '${PROJECT_ROOT}scripts/lib/jev-shadow.mjs';
-        import { readdirSync } from 'node:fs';
-        import { tmpdir } from 'node:os';
-        
-        // Sweep directories older than 1ms (all of them should be swept)
-        const cleaned = sweepStaleTempDirs(1);
-        const remaining = readdirSync(tmpdir()).filter(d => d.startsWith('omc-jev-')).length;
-        console.log(JSON.stringify({ cleaned, remaining }));
-      `;
-
-      const scriptFile = join(isolatedTempRoot, "test-sweep.mjs");
-      writeFileSync(scriptFile, testScript, { encoding: "utf8" });
-
-      // Run the test script with isolated temp root
-      const result = spawnSync(process.execPath, [scriptFile], {
-        cwd: PROJECT_ROOT,
-        encoding: "utf8",
-        env: {
-          ...process.env,
-          TMPDIR: isolatedTempRoot,
-          TMP: isolatedTempRoot,
-        },
-      });
-
-      // Verify the script ran successfully
-      expect(result.status).toBe(0);
-
-      // Parse the output to get count of cleaned directories
-      try {
-        const output = JSON.parse(result.stdout.trim());
-        expect(output.cleaned).toBeGreaterThanOrEqual(2);
-      } catch (e) {
-        // If output is not valid JSON, it means the function didn't return anything
-        // but it should have at least attempted the cleanup
-      }
-
-      // Verify the old directories were removed
-      expect(existsSync(oldTempDir1)).toBe(false);
-      expect(existsSync(oldTempDir2)).toBe(false);
-    });
-  });
-
-  describe("recordJevShadow sweep integration", () => {
-    it("calls sweepStaleTempDirs on first recordJevShadow invocation", () => {
-      // Test that recordJevShadow at least attempts to call sweepStaleTempDirs
-      // We can't directly verify the sweep works across processes, but we can
-      // verify the function is exported and callable
-      const testScript = `
-        import { recordJevShadow, sweepStaleTempDirs } from '${PROJECT_ROOT}scripts/lib/jev-shadow.mjs';
-        
-        // Verify sweepStaleTempDirs is callable
-        const result1 = typeof sweepStaleTempDirs === 'function';
-        
-        // Call recordJevShadow - it should trigger the sweep internally
-        recordJevShadow({
-          point: 'test-point-1',
-          state: {},
-          questions: {},
-          heuristic: 'test'
-        });
-        
-        console.log(JSON.stringify({ 
-          sweepFunctionExists: result1,
-          success: true
-        }));
-      `;
-
-      const tmpDir = mkdtempSync(join(tmpdir(), "test-"));
-      trackedTempDirs.push(tmpDir);
-      
-      const scriptFile = join(tmpDir, "test-jev-sweep.mjs");
-      writeFileSync(scriptFile, testScript, { encoding: "utf8" });
-
-      // Run the test script with Jev disabled
-      const result = spawnSync(process.execPath, [scriptFile], {
-        cwd: PROJECT_ROOT,
-        env: {
-          ...process.env,
-          OMC_JEV: "off",
-        },
-        encoding: "utf8",
-      });
-
-      // Verify the script ran successfully
-      expect(result.status).toBe(0);
-      
-      // Verify the sweep function is exported and callable
-      try {
-        const output = JSON.parse(result.stdout.trim());
-        expect(output.sweepFunctionExists).toBe(true);
-        expect(output.success).toBe(true);
-      } catch (e) {
-        expect(result.status).toBe(0);
-      }
-    });
-
+      expect(JSON.parse(result.stdout).result.mode).toBe("degraded");
+      expect(existsSync(staleDir)).toBe(false);
+      expect(existsSync(privateMarker)).toBe(true);
+      expect(existsSync(victimPath)).toBe(false);
+      expect(readdirSync(tempRoot).filter((entry) => entry.startsWith("omc-jev-"))).toEqual([]);
+      if (createdSymlink) expect(lstatSync(sharedTmpMarker).isSymbolicLink()).toBe(true);
+    } finally {
+      rmSync(testRoot, { recursive: true, force: true });
+    }
   });
 });

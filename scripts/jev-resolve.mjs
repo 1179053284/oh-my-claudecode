@@ -24,9 +24,9 @@
  * deliberate mirrors; parity with the TS parse is locked by the test suite.
  */
 
-import { readFileSync, unlinkSync, rmSync } from 'node:fs';
+import { readFileSync, rmSync } from 'node:fs';
 import { appendFile, mkdir } from 'node:fs/promises';
-import { dirname, basename, join } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { pathToFileURL } from 'node:url';
 
@@ -217,20 +217,20 @@ export async function readStdinJson() {
  */
 export function readRequestFile(path) {
   let raw;
-  const dir = dirname(path);
+  const dir = dirname(resolve(path));
   try {
     raw = readFileSync(path, 'utf8');
   } finally {
     // Always attempt cleanup: restrict deletion to omc-jev-* temp dirs under os.tmpdir
     // Never delete arbitrary parent directories from untrusted --request-file paths
     try {
-      const safeTmpDir = tmpdir();
+      const safeTmpDir = resolve(tmpdir());
       const dirBasename = basename(dir);
-      
+
       // Only delete if:
       // 1. dir is directly under os.tmpdir()
       // 2. dir basename matches omc-jev-* pattern
-      if (dir.startsWith(safeTmpDir + '/') && dirBasename.startsWith('omc-jev-')) {
+      if (dirname(dir) === safeTmpDir && dirBasename.startsWith('omc-jev-')) {
         rmSync(dir, { recursive: true, force: true });
       }
     } catch {
