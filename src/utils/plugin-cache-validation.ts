@@ -214,7 +214,7 @@ function hasUsableOmcHookTargets(path: string, staleVersionIdentity: Stats): boo
       for (const hook of group.hooks) {
         if (!isRecord(hook)) return false;
         if (typeof hook.command !== 'string') continue;
-        for (const match of hook.command.matchAll(/\$\{CLAUDE_PLUGIN_ROOT\}["']?([\\/][^"'`\s]+)/g)) {
+        for (const match of hook.command.matchAll(/\$(?:\{CLAUDE_PLUGIN_ROOT\}|CLAUDE_PLUGIN_ROOT)["']?([\\/][^"'`\s]+)/g)) {
           const reference = match[1];
           if (!reference) return false;
           const pathParts = reference.split(/[\\/]+/).filter(Boolean);

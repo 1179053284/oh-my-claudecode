@@ -27,6 +27,8 @@ const { purgeStalePluginCacheVersions } = await import('../utils/paths.js');
 const PLUGIN = 'omc/oh-my-claudecode';
 const STALE = '4.15.6';
 const ACTIVE = '4.15.10';
+const LEGACY_SESSION_START_COMMAND =
+  'sh "$CLAUDE_PLUGIN_ROOT"/scripts/find-node.sh "$CLAUDE_PLUGIN_ROOT"/scripts/session-start.mjs';
 const LEGACY = ['4.13.5', '4.14.0'];
 let pluginDir: string;
 
@@ -44,7 +46,10 @@ function writeVersion(version: string): string {
   return directory;
 }
 
-function writeSessionStartManifest(versionPath: string): void {
+function writeSessionStartManifest(
+  versionPath: string,
+  command = 'node "${CLAUDE_PLUGIN_ROOT}"/scripts/run.cjs "${CLAUDE_PLUGIN_ROOT}"/scripts/session-start.mjs',
+): void {
   writeFileSync(
     join(versionPath, 'hooks', 'hooks.json'),
     JSON.stringify({
@@ -56,8 +61,7 @@ function writeSessionStartManifest(versionPath: string): void {
             hooks: [
               {
                 type: 'command',
-                command:
-                  'node "${CLAUDE_PLUGIN_ROOT}"/scripts/run.cjs "${CLAUDE_PLUGIN_ROOT}"/scripts/session-start.mjs',
+                command,
                 timeout: 5,
               },
             ],
@@ -165,9 +169,11 @@ describe('purgeStalePluginCacheVersions symlink payload validation', () => {
     const stale = writeVersion(STALE);
     const staleScript = join(stale, 'scripts', 'session-start.mjs');
     const active = join(pluginDir, ACTIVE);
+    writeFileSync(join(stale, 'scripts', 'find-node.sh'), '#!/bin/sh\n');
+    writeFileSync(join(active, 'scripts', 'find-node.sh'), '#!/bin/sh\n');
     writeFileSync(staleScript, '// complete stale hook script');
-    writeSessionStartManifest(stale);
-    writeSessionStartManifest(active);
+    writeSessionStartManifest(stale, LEGACY_SESSION_START_COMMAND);
+    writeSessionStartManifest(active, LEGACY_SESSION_START_COMMAND);
     makeStale(stale);
     installPath(active);
 
@@ -183,8 +189,9 @@ describe('purgeStalePluginCacheVersions symlink payload validation', () => {
   it('allows a directory symlink back to an ancestor when validating OMC payload', () => {
     const stale = writeVersion(STALE);
     const active = join(pluginDir, ACTIVE);
+    writeFileSync(join(active, 'scripts', 'find-node.sh'), '#!/bin/sh\n');
     writeFileSync(join(active, 'scripts', 'session-start.mjs'), '// active hook script');
-    writeSessionStartManifest(active);
+    writeSessionStartManifest(active, LEGACY_SESSION_START_COMMAND);
     const docs = join(active, 'docs');
     const backLink = join(docs, 'back');
     mkdirSync(docs);
