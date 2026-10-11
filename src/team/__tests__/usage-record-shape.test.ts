@@ -76,6 +76,35 @@ describe('usage JSONL record recovery', () => {
     expect(report.workers[1].totalPromptChars).toBe(3);
     expect(report.totalWallClockMs).toBe(2001);
   });
+  it('skips duration additions beyond the safe aggregate range while retaining later records', () => {
+    recordTaskUsage(root, 'duration', {
+      ...valid, workerName: 'worker-1', wallClockMs: Number.MAX_SAFE_INTEGER, promptChars: 0, responseChars: 0,
+    });
+    for (let task = 0; task < 10; task++) {
+      recordTaskUsage(root, 'duration', { ...valid, taskId: `rounded-${task}`, workerName: 'worker-2', wallClockMs: 1 });
+    }
+    recordTaskUsage(root, 'duration', {
+      ...valid, taskId: 'later', workerName: 'worker-3', wallClockMs: 0, promptChars: 2, responseChars: 3,
+    });
+
+    const report = generateUsageReport(root, 'duration');
+    expect(report.taskCount).toBe(2);
+    expect(report.totalWallClockMs).toBe(Number.MAX_SAFE_INTEGER);
+    expect(report.workers.map(worker => worker.workerName)).toEqual(['worker-1', 'worker-3']);
+    expect(report.workers[1].totalPromptChars).toBe(2);
+  });
+  it('skips a positive duration increment when floating-point precision rounds it away', () => {
+    recordTaskUsage(root, 'rounded', {
+      ...valid, workerName: 'worker-1', wallClockMs: Number.MAX_SAFE_INTEGER - 1, promptChars: 0, responseChars: 0,
+    });
+    recordTaskUsage(root, 'rounded', { ...valid, taskId: 'lost', workerName: 'worker-2', wallClockMs: 0.25 });
+    recordTaskUsage(root, 'rounded', { ...valid, taskId: 'later', workerName: 'worker-3', wallClockMs: 1 });
+
+    const report = generateUsageReport(root, 'rounded');
+    expect(report.taskCount).toBe(2);
+    expect(report.totalWallClockMs).toBe(Number.MAX_SAFE_INTEGER);
+    expect(report.workers.map(worker => worker.workerName)).toEqual(['worker-1', 'worker-3']);
+  });
   it('returns an empty report when every syntactically valid record is invalid', () => {
     recordTaskUsage(root, 'empty', valid);
     const log = join(getOmcRoot(root), 'logs', 'team-usage-empty.jsonl');

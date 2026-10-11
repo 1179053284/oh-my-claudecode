@@ -143,19 +143,24 @@ export function generateUsageReport(
 
   for (const r of records) {
     const existing = workerMap.get(r.workerName);
-    const nextWallClockMs = (existing?.totalWallClockMs ?? 0) + r.wallClockMs;
+    const currentWallClockMs = existing?.totalWallClockMs ?? 0;
+    const nextWallClockMs = currentWallClockMs + r.wallClockMs;
     const nextPromptChars = (existing?.totalPromptChars ?? 0) + r.promptChars;
     const nextResponseChars = (existing?.totalResponseChars ?? 0) + r.responseChars;
     const nextTotalWallClockMs = totalWallClockMs + r.wallClockMs;
+    const losesDurationPrecision = r.wallClockMs > 0
+      && (nextWallClockMs === currentWallClockMs || nextTotalWallClockMs === totalWallClockMs);
     // Skip the whole record if adding it would corrupt totals; retain later valid siblings.
     if (!Number.isFinite(nextWallClockMs) || !Number.isFinite(nextTotalWallClockMs)
+      || nextWallClockMs > Number.MAX_SAFE_INTEGER || nextTotalWallClockMs > Number.MAX_SAFE_INTEGER
+      || losesDurationPrecision
       || !Number.isSafeInteger(nextPromptChars) || !Number.isSafeInteger(nextResponseChars)) continue;
     totalWallClockMs = nextTotalWallClockMs;
     if (existing) {
       existing.taskCount++;
-      existing.totalWallClockMs += r.wallClockMs;
-      existing.totalPromptChars += r.promptChars;
-      existing.totalResponseChars += r.responseChars;
+      existing.totalWallClockMs = nextWallClockMs;
+      existing.totalPromptChars = nextPromptChars;
+      existing.totalResponseChars = nextResponseChars;
     } else {
       workerMap.set(r.workerName, {
         workerName: r.workerName,
