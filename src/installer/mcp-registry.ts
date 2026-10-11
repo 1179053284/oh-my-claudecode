@@ -312,17 +312,14 @@ function codexEntriesEqual(
   const comparableRegistryEntry = { ...registryEntry };
   if (typeFieldPresent) {
     comparableCodexEntry.type = normalizeCodexMcpType(codexEntry.type);
-    comparableRegistryEntry.type = normalizeCodexMcpType(registryEntry.type);
+    comparableRegistryEntry.type = normalizeCodexMcpType(
+      registryEntry.type ?? inferCodexMcpTransportType(registryEntry),
+    );
   } else {
-    const inferredType = codexEntry.command && !codexEntry.url
-      ? 'stdio'
-      : codexEntry.url && !codexEntry.command
-        ? 'http'
-        : undefined;
+    const inferredType = inferCodexMcpTransportType(codexEntry);
     if (
       registryEntry.type !== undefined
-      && registryEntry.type !== inferredType
-      && !(inferredType === 'http' && registryEntry.type === 'streamable-http')
+      && normalizeCodexMcpType(registryEntry.type) !== inferredType
     ) {
       return false;
     }
@@ -333,6 +330,12 @@ function codexEntriesEqual(
 
 function normalizeCodexMcpType(type: string | undefined): string | undefined {
   return type === 'streamable-http' ? 'http' : type;
+}
+
+function inferCodexMcpTransportType(entry: UnifiedMcpRegistryEntry): string | undefined {
+  if (entry.command && !entry.url) return 'stdio';
+  if (entry.url && !entry.command) return 'http';
+  return undefined;
 }
 
 export function applyRegistryToClaudeSettings(

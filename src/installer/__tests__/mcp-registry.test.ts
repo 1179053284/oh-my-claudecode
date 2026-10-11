@@ -836,6 +836,9 @@ describe('unified MCP registry sync', () => {
       streamableAlias: { url: 'https://mcp.example.com/streamable-alias', type: 'streamable-http' },
       streamableOmitted: { url: 'https://mcp.example.com/streamable-omitted', type: 'streamable-http' },
       unicodeTypeMismatch: { url: 'https://mcp.example.com/unicode', type: 'http' },
+      implicitStdio: { command: '/tools/implicit-stdio.sh' },
+      implicitHttp: { url: 'https://mcp.example.com/implicit-http' },
+      implicitTypeMismatch: { url: 'https://mcp.example.com/implicit-mismatch' },
     };
 
     writeFileSync(getUnifiedMcpRegistryPath(), JSON.stringify(registry, null, 2));
@@ -886,12 +889,24 @@ describe('unified MCP registry sync', () => {
       'url = "https://mcp.example.com/unicode"',
       '"\\U00000074ype" = "sse"',
       '',
+      '[mcp_servers.implicitStdio]',
+      'command = "/tools/implicit-stdio.sh"',
+      'type = "stdio"',
+      '',
+      '[mcp_servers.implicitHttp]',
+      'url = "https://mcp.example.com/implicit-http"',
+      'type = "streamable-http"',
+      '',
+      '[mcp_servers.implicitTypeMismatch]',
+      'url = "https://mcp.example.com/implicit-mismatch"',
+      'type = "sse"',
+      '',
     ].join('\n'));
 
     const status = inspectUnifiedMcpRegistrySync();
 
     expect(status.codexMissing).toEqual([]);
-    expect(status.codexMismatched).toEqual(['changed', 'quotedTypeMismatch', 'sseOmitted', 'typeMismatch', 'unicodeTypeMismatch', 'unparsedType']);
+    expect(status.codexMismatched).toEqual(['changed', 'implicitTypeMismatch', 'quotedTypeMismatch', 'sseOmitted', 'typeMismatch', 'unicodeTypeMismatch', 'unparsedType']);
     expect(status.claudeMissing).toEqual([]);
     expect(status.claudeMismatched).toEqual([]);
   });
