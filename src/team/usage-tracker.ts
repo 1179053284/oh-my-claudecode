@@ -92,6 +92,21 @@ export function measureCharCounts(
   return { promptChars, responseChars };
 }
 
+function isTaskUsageRecord(value: unknown): value is TaskUsageRecord {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
+  const record = value as Record<string, unknown>;
+  for (const field of ['taskId', 'workerName', 'model', 'startedAt', 'completedAt']) {
+    if (typeof record[field] !== 'string' || !record[field].trim()) return false;
+  }
+  if (record.provider !== 'codex' && record.provider !== 'gemini') return false;
+  for (const field of ['wallClockMs', 'promptChars', 'responseChars']) {
+    const count = record[field];
+    if (typeof count !== 'number' || !Number.isFinite(count) || count < 0) return false;
+    if (field !== 'wallClockMs' && !Number.isInteger(count)) return false;
+  }
+  return true;
+}
+
 /**
  * Read all usage records from the JSONL log.
  */
@@ -105,7 +120,8 @@ function readUsageRecords(workingDirectory: string, teamName: string): TaskUsage
   const records: TaskUsageRecord[] = [];
   for (const line of lines) {
     try {
-      records.push(JSON.parse(line));
+      const record: unknown = JSON.parse(line);
+      if (isTaskUsageRecord(record)) records.push(record);
     } catch { /* skip malformed */ }
   }
 
