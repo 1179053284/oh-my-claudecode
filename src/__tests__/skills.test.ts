@@ -438,7 +438,12 @@ describe('Builtin Skills', () => {
     it('preserves non-OMC hooks when fixing legacy settings hooks (issue #4277)', () => {
       const raw = readFileSync(join(originalCwd, 'skills', 'omc-doctor', 'SKILL.md'), 'utf-8');
       expect(raw).toContain('ask for explicit confirmation of that scoped change');
-      expect(raw).toContain('create a timestamped backup');
+      expect(raw).toContain('verify the target is a regular non-symlink file');
+      expect(raw).toContain('Create a timestamped backup beside the original with exclusive, no-follow semantics');
+      expect(raw).toContain('Give the backup permissions no broader than the source');
+      expect(raw).toContain('Write the replacement through a same-directory exclusive/no-follow temporary file and atomic replacement');
+      expect(raw).toContain('On Windows, preserve the source ACLs using platform-appropriate operations');
+      expect(raw).toContain('If the backup or replacement cannot be kept no broader than the original, leave the settings file untouched and do not apply cleanup');
       expect(raw).toContain('every project-local settings file Claude Code may read');
       expect(raw).toContain('Do not match other scripts merely because they are under a `hooks/` directory');
       expect(raw).toContain('keyword-detector.sh');
