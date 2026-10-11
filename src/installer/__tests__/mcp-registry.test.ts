@@ -843,6 +843,7 @@ describe('unified MCP registry sync', () => {
       multilineType: { url: 'https://mcp.example.com/multiline-type' },
       multilineLiteralType: { url: 'https://mcp.example.com/multiline-literal-type' },
       multilineContinuationType: { url: 'https://mcp.example.com/multiline-continuation' },
+      multilineSpacedContinuationType: { url: 'https://mcp.example.com/multiline-spaced-continuation' },
     };
 
     writeFileSync(getUnifiedMcpRegistryPath(), JSON.stringify(registry, null, 2));
@@ -922,6 +923,11 @@ describe('unified MCP registry sync', () => {
       '[mcp_servers.multilineContinuationType]',
       'url = "https://mcp.example.com/multiline-continuation"',
       'type = """ht\\',
+      '    tp"""',
+      '',
+      '[mcp_servers.multilineSpacedContinuationType]',
+      'url = "https://mcp.example.com/multiline-spaced-continuation"',
+      'type = """ht\\   ',
       '    tp"""',
       '',
     ].join('\n'));
