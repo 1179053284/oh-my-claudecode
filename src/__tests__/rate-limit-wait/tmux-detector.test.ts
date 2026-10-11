@@ -10,6 +10,7 @@ import {
   capturePaneContent,
   formatBlockedPanesSummary,
   scanForBlockedPanes,
+  revalidateBlockedPanes,
 } from '../../features/rate-limit-wait/tmux-detector.js';
 import type { BlockedPane } from '../../features/rate-limit-wait/types.js';
 
@@ -481,6 +482,85 @@ describe('tmux-detector', () => {
       const content = capturePaneContent('%0');
 
       expect(content).toBe('');
+    });
+  });
+
+  describe('revalidateBlockedPanes', () => {
+    const trackedPane: BlockedPane = {
+      id: '%0',
+      session: 'main',
+      windowIndex: 0,
+      windowName: 'dev',
+      paneIndex: 0,
+      isActive: true,
+      analysis: { hasClaudeCode: true, hasRateLimitMessage: true, isBlocked: true, confidence: 1 },
+      firstDetectedAt: new Date('2026-01-01T00:00:00.000Z'),
+      resumeAttempted: false,
+    };
+    const paneList = 'main:0.0 %0 1 dev Claude\n';
+    const livePrompt = [
+      'Claude Code v1.2.3',
+      "You've reached your rate limit. Please wait for the limit to reset.",
+      '[1] Continue when ready',
+      '[2] Exit',
+    ].join('\n');
+
+    function makeTmuxAvailable(): void {
+      vi.mocked(tmuxSpawn).mockReturnValue({
+        status: 0,
+        stdout: '/usr/bin/tmux',
+        stderr: '',
+        signal: null,
+        pid: 1234,
+        output: [],
+      });
+    }
+
+    it('requires a live continuation option near the current pane prompt', () => {
+      makeTmuxAvailable();
+      vi.mocked(tmuxExec)
+        .mockReturnValueOnce(paneList)
+        .mockReturnValueOnce(livePrompt);
+
+      expect(revalidateBlockedPanes([trackedPane])).toMatchObject([
+        { id: '%0', session: 'main', windowName: 'dev' },
+      ]);
+    });
+
+    it('rejects old rate-limit text after the pane has resumed into a conversation', () => {
+      makeTmuxAvailable();
+      const activeConversation = [
+        'Claude Code v1.2.3',
+        "You've reached your rate limit. Please wait for the limit to reset.",
+        '[1] Continue when ready',
+        '[2] Exit',
+        '❯ How can I help?',
+      ].join('\n');
+      vi.mocked(tmuxExec)
+        .mockReturnValueOnce(paneList)
+        .mockReturnValueOnce(activeConversation);
+
+      expect(revalidateBlockedPanes([trackedPane])).toEqual([]);
+    });
+
+    it('returns inconclusive when pane listing fails', () => {
+      makeTmuxAvailable();
+      vi.mocked(tmuxExec).mockImplementationOnce(() => {
+        throw new Error('tmux server unavailable');
+      });
+
+      expect(revalidateBlockedPanes([trackedPane])).toBeNull();
+    });
+
+    it('returns inconclusive when a tracked pane capture fails', () => {
+      makeTmuxAvailable();
+      vi.mocked(tmuxExec)
+        .mockReturnValueOnce(paneList)
+        .mockImplementationOnce(() => {
+          throw new Error('pane capture failed');
+        });
+
+      expect(revalidateBlockedPanes([trackedPane])).toBeNull();
     });
   });
 

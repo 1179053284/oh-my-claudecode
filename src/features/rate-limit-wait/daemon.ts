@@ -29,6 +29,7 @@ import {
 import {
   isTmuxAvailable,
   scanForBlockedPanes,
+  revalidateBlockedPanes,
   sendResumeSequence,
   formatBlockedPanesSummary,
 } from './tmux-detector.js';
@@ -293,6 +294,7 @@ function createInitialState(): DaemonState {
     startedAt: new Date(),
     lastPollAt: null,
     rateLimitStatus: null,
+    resumePending: false,
     blockedPanes: [],
     resumedPaneIds: [],
     totalResumeAttempts: 0,
@@ -319,6 +321,7 @@ function scopeStateToCurrentUsageProfile(state: DaemonState): DaemonState {
     state.lastPollAt = null;
     state.rateLimitStatus = null;
     state.lastConfirmedLimited = false;
+    state.resumePending = false;
     state.blockedPanes = [];
     state.resumedPaneIds = [];
     state.totalResumeAttempts = 0;
@@ -401,16 +404,19 @@ async function pollLoop(config: Required<DaemonConfig>): Promise<void> {
         ),
       ]);
       const isNowLimited = shouldMonitorBlockedPanes(rateLimitStatus);
+      const isConfirmedClear =
+        rateLimitStatus !== null && !isNowLimited && !isRateLimitStatusDegraded(rateLimitStatus);
       const shouldResumeBlockedPanes = shouldResumeBlockedPanesOnStatusChange(
         { isLimited: lastConfirmedLimited },
         rateLimitStatus,
-      );
+      ) || (state.resumePending === true && isConfirmedClear);
 
       state.rateLimitStatus = rateLimitStatus;
       if (rateLimitStatus?.isLimited) {
         // Stale cached exhaustion can still carry a previously confirmed limit;
         // a stale all-clear cannot confirm recovery.
         lastConfirmedLimited = true;
+        state.resumePending = false;
       } else if (rateLimitStatus && !isRateLimitStatusDegraded(rateLimitStatus)) {
         lastConfirmedLimited = rateLimitStatus.isLimited;
       }
@@ -446,47 +452,54 @@ async function pollLoop(config: Required<DaemonConfig>): Promise<void> {
       // If rate limit just cleared (was limited, now not), attempt resume
       if (shouldResumeBlockedPanes && state.blockedPanes.length > 0) {
         log('Rate limit cleared! Attempting to resume blocked panes', config);
-        const currentlyBlockedPanes = isTmuxAvailable()
-          ? scanForBlockedPanes(config.paneLinesToCapture)
-          : [];
+        const currentlyBlockedPanes = revalidateBlockedPanes(
+          state.blockedPanes,
+          config.paneLinesToCapture,
+        );
 
-        for (const pane of state.blockedPanes) {
-          if (state.resumedPaneIds.includes(pane.id)) {
-            log(`Skipping already resumed pane: ${pane.id}`, config);
-            continue;
+        if (currentlyBlockedPanes === null) {
+          state.resumePending = true;
+          log('Pane revalidation was inconclusive; retaining blocked panes for retry', config);
+        } else {
+          for (const pane of state.blockedPanes) {
+            if (state.resumedPaneIds.includes(pane.id)) {
+              log(`Skipping already resumed pane: ${pane.id}`, config);
+              continue;
+            }
+
+            const currentPane = currentlyBlockedPanes.find((current) =>
+              current.id === pane.id &&
+              current.session === pane.session &&
+              current.windowIndex === pane.windowIndex &&
+              current.windowName === pane.windowName &&
+              current.paneIndex === pane.paneIndex
+            );
+            if (!currentPane) {
+              log(`Skipping pane no longer blocked at its saved location: ${pane.id}`, config);
+              continue;
+            }
+
+            state.totalResumeAttempts++;
+            log(`Attempting resume for pane: ${pane.id}`, config);
+
+            const success = sendResumeSequence(pane.id);
+            pane.resumeAttempted = true;
+            pane.resumeSuccessful = success;
+
+            if (success) {
+              state.successfulResumes++;
+              state.resumedPaneIds.push(pane.id);
+              log(`Successfully sent resume to pane: ${pane.id}`, config);
+            } else {
+              state.errorCount++;
+              log(`Failed to send resume to pane: ${pane.id}`, config);
+            }
           }
 
-          const currentPane = currentlyBlockedPanes.find((current) =>
-            current.id === pane.id &&
-            current.session === pane.session &&
-            current.windowIndex === pane.windowIndex &&
-            current.windowName === pane.windowName &&
-            current.paneIndex === pane.paneIndex
-          );
-          if (!currentPane) {
-            log(`Skipping pane no longer blocked at its saved location: ${pane.id}`, config);
-            continue;
-          }
-
-          state.totalResumeAttempts++;
-          log(`Attempting resume for pane: ${pane.id}`, config);
-
-          const success = sendResumeSequence(pane.id);
-          pane.resumeAttempted = true;
-          pane.resumeSuccessful = success;
-
-          if (success) {
-            state.successfulResumes++;
-            state.resumedPaneIds.push(pane.id);
-            log(`Successfully sent resume to pane: ${pane.id}`, config);
-          } else {
-            state.errorCount++;
-            log(`Failed to send resume to pane: ${pane.id}`, config);
-          }
+          // Clear blocked panes after a conclusive revalidation and resume attempt.
+          state.blockedPanes = [];
+          state.resumePending = false;
         }
-
-        // Clear blocked panes after resume attempt
-        state.blockedPanes = [];
       }
 
       // If rate limit cleared and no blocked panes, clear resumed list

@@ -96,6 +96,8 @@ export interface DaemonState {
   lastConfirmedLimited?: boolean;
   /** Fingerprint of the Claude profile associated with the saved quota state */
   usageProfileHash?: string;
+  /** A confirmed clear is waiting for a conclusive pane revalidation */
+  resumePending?: boolean;
   /** Currently tracked blocked panes */
   blockedPanes: BlockedPane[];
   /** Panes that have been resumed (to avoid re-sending) */

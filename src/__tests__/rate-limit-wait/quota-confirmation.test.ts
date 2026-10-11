@@ -6,7 +6,12 @@ import { tmpdir } from 'node:os';
 import { getClaudeConfigDir } from '../../utils/config-dir.js';
 import type { BlockedPane, DaemonConfig, DaemonState, RateLimitStatus } from '../../features/rate-limit-wait/types.js';
 
-const boundary = vi.hoisted(() => ({ check: vi.fn(), resume: vi.fn(() => true), scan: vi.fn() }));
+const boundary = vi.hoisted(() => ({
+  check: vi.fn(),
+  resume: vi.fn(() => true),
+  scan: vi.fn(),
+  revalidate: vi.fn(),
+}));
 vi.mock('../../features/rate-limit-wait/rate-limit-monitor.js', async importOriginal => ({
   ...await importOriginal<typeof import('../../features/rate-limit-wait/rate-limit-monitor.js')>(),
   checkRateLimitStatus: boundary.check,
@@ -15,6 +20,7 @@ vi.mock('../../features/rate-limit-wait/tmux-detector.js', async importOriginal 
   ...await importOriginal<typeof import('../../features/rate-limit-wait/tmux-detector.js')>(),
   isTmuxAvailable: () => true,
   scanForBlockedPanes: boundary.scan,
+  revalidateBlockedPanes: boundary.revalidate,
   sendResumeSequence: boundary.resume,
 }));
 import { pollLoop, shouldResumeBlockedPanesOnStatusChange } from '../../features/rate-limit-wait/daemon.js';
@@ -59,6 +65,8 @@ describe('confirmed quota transitions in the actual daemon polling loop', () => 
     boundary.resume.mockClear();
     boundary.scan.mockReset();
     boundary.scan.mockReturnValue([blockedPane()]);
+    boundary.revalidate.mockReset();
+    boundary.revalidate.mockReturnValue([blockedPane()]);
     originalConfigDir = process.env.CLAUDE_CONFIG_DIR;
     root = mkdtempSync(join(tmpdir(), 'omc-quota-confirmation-'));
     config = { pollIntervalMs: 1000, paneLinesToCapture: 15, verbose: false,
@@ -150,10 +158,21 @@ describe('confirmed quota transitions in the actual daemon polling loop', () => 
   it('does not resume a restored pane after its saved location has changed', async () => {
     seed(status(true));
     await start(null);
-    boundary.scan.mockReturnValue([blockedPane({ session: 'reused-session' })]);
+    boundary.revalidate.mockReturnValue([blockedPane({ session: 'reused-session' })]);
     await next(status(false));
     expect(boundary.resume).not.toHaveBeenCalled();
     expect(observed().successfulResumes).toBe(0);
+  });
+  it('retains panes after inconclusive revalidation and retries on the next clear poll', async () => {
+    seed(status(true));
+    await start(null);
+    boundary.revalidate.mockReturnValueOnce(null).mockReturnValue([blockedPane()]);
+    await next(status(false));
+    expect(boundary.resume).not.toHaveBeenCalled();
+    expect(observed().blockedPanes).toHaveLength(1);
+    await next(status(false));
+    expect(boundary.resume).toHaveBeenCalledExactlyOnceWith('%test');
+    expect(observed().blockedPanes).toEqual([]);
   });
   it('does not carry quota state across Claude config profiles', async () => {
     seed(status(true));

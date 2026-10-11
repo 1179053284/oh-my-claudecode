@@ -169,6 +169,12 @@ const WAITING_PATTERNS = [
   /enter to confirm/i,
 ];
 
+/** The first menu option must still offer an actionable continuation. */
+const LIVE_RESUME_OPTION_PATTERN =
+  /^\s*(?:❯\s*)?(?:\[1\]|1[.)]?)\s+(?:continue|resume|retry|try again)\b/im;
+const LIVE_PROMPT_LINE_PATTERN =
+  /^\s*(?:❯\s*)?(?:\[\d+\]|\d+[.)])\s+\S|^\s*(?:press enter|select an option|continue\?)/i;
+
 /**
  * Check if tmux is installed and available.
  * On Windows, a tmux-compatible binary such as psmux may provide tmux.
@@ -189,12 +195,36 @@ export function isInsideTmux(): boolean {
   return !!process.env.TMUX;
 }
 
-/**
- * List all tmux panes across all sessions
- */
-export function listTmuxPanes(): TmuxPane[] {
+function parseTmuxPanes(result: string): TmuxPane[] {
+  const panes: TmuxPane[] = [];
+
+  for (const line of result.trim().split('\n')) {
+    if (!line.trim()) continue;
+
+    const parts = line.split(' ');
+    if (parts.length < 4) continue;
+
+    const [location, paneId, activeStr, windowName, ...titleParts] = parts;
+    const [sessionWindow, paneIndexStr] = location.split('.');
+    const [session, windowIndexStr] = sessionWindow.split(':');
+
+    panes.push({
+      id: paneId,
+      session,
+      windowIndex: parseInt(windowIndexStr, 10),
+      windowName,
+      paneIndex: parseInt(paneIndexStr, 10),
+      title: titleParts.join(' ') || undefined,
+      isActive: activeStr === '1',
+    });
+  }
+
+  return panes;
+}
+
+function listTmuxPanesStrict(): TmuxPane[] | null {
   if (!isTmuxAvailable()) {
-    return [];
+    return null;
   }
 
   try {
@@ -205,34 +235,18 @@ export function listTmuxPanes(): TmuxPane[] {
       timeout: 5000,
     });
 
-    const panes: TmuxPane[] = [];
-
-    for (const line of result.trim().split('\n')) {
-      if (!line.trim()) continue;
-
-      const parts = line.split(' ');
-      if (parts.length < 4) continue;
-
-      const [location, paneId, activeStr, windowName, ...titleParts] = parts;
-      const [sessionWindow, paneIndexStr] = location.split('.');
-      const [session, windowIndexStr] = sessionWindow.split(':');
-
-      panes.push({
-        id: paneId,
-        session,
-        windowIndex: parseInt(windowIndexStr, 10),
-        windowName,
-        paneIndex: parseInt(paneIndexStr, 10),
-        title: titleParts.join(' ') || undefined,
-        isActive: activeStr === '1',
-      });
-    }
-
-    return panes;
+    return parseTmuxPanes(result);
   } catch (error) {
     console.error('[TmuxDetector] Error listing panes:', error);
-    return [];
+    return null;
   }
+}
+
+/**
+ * List all tmux panes across all sessions.
+ */
+export function listTmuxPanes(): TmuxPane[] {
+  return listTmuxPanesStrict() ?? [];
 }
 
 /**
@@ -271,15 +285,15 @@ export function isPaneAlive(paneId: string): boolean {
  * @param paneId - The tmux pane ID (e.g., "%0")
  * @param lines - Number of lines to capture (default: 15)
  */
-export function capturePaneContent(paneId: string, lines = 15): string {
+function capturePaneContentStrict(paneId: string, lines: number): string | null {
   if (!isTmuxAvailable()) {
-    return '';
+    return null;
   }
 
   // Validate pane ID to prevent command injection
   if (!isValidPaneId(paneId)) {
     console.error(`[TmuxDetector] Invalid pane ID format: ${paneId}`);
-    return '';
+    return null;
   }
 
   // Validate lines is a reasonable positive integer
@@ -294,8 +308,12 @@ export function capturePaneContent(paneId: string, lines = 15): string {
     return result;
   } catch (error) {
     console.error(`[TmuxDetector] Error capturing pane ${paneId}:`, error);
-    return '';
+    return null;
   }
+}
+
+export function capturePaneContent(paneId: string, lines = 15): string {
+  return capturePaneContentStrict(paneId, lines) ?? '';
 }
 
 /**
@@ -400,6 +418,61 @@ export function scanForBlockedPanes(lines = 15, stateDir?: string): BlockedPane[
   }
 
   return blocked;
+}
+
+/**
+ * Revalidate persisted pane candidates before sending resume keys.
+ * Returns null when tmux could not provide a complete scan, so callers can retry
+ * without discarding recovery state. A successful scan only returns panes whose
+ * current output still shows a rate-limit screen and a live first resume option.
+ */
+export function revalidateBlockedPanes(
+  trackedPanes: BlockedPane[],
+  lines = 15,
+): BlockedPane[] | null {
+  if (trackedPanes.length === 0) return [];
+
+  const livePanes = listTmuxPanesStrict();
+  if (livePanes === null) return null;
+
+  const resumable: BlockedPane[] = [];
+  for (const tracked of trackedPanes) {
+    if (!isValidPaneId(tracked.id)) continue;
+    const current = livePanes.find((pane) =>
+      pane.id === tracked.id &&
+      pane.session === tracked.session &&
+      pane.windowIndex === tracked.windowIndex &&
+      pane.windowName === tracked.windowName &&
+      pane.paneIndex === tracked.paneIndex
+    );
+    if (!current) continue;
+
+    const content = capturePaneContentStrict(current.id, lines);
+    if (content === null) return null;
+
+    const analysis = analyzePaneContent(content);
+    const recentLines = content
+      .split(/\r?\n/)
+      .filter((line) => line.trim())
+      .slice(-5)
+      .join('\n');
+    const lastLine = recentLines.split('\n').at(-1) ?? '';
+    if (
+      !analysis.isBlocked ||
+      !LIVE_RESUME_OPTION_PATTERN.test(recentLines) ||
+      !LIVE_PROMPT_LINE_PATTERN.test(lastLine)
+    ) continue;
+
+    resumable.push({
+      ...current,
+      analysis,
+      firstDetectedAt: tracked.firstDetectedAt,
+      resumeAttempted: tracked.resumeAttempted,
+      resumeSuccessful: tracked.resumeSuccessful,
+    });
+  }
+
+  return resumable;
 }
 
 /**
