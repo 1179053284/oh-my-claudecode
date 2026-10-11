@@ -60,6 +60,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build TypeScript for runtime entrypoint tests
+        run: npx tsc
+
       - name: Run functional tests
         run: npm test -- --run
 
