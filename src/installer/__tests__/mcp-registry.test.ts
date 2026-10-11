@@ -832,6 +832,8 @@ describe('unified MCP registry sync', () => {
       sseOmitted: { url: 'https://mcp.example.com/sse', type: 'sse' },
       unparsedType: { command: 'node', type: 'stdio' },
       quotedTypeMismatch: { url: 'https://mcp.example.com/quoted', type: 'http' },
+      httpAlias: { url: 'https://mcp.example.com/http-alias', type: 'http' },
+      streamableAlias: { url: 'https://mcp.example.com/streamable-alias', type: 'streamable-http' },
     };
 
     writeFileSync(getUnifiedMcpRegistryPath(), JSON.stringify(registry, null, 2));
@@ -866,6 +868,14 @@ describe('unified MCP registry sync', () => {
       '[mcp_servers.quotedTypeMismatch]',
       'url = "https://mcp.example.com/quoted"',
       '"type" = "sse"',
+      '',
+      '[mcp_servers.httpAlias]',
+      'url = "https://mcp.example.com/http-alias"',
+      'type = "streamable-http"',
+      '',
+      '[mcp_servers.streamableAlias]',
+      'url = "https://mcp.example.com/streamable-alias"',
+      'type = "http"',
       '',
     ].join('\n'));
 

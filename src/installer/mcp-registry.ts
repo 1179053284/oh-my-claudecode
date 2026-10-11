@@ -308,8 +308,12 @@ function codexEntriesEqual(
     return false;
   }
 
+  const comparableCodexEntry = { ...codexEntry };
   const comparableRegistryEntry = { ...registryEntry };
-  if (!typeFieldPresent) {
+  if (typeFieldPresent) {
+    comparableCodexEntry.type = normalizeCodexMcpType(codexEntry.type);
+    comparableRegistryEntry.type = normalizeCodexMcpType(registryEntry.type);
+  } else {
     const inferredType = codexEntry.command && !codexEntry.url
       ? 'stdio'
       : codexEntry.url && !codexEntry.command
@@ -324,7 +328,11 @@ function codexEntriesEqual(
     }
     delete comparableRegistryEntry.type;
   }
-  return isDeepStrictEqual(codexEntry, comparableRegistryEntry);
+  return isDeepStrictEqual(comparableCodexEntry, comparableRegistryEntry);
+}
+
+function normalizeCodexMcpType(type: string | undefined): string | undefined {
+  return type === 'streamable-http' ? 'http' : type;
 }
 
 export function applyRegistryToClaudeSettings(
