@@ -464,11 +464,17 @@ describe('Builtin Skills', () => {
       expect(raw).toContain('persistent-mode.sh`: `c131c6846573f0f69b6e39aed1e6db8f05279131a8976f604c1511a46f564ce5`');
       expect(raw).toContain('session-start.sh`: `d87571c326c43cc43b6948aca661a9616faa6943cfe1d1131f482bd30f638134`');
       expect(raw).toContain('stop-continuation.sh`: `f74deb67479c7861b0966bc959ffd3917152b8872ac83d9243a03c7cb707b51f`');
+      expect(raw).toContain('any validated, retained versioned OMC package under `${CLAUDE_CONFIG_DIR:-~/.claude}/plugins/cache/omc/oh-my-claudecode/<version>/`');
+      expect(raw).toContain('keyword-detector.mjs` payload fingerprints (SHA-256) include `22d612620f54f360797e42fe608bf7f98155b92a3b0bba187fd89e216395d65a`');
+      expect(raw).toContain('`180fc09840baa8ada1661bcc5a13821c9ca802f43ac52cb4e517ca2cba75838a` (`387956a4`)');
+      expect(raw).toContain('`71a01806c1b0e29d8e553797de3900b7172654091980ae644d74e5e9291b8af2` (`0b46a595`)');
       expect(raw).toContain('No tracked OMC payload fingerprint is available for `silent-auto-update.sh` or historical `.js`/`.cjs` variants');
       expect(raw).toContain('If the plugin is inactive, does not provide that event, no payload or fingerprint exists');
       expect(raw).toContain('Never run an unconditional `rm -f` based on basename');
       expect(raw).toContain('plain direct invocation of exactly one listed file');
-      expect(raw).toContain('with no extra arguments, shell operators, or other commands');
+      expect(raw).toContain('or the exact executable script path alone when the target has execute permission');
+      expect(raw).toContain('`$HOME/.claude/hooks/keyword-detector.sh`');
+      expect(raw).toContain('No form may include extra arguments, shell operators, or other commands');
       expect(raw).toContain('`bash legacy.sh && run-my-check`');
       expect(raw).toContain('report it for manual cleanup and leave the hook object unchanged');
       expect(raw).toContain('If a composite or ambiguous command mentions a legacy path: WARN - manual cleanup required; never remove it automatically');
