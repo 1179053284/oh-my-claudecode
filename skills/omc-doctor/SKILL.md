@@ -38,7 +38,15 @@ Also recognize standalone Node hook registrations under the active config direct
 
 A command is an auto-fix candidate only when it is a plain direct invocation of exactly one listed file: `bash <exact .sh path>` or `node <exact Node path>`, with no extra arguments, shell operators, or other commands. If a command merely mentions the path, adds custom behavior (for example, `bash legacy.sh && run-my-check`), or cannot be parsed unambiguously, report it for manual cleanup and leave the hook object unchanged.
 
-Before diagnosing a standalone registration as a duplicate, confirm the OMC plugin is enabled for this context (`enabledPlugins` or legacy `plugins` in effective settings, or an active OMC `CLAUDE_PLUGIN_ROOT`) and the resolved active plugin root has `hooks/hooks.json` declaring a hook for the same event. A cached plugin version is insufficient. Also resolve the standalone script file and compare its bytes or SHA-256 with the shipped OMC payload for that exact filename. A matching name or path alone does not prove ownership. If the plugin is inactive, does not provide that event, the payload is missing, the target cannot be read, or the content differs, treat the entry as potentially active or user-owned and leave it for manual review.
+Before diagnosing a standalone registration as a duplicate, confirm the OMC plugin is enabled for this context (`enabledPlugins` or legacy `plugins` in effective settings, or an active OMC `CLAUDE_PLUGIN_ROOT`) and the resolved active plugin root has `hooks/hooks.json` declaring a hook for the same event. A cached plugin version is insufficient. Also resolve the standalone script file and compare its bytes or SHA-256 with the shipped OMC payload for that exact filename; for historical `.sh` files, use the versioned fingerprints below. A matching name or path alone does not prove ownership. If the plugin is inactive, does not provide that event, no payload or fingerprint exists, the target cannot be read, or the content differs, treat the entry as potentially active or user-owned and leave it for manual review.
+
+The tracked historical OMC Bash-hook payload fingerprints (SHA-256) are:
+- `keyword-detector.sh`: `abe4dd5e4b16231060166264d271a51e781f08a31c6aa402b26976f9c40d424e` (`96266316`), `748463911b2a8b7fffed51137c9731c962b656d490a1e4b27ef7ab10dbbbaff5` (`3a02feb1`), `1eaced21774916c31bec5b149a87009d014ffd8027ecf8e9d6ae6a36bdd79a40` (`bef486f1`)
+- `persistent-mode.sh`: `c131c6846573f0f69b6e39aed1e6db8f05279131a8976f604c1511a46f564ce5` (`96266316`), `219e50bf42b7a7a0e52fb142844dce21faca7c327d9acf346fa70f074ac982ac` (`3a02feb1`), `02f4d0d63a9ce092fe5be02ce6e79f275710b773d4b8d75ff33f272540451eff` (`bef486f1`)
+- `session-start.sh`: `d87571c326c43cc43b6948aca661a9616faa6943cfe1d1131f482bd30f638134` (`96266316`), `a9607c64a14d9f8e9fa990b9f38879ef095d85652f548b1232e28d14641214eb` (`3a02feb1`), `cf7aa2b008829784c8942766c3f00d348ef33a1aab66dd3f96536e95560fd56b` (`bef486f1`)
+- `stop-continuation.sh`: `f74deb67479c7861b0966bc959ffd3917152b8872ac83d9243a03c7cb707b51f` (`96266316`)
+
+No tracked OMC payload fingerprint is available for `silent-auto-update.sh` or historical `.js`/`.cjs` variants. Treat those files as ownership-inconclusive; do not automatically remove their hook registrations or files.
 
 **Diagnosis**:
 - If a direct command is verified as OMC-owned and the active plugin provides the same event: CRITICAL - duplicate legacy hook
@@ -52,7 +60,7 @@ ls -la "${CLAUDE_CONFIG_DIR:-$HOME/.claude}"/hooks/*.sh 2>/dev/null
 ```
 
 **Diagnosis**:
-- If a listed script exists, call it a duplicate only when the active plugin provides the matching event and the file matches its shipped OMC payload; otherwise mark ownership as unknown or treat it as an active standalone hook.
+- If a listed script exists, call it a duplicate only when the active plugin provides the matching event and the file matches a shipped payload or historical fingerprint; otherwise mark ownership as unknown or treat it as an active standalone hook.
 
 ### Step 4: Check CLAUDE.md
 

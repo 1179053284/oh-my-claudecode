@@ -459,7 +459,13 @@ describe('Builtin Skills', () => {
       expect(raw).toContain('A cached plugin version is insufficient');
       expect(raw).toContain('compare its bytes or SHA-256 with the shipped OMC payload for that exact filename');
       expect(raw).toContain('A matching name or path alone does not prove ownership');
-      expect(raw).toContain('If the plugin is inactive, does not provide that event, the payload is missing');
+      expect(raw).toContain('The tracked historical OMC Bash-hook payload fingerprints (SHA-256) are');
+      expect(raw).toContain('keyword-detector.sh`: `abe4dd5e4b16231060166264d271a51e781f08a31c6aa402b26976f9c40d424e`');
+      expect(raw).toContain('persistent-mode.sh`: `c131c6846573f0f69b6e39aed1e6db8f05279131a8976f604c1511a46f564ce5`');
+      expect(raw).toContain('session-start.sh`: `d87571c326c43cc43b6948aca661a9616faa6943cfe1d1131f482bd30f638134`');
+      expect(raw).toContain('stop-continuation.sh`: `f74deb67479c7861b0966bc959ffd3917152b8872ac83d9243a03c7cb707b51f`');
+      expect(raw).toContain('No tracked OMC payload fingerprint is available for `silent-auto-update.sh` or historical `.js`/`.cjs` variants');
+      expect(raw).toContain('If the plugin is inactive, does not provide that event, no payload or fingerprint exists');
       expect(raw).toContain('Never run an unconditional `rm -f` based on basename');
       expect(raw).toContain('plain direct invocation of exactly one listed file');
       expect(raw).toContain('with no extra arguments, shell operators, or other commands');
