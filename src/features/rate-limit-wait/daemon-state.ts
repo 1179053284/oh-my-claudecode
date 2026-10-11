@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { getUsageCredentialIdentity } from '../../hud/usage-api.js';
 import { getClaudeConfigDir } from '../../utils/config-dir.js';
 import { isRateLimitStatusDegraded, shouldMonitorBlockedPanes } from './rate-limit-monitor.js';
+import { resetPaneTailPositions } from './pane-fresh-capture.js';
 import type { DaemonState, RateLimitStatus } from './types.js';
 
 export function createInitialState(): DaemonState {
@@ -38,9 +39,11 @@ export function getUsageProfileHash(includeEnvironmentCredentials = true): strin
 export function scopeStateToCurrentUsageProfile(
   state: DaemonState,
   usageProfileHash: string | null,
+  stateDir: string,
 ): DaemonState {
   if (usageProfileHash === null) return state;
   if (state.usageProfileHash !== usageProfileHash) {
+    resetPaneTailPositions(stateDir);
     state.lastPollAt = null;
     state.rateLimitStatus = null;
     state.lastConfirmedLimited = false;

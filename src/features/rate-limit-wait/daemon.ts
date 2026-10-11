@@ -336,7 +336,7 @@ async function pollLoop(config: Required<DaemonConfig>): Promise<void> {
     try {
       const previousProfileHash = state.usageProfileHash;
       const usageProfileHash = getUsageProfileHash();
-      scopeStateToCurrentUsageProfile(state, usageProfileHash);
+      scopeStateToCurrentUsageProfile(state, usageProfileHash, dirname(config.stateFilePath));
       if (usageProfileHash !== null && state.usageProfileHash !== previousProfileHash) {
         lastConfirmedLimited = state.lastConfirmedLimited === true;
         log('Claude usage profile changed; discarded saved quota and pane state', config);
@@ -537,6 +537,7 @@ export function startDaemon(config?: DaemonConfig): DaemonResponse {
       const state = scopeStateToCurrentUsageProfile(
         readDaemonState(cfg) || createInitialState(),
         getUsageProfileHash(false),
+        dirname(cfg.stateFilePath),
       );
       state.isRunning = true;
       state.pid = pid;

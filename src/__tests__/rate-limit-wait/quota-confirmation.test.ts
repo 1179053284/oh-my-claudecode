@@ -234,6 +234,19 @@ describe('confirmed quota transitions in the actual daemon polling loop', () => 
     expect(observed().blockedPanes).toEqual([]);
     expect(observed().usageProfileHash).toBe(currentUsageProfileHash());
   });
+  it('resets pane cursors when discarding legacy unscoped state', async () => {
+    seed(status(true));
+    const legacyState = observed() as DaemonState & { usageProfileHash?: string };
+    delete legacyState.usageProfileHash;
+    writeFileSync(config.stateFilePath, JSON.stringify(legacyState));
+    writeFileSync(join(root, 'pane-tail-positions.json'), JSON.stringify({ '%test': 100 }));
+
+    await start(status(true));
+
+    expect(JSON.parse(readFileSync(join(root, 'pane-tail-positions.json'), 'utf8'))).toEqual({});
+    expect(boundary.scan).toHaveBeenCalledWith(15, root);
+    expect(observed().blockedPanes).toHaveLength(1);
+  });
   it('does not carry quota state across direct OAuth credential changes', async () => {
     process.env.CLAUDE_CODE_OAUTH_TOKEN = 'profile-a-token';
     seed(status(true));
@@ -285,6 +298,44 @@ describe('confirmed quota transitions in the actual daemon polling loop', () => 
     setStoredOAuthCredentials('account-a', 'access-a', 'refresh-a');
     await next(status(false));
     expect(boundary.resume).toHaveBeenCalledExactlyOnceWith('%test');
+  });
+  it('skips polls when Keychain is unavailable despite alternate file credentials', async () => {
+    seed(status(true));
+    const savedProfileHash = observed().usageProfileHash;
+    const profileDir = join(root, 'claude-profile');
+    mkdirSync(profileDir, { recursive: true });
+    writeFileSync(
+      join(profileDir, '.credentials.json'),
+      JSON.stringify({
+        claudeAiOauth: {
+          accessToken: 'account-b-access',
+          refreshToken: 'account-b-refresh',
+          oauthAccount: { uuid: 'account-b' },
+        },
+      }),
+    );
+    writeFileSync(
+      join(profileDir, '.claude.json'),
+      JSON.stringify({
+        oauthAccount: { accountUuid: 'account-a' },
+      }),
+    );
+    process.env.CLAUDE_CONFIG_DIR = profileDir;
+    delete process.env.CLAUDE_CODE_OAUTH_TOKEN;
+
+    const originalPlatform = process.platform;
+    Object.defineProperty(process, 'platform', { value: 'darwin', configurable: true });
+    try {
+      await start(status(false));
+    } finally {
+      Object.defineProperty(process, 'platform', { value: originalPlatform, configurable: true });
+    }
+
+    expect(boundary.check).not.toHaveBeenCalled();
+    expect(boundary.resume).not.toHaveBeenCalled();
+    expect(observed().lastConfirmedLimited).toBe(true);
+    expect(observed().blockedPanes).toHaveLength(1);
+    expect(observed().usageProfileHash).toBe(savedProfileHash);
   });
   it('discards quota state when the selected provider credential changes', async () => {
     process.env.ANTHROPIC_BASE_URL = 'https://api.minimax.io/anthropic';

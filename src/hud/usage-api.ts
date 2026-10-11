@@ -804,7 +804,20 @@ function isCredentialExpired(creds: OAuthCredentials): boolean {
   return creds.expiresAt != null && creds.expiresAt <= Date.now();
 }
 
-function readKeychainCredential(serviceName: string, account?: string): OAuthCredentials | null {
+type KeychainCredentialLookup =
+  | { status: 'found'; credentials: OAuthCredentials }
+  | { status: 'missing' }
+  | { status: 'unavailable' };
+
+function isMissingKeychainItem(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null) return false;
+  const details = error as { message?: unknown; stderr?: unknown };
+  return /the specified item could not be found in the keychain/i.test(
+    `${String(details.message ?? '')}\n${String(details.stderr ?? '')}`,
+  );
+}
+
+function readKeychainCredential(serviceName: string, account?: string): KeychainCredentialLookup {
   try {
     const args = account
       ? ['find-generic-password', '-s', serviceName, '-a', account, '-w']
@@ -815,37 +828,40 @@ function readKeychainCredential(serviceName: string, account?: string): OAuthCre
       stdio: ['pipe', 'pipe', 'pipe'],
     }).trim();
 
-    if (!result) return null;
+    if (!result) return { status: 'unavailable' };
 
     const parsed = JSON.parse(result);
 
     // Handle nested structure (claudeAiOauth wrapper)
     const creds = parsed.claudeAiOauth || parsed;
 
-    if (!creds.accessToken) return null;
+    if (!creds.accessToken) return { status: 'unavailable' };
     const profileIdentity = getOAuthAccountProfileIdentity(creds);
 
     return {
-      accessToken: creds.accessToken,
-      expiresAt: creds.expiresAt,
-      refreshToken: creds.refreshToken,
-      profileIdentity: profileIdentity ?? undefined,
-      profileIdentityUnavailable: profileIdentity === null,
-      source: 'keychain' as const,
-      keychainAccount: account ?? null,
-      subscriptionType: creds.subscriptionType,
-      rateLimitTier: creds.rateLimitTier,
+      status: 'found',
+      credentials: {
+        accessToken: creds.accessToken,
+        expiresAt: creds.expiresAt,
+        refreshToken: creds.refreshToken,
+        profileIdentity: profileIdentity ?? undefined,
+        profileIdentityUnavailable: profileIdentity === null,
+        source: 'keychain',
+        keychainAccount: account ?? null,
+        subscriptionType: creds.subscriptionType,
+        rateLimitTier: creds.rateLimitTier,
+      },
     };
-  } catch {
-    return null;
+  } catch (error) {
+    return isMissingKeychainItem(error) ? { status: 'missing' } : { status: 'unavailable' };
   }
 }
 
 /**
  * Read OAuth credentials from macOS Keychain
  */
-function readKeychainCredentials(): OAuthCredentials | null {
-  if (process.platform !== 'darwin') return null;
+function readKeychainCredentials(): KeychainCredentialLookup {
+  if (process.platform !== 'darwin') return { status: 'missing' };
 
   const serviceName = getKeychainServiceName();
   const candidateAccounts: Array<string | undefined> = [];
@@ -864,17 +880,23 @@ function readKeychainCredentials(): OAuthCredentials | null {
   let expiredFallback: OAuthCredentials | null = null;
 
   for (const account of candidateAccounts) {
-    const creds = readKeychainCredential(serviceName, account);
-    if (!creds) continue;
+    const result = readKeychainCredential(serviceName, account);
+    if (result.status === 'unavailable') {
+      if (expiredFallback) return { status: 'found', credentials: expiredFallback };
+      return result;
+    }
+    if (result.status === 'missing') continue;
+    const creds = result.credentials;
 
     if (!isCredentialExpired(creds)) {
-      return creds;
+      return result;
     }
 
     expiredFallback ??= creds;
   }
 
-  return expiredFallback;
+  if (expiredFallback) return { status: 'found', credentials: expiredFallback };
+  return { status: 'missing' };
 }
 
 /**
@@ -911,13 +933,11 @@ function readFileCredentials(): OAuthCredentials | null {
   return null;
 }
 
-/**
- * Get OAuth credentials (Keychain first, then file fallback)
- */
 function getStoredCredentialCacheKey(): string {
   return JSON.stringify([process.env.CLAUDE_CONFIG_DIR ?? null, getClaudeConfigDir()]);
 }
 
+/** Use the file fallback only after Keychain confirms there is no matching item. */
 function getStoredCredentials(refresh = false): OAuthCredentials | null {
   const configKey = getStoredCredentialCacheKey();
   if (
@@ -928,9 +948,14 @@ function getStoredCredentials(refresh = false): OAuthCredentials | null {
     return storedCredentialCache.credentials;
   }
 
-  // Try Keychain first (macOS)
-  const keychainCreds = readKeychainCredentials();
-  const credentials = keychainCreds ?? readFileCredentials();
+  // Do not treat a failed Keychain read as an absent entry: the file may belong to another account.
+  const keychainLookup = readKeychainCredentials();
+  let credentials: OAuthCredentials | null = null;
+  if (keychainLookup.status === 'found') {
+    credentials = keychainLookup.credentials;
+  } else if (keychainLookup.status === 'missing') {
+    credentials = readFileCredentials();
+  }
   storedCredentialCache = { configKey, checkedAt: Date.now(), credentials };
   storedCredentialLookupGeneration++;
   return credentials;

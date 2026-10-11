@@ -44,7 +44,9 @@ vi.mock('fs', async (importOriginal) => {
 
 vi.mock('child_process', () => ({
   execSync: vi.fn().mockImplementation(() => { throw new Error('mock: no keychain'); }),
-  execFileSync: vi.fn().mockImplementation(() => { throw new Error('mock: no keychain'); }),
+  execFileSync: vi.fn().mockImplementation(() => {
+    throw new Error('The specified item could not be found in the keychain.');
+  }),
 }));
 
 vi.mock('https', () => ({
@@ -405,7 +407,9 @@ describe('getUsage routing', () => {
     vi.mocked(fs.existsSync).mockReturnValue(false);
     vi.mocked(fs.readFileSync).mockReturnValue('{}');
     vi.mocked(childProcess.execSync).mockImplementation(() => { throw new Error('mock: no keychain'); });
-    vi.mocked(childProcess.execFileSync).mockImplementation(() => { throw new Error('mock: no keychain'); });
+    vi.mocked(childProcess.execFileSync).mockImplementation(() => {
+      throw new Error('The specified item could not be found in the keychain.');
+    });
     // Reset env
     delete process.env.ANTHROPIC_BASE_URL;
     delete process.env.ANTHROPIC_AUTH_TOKEN;
@@ -700,6 +704,39 @@ describe('getUsage routing', () => {
     expect(getUsageCredentialIdentity(false, true)).toBeNull();
   });
 
+  it('does not fall back to file credentials when Keychain lookup is unavailable', async () => {
+    const credentialsPath = '/tmp/test-claude/.credentials.json';
+    const claudeJsonPath = '/tmp/.claude.json';
+    const credentialsContent = JSON.stringify({
+      claudeAiOauth: {
+        accessToken: 'account-b-access',
+        refreshToken: 'account-b-refresh',
+      },
+    });
+
+    process.env.CLAUDE_CONFIG_DIR = '/tmp/test-claude';
+    vi.mocked(fs.existsSync).mockImplementation(path =>
+      String(path) === credentialsPath || String(path) === claudeJsonPath,
+    );
+    vi.mocked(fs.readFileSync).mockImplementation(path => {
+      if (String(path) === credentialsPath) return credentialsContent;
+      if (String(path) === claudeJsonPath) {
+        return JSON.stringify({ oauthAccount: { accountUuid: 'account-a' } });
+      }
+      return '{}';
+    });
+    vi.mocked(childProcess.execFileSync).mockImplementation(() => {
+      throw new Error('mock: transient Keychain failure');
+    });
+
+    expect(getUsageCredentialIdentity(false, true)).toBeNull();
+    expect(childProcess.execFileSync).toHaveBeenCalledTimes(1);
+
+    const result = await getUsage();
+    expect(result.error).toBe('no_credentials');
+    expect(httpsModule.default.request).not.toHaveBeenCalled();
+  });
+
   it('normalizes the email fallback when no stable account UUID is available', () => {
     const credentialsPath = '/tmp/test-claude/.credentials.json';
     let credentialsContent = JSON.stringify({
@@ -860,7 +897,7 @@ describe('getUsage routing', () => {
       if (argsArray.includes('find-generic-password') && argsArray.includes('-a')) {
         return cachedCredentials;
       }
-      throw new Error('mock: no service-only Keychain entry');
+      throw new Error('The specified item could not be found in the keychain.');
     });
 
     const credentialIdentity = getUsageCredentialIdentity(false, true);
@@ -2353,7 +2390,9 @@ describe('writeBackCredentials — Keychain vs file refresh', () => {
     vi.clearAllMocks();
     vi.mocked(fs.existsSync).mockReturnValue(false);
     vi.mocked(fs.readFileSync).mockReturnValue('{}');
-    vi.mocked(childProcess.execFileSync).mockImplementation(() => { throw new Error('mock: no keychain'); });
+    vi.mocked(childProcess.execFileSync).mockImplementation(() => {
+      throw new Error('The specified item could not be found in the keychain.');
+    });
     delete process.env.ANTHROPIC_BASE_URL;
     delete process.env.ANTHROPIC_AUTH_TOKEN;
   });
@@ -2399,7 +2438,7 @@ describe('writeBackCredentials — Keychain vs file refresh', () => {
       }
 
       // service-only fallback: no entry
-      throw new Error('mock: no service-only entry');
+      throw new Error('The specified item could not be found in the keychain.');
     });
 
     // Token refresh returns new tokens
@@ -2485,7 +2524,11 @@ describe('writeBackCredentials — Keychain vs file refresh', () => {
     });
 
     // Keychain has no entry — only file credentials
-    execFileMock.mockImplementation(() => { throw new Error('mock: no keychain'); });
+    execFileMock.mockImplementation(() => {
+      throw Object.assign(new Error('security command failed'), {
+        stderr: Buffer.from('The specified item could not be found in the keychain.'),
+      });
+    });
 
     mockedExistsSync.mockImplementation(path => String(path).endsWith('.credentials.json'));
     mockedReadFileSync.mockImplementation((path) => {
