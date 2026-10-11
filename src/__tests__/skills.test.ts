@@ -439,7 +439,7 @@ describe('Builtin Skills', () => {
       const raw = readFileSync(join(originalCwd, 'skills', 'omc-doctor', 'SKILL.md'), 'utf-8');
       expect(raw).toContain('ask for explicit confirmation of that scoped change');
       expect(raw).toContain('create a timestamped backup');
-      expect(raw).toContain('`./.claude/settings.local.json` (project-local, with precedence over project settings)');
+      expect(raw).toContain('effective project-local `.claude/settings.local.json`');
       expect(raw).toContain('Do not match other scripts merely because they are under a `hooks/` directory');
       expect(raw).toContain('keyword-detector.sh');
       expect(raw).toContain('persistent-mode.sh');
@@ -455,7 +455,13 @@ describe('Builtin Skills', () => {
       expect(raw).toContain('`%CLAUDE_CONFIG_DIR%\\hooks\\<filename>`');
       expect(raw).toContain('with backslash separators as the same active config directory');
       expect(raw).toContain('Before diagnosing a standalone registration as a duplicate, resolve plugin enablement with the runtime\'s precedence');
-      expect(raw).toContain('resolve plugin enablement with the runtime\'s precedence: `./.claude/settings.local.json` first, then `./.claude/settings.json`, then `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json`');
+      expect(raw).toContain('resolve plugin enablement with the runtime\'s precedence: managed and command-line settings first (read-only), then the effective project-local file resolved above, then the primary working directory\'s `./.claude/settings.json`, then `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json`');
+      expect(raw).toContain('In a linked Git worktree, Claude Code uses the main checkout root\'s `.claude/settings.local.json`, not necessarily the linked worktree\'s file');
+      expect(raw).toContain('identify the main checkout with `git worktree list --porcelain`');
+      expect(raw).toContain('Also inspect a starting-directory `.claude/settings.local.json` left by Claude Code versions before 2.1.211, which may still be read');
+      expect(raw).toContain('If the main checkout root or any applicable local settings file cannot be resolved or read, treat settings and script references as inconclusive and do not remove hooks or scripts');
+      expect(raw).toContain('For a linked worktree, include the main checkout\'s `.claude/settings.local.json` in the proposed scope');
+      expect(raw).toContain('the effective project-local `.claude/settings.local.json` resolved above (the main checkout root for a linked worktree)');
       expect(raw).toContain('The first scope that explicitly mentions any supported OMC ID decides; unmentioned scopes are transparent');
       expect(raw).toContain('The supported IDs are `oh-my-claudecode`, `oh-my-claudecode@omc`, and `oh-my-claudecode@oh-my-claudecode`');
       expect(raw).toContain('Within each scope, `enabledPlugins` is canonical, and legacy `plugins` is consulted only if `enabledPlugins` does not mention any supported OMC ID');
@@ -493,15 +499,15 @@ describe('Builtin Skills', () => {
       expect(raw).toContain('If removing matched objects leaves a matcher group with no hooks, remove that now-empty group');
       expect(raw).toContain('remove an event key when no groups remain and remove the top-level `"hooks"` key when no events remain');
       expect(raw).toContain('For each affected profile-level, project-level, or project-local settings file');
-      expect(raw).toContain('If any managed source references it, a managed or command-line source cannot be inspected, the user declined the relevant settings change, a file could not be updated, no shipped payload exists, or verification is inconclusive, leave the corresponding script in place');
-      expect(raw).toContain('re-check `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json`, `./.claude/settings.json`, and `./.claude/settings.local.json`');
+      expect(raw).toContain('If the main checkout root or any applicable local, managed, or command-line source cannot be resolved or inspected, if any source references the script, the user declined the relevant settings change, a file could not be updated, no shipped payload exists, or verification is inconclusive, leave the corresponding script in place');
+      expect(raw).toContain('re-check `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json`, the primary working directory\'s `.claude/settings.json`, the effective project-local `.claude/settings.local.json` resolved above (the main checkout root for a linked worktree), and any existing starting-directory local file left by an older Claude Code version');
       expect(raw).toContain('Never edit managed settings or MDM/server policy');
       expect(raw).toContain('inspect managed hook sources read-only');
       expect(raw).toContain('/etc/claude-code/managed-settings.json');
       expect(raw).toContain('C:\\Program Files\\ClaudeCode\\managed-settings.json');
       expect(raw).toContain('any applicable MDM, server-managed, or command-line `--settings` sources');
       expect(raw).toContain('no configured hook references remain in any source');
-      expect(raw).toContain('If any managed source references it, a managed or command-line source cannot be inspected');
+      expect(raw).toContain('If the main checkout root or any applicable local, managed, or command-line source cannot be resolved or inspected');
       expect(raw).not.toContain('Remove the `"hooks"` section');
     });
 
