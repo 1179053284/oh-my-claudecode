@@ -171,7 +171,7 @@ function processConditionals(
   return template.replace(
     /\{\{#if\s+(\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g,
     (_match, varName: string, content: string) => {
-      const value = vars[varName] || "";
+      const value = Object.hasOwn(vars, varName) ? vars[varName] : "";
       return value ? content : "";
     },
   );
@@ -187,7 +187,7 @@ function replaceVariables(
 ): string {
   return template.replace(
     /\{\{(\w+)\}\}/g,
-    (_match, varName: string) => vars[varName] ?? "",
+    (_match, varName: string) => Object.hasOwn(vars, varName) ? vars[varName] : "",
   );
 }
 
