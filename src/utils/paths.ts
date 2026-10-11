@@ -7,7 +7,7 @@
  */
 
 import { join, dirname } from 'path';
-import { existsSync, readFileSync, readdirSync, statSync, lstatSync, unlinkSync, rmSync, renameSync, symlinkSync } from 'fs';
+import { existsSync, readFileSync, readdirSync, statSync, lstatSync, realpathSync, unlinkSync, rmSync, renameSync, symlinkSync } from 'fs';
 import { homedir } from 'os';
 import { getClaudeConfigDir } from './config-dir.js';
 import { pathIdentity, readOccupiedPluginRoots } from './cache-occupancy.js';
@@ -662,10 +662,11 @@ export function purgeStalePluginCacheVersions(options?: { skipGracePeriod?: bool
             ),
           )[0];
           try {
-            if (!statSync(target).isDirectory() ||
-                (comparisonPath(pluginName) === comparisonPath('oh-my-claudecode') &&
-                  !isUsableVersionPath(target))) {
-              throw new Error('Registered active plugin target is missing or incomplete');
+            const targetResolvesToStaleVersion = lstatSync(target).isSymbolicLink() &&
+              comparisonPath(realpathSync(target)) === comparisonPath(realpathSync(versionDir));
+            if (!statSync(target).isDirectory() || targetResolvesToStaleVersion ||
+                (pluginName.toLowerCase() === 'oh-my-claudecode' && !isUsableVersionPath(target))) {
+              throw new Error('Registered active plugin target is unusable or resolves to the stale version');
             }
             relinkStaleVersionDir(versionDir, target);
             result.symlinked++;

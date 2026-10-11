@@ -47,12 +47,12 @@ function writeVersion(version: string) {
   return dir;
 }
 
-function installedPlugins() {
+function installedPlugins(installPath = join(pluginDir, ACTIVE)) {
   writeFileSync(
     join(configDir, 'plugins', 'installed_plugins.json'),
     JSON.stringify({
       version: 2,
-      plugins: { 'oh-my-claudecode@omc': [{ installPath: join(pluginDir, ACTIVE), version: ACTIVE }] },
+      plugins: { 'oh-my-claudecode@omc': [{ installPath, version: ACTIVE }] },
     }),
   );
 }
@@ -116,9 +116,9 @@ describe('purgeStalePluginCacheVersions on a real filesystem', () => {
     expect(readdirSync(pluginDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
   });
 
-  it('recognizes a mixed-case OMC cache directory on Windows', () => {
+  it.each(['win32', 'darwin'])('recognizes a mixed-case OMC cache directory on %s', (platform) => {
     const originalPlatform = process.platform;
-    Object.defineProperty(process, 'platform', { value: 'win32', configurable: true });
+    Object.defineProperty(process, 'platform', { value: platform, configurable: true });
     try {
       rmSync(join(configDir, 'plugins', 'cache', 'omc'), { recursive: true, force: true });
       pluginDir = join(configDir, 'plugins', 'cache', 'omc', 'Oh-My-ClaudeCode');
@@ -139,6 +139,23 @@ describe('purgeStalePluginCacheVersions on a real filesystem', () => {
     } finally {
       Object.defineProperty(process, 'platform', { value: originalPlatform, configurable: true });
     }
+  });
+
+  it('preserves a stale root when the registered target redirects through it', () => {
+    const stale = writeVersion(STALE);
+    const redirect = join(pluginDir, LEGACY[0]);
+    symlinkSync(stale, redirect, 'dir');
+    makeStale(stale);
+    installedPlugins(redirect);
+
+    const result = purgeStalePluginCacheVersions();
+
+    expect(result.symlinked).toBe(0);
+    expect(result.errors).toHaveLength(1);
+    expect(lstatSync(stale).isDirectory()).toBe(true);
+    expect(hookResolves(STALE)).toBe(true);
+    expect(readlinkSync(redirect)).toBe(stale);
+    expect(readdirSync(pluginDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
   });
 
   it('retains support for other plugins without OMC hook entry points', () => {
