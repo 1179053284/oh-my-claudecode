@@ -57,6 +57,15 @@ describe('usage JSONL record recovery', () => {
     expect(report.taskCount).toBe(1);
     expect(report.workers[0].model).toBe('');
   });
+  it('retains ordinary fractional durations when floating-point sums round normally', () => {
+    recordTaskUsage(root, 'fractional', { ...valid, wallClockMs: 0.1 });
+    recordTaskUsage(root, 'fractional', { ...valid, taskId: 'task-2', wallClockMs: 0.2 });
+
+    const report = generateUsageReport(root, 'fractional');
+    expect(report.taskCount).toBe(2);
+    expect(report.totalWallClockMs).toBe(0.1 + 0.2);
+    expect(report.workers[0].totalWallClockMs).toBe(0.1 + 0.2);
+  });
   it('skips finite but unsafe counters and overflow-prone durations without poisoning valid siblings', () => {
     recordTaskUsage(root, 'large', valid);
     const log = join(getOmcRoot(root), 'logs', 'team-usage-large.jsonl');
@@ -112,6 +121,25 @@ describe('usage JSONL record recovery', () => {
     expect(report.totalWallClockMs).toBe(Number.MAX_SAFE_INTEGER);
     expect(report.workers.map(worker => worker.workerName)).toEqual(['worker-1', 'worker-3']);
     expect(report.workers[0].totalWallClockMs).toBe(Number.MAX_SAFE_INTEGER - 1);
+    expect(report.workers[1].totalWallClockMs).toBe(1);
+  });
+  it('skips duration additions that round away the existing subtotal', () => {
+    recordTaskUsage(root, 'prior-total', {
+      ...valid, workerName: 'worker-1', wallClockMs: 0.25, promptChars: 0, responseChars: 0,
+    });
+    recordTaskUsage(root, 'prior-total', {
+      ...valid, taskId: 'lost-prior-total', workerName: 'worker-1',
+      wallClockMs: Number.MAX_SAFE_INTEGER - 1, promptChars: 0, responseChars: 0,
+    });
+    recordTaskUsage(root, 'prior-total', {
+      ...valid, taskId: 'later', workerName: 'worker-3', wallClockMs: 1, promptChars: 2, responseChars: 3,
+    });
+
+    const report = generateUsageReport(root, 'prior-total');
+    expect(report.taskCount).toBe(2);
+    expect(report.totalWallClockMs).toBe(1.25);
+    expect(report.workers.map(worker => worker.workerName)).toEqual(['worker-1', 'worker-3']);
+    expect(report.workers[0].totalWallClockMs).toBe(0.25);
     expect(report.workers[1].totalWallClockMs).toBe(1);
   });
   it('returns an empty report when every syntactically valid record is invalid', () => {

@@ -106,6 +106,16 @@ const taskUsageRecordSchema: z.ZodType<TaskUsageRecord> = z.object({
   responseChars: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
 });
 
+function durationAdditionLosesPrecision(previousTotal: number, duration: number, nextTotal: number): boolean {
+  if (duration === 0) return false;
+
+  const tolerance = 2 * Number.EPSILON;
+  const appliedDuration = nextTotal - previousTotal;
+  const recoveredPreviousTotal = nextTotal - duration;
+  return Math.abs(appliedDuration - duration) > tolerance * duration
+    || Math.abs(recoveredPreviousTotal - previousTotal) > tolerance * previousTotal;
+}
+
 /**
  * Read all usage records from the JSONL log.
  */
@@ -148,10 +158,8 @@ export function generateUsageReport(
     const nextPromptChars = (existing?.totalPromptChars ?? 0) + r.promptChars;
     const nextResponseChars = (existing?.totalResponseChars ?? 0) + r.responseChars;
     const nextTotalWallClockMs = totalWallClockMs + r.wallClockMs;
-    const appliedWorkerDurationMs = nextWallClockMs - currentWallClockMs;
-    const appliedTotalDurationMs = nextTotalWallClockMs - totalWallClockMs;
-    const losesDurationPrecision = r.wallClockMs > 0
-      && (appliedWorkerDurationMs !== r.wallClockMs || appliedTotalDurationMs !== r.wallClockMs);
+    const losesDurationPrecision = durationAdditionLosesPrecision(currentWallClockMs, r.wallClockMs, nextWallClockMs)
+      || durationAdditionLosesPrecision(totalWallClockMs, r.wallClockMs, nextTotalWallClockMs);
     // Skip the whole record if adding it would corrupt totals; retain later valid siblings.
     if (!Number.isFinite(nextWallClockMs) || !Number.isFinite(nextTotalWallClockMs)
       || nextWallClockMs > Number.MAX_SAFE_INTEGER || nextTotalWallClockMs > Number.MAX_SAFE_INTEGER
