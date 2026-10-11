@@ -1,29 +1,29 @@
-import { basename, dirname, isAbsolute, join, resolve } from 'path';
+import { basename, dirname, isAbsolute, join, parse, resolve } from 'path';
 import { existsSync, lstatSync, readlinkSync, readdirSync, statSync, type Stats } from 'fs';
 
 /**
  * The hook runner's required entry points. Keep this aligned with isPluginRoot()
  * in scripts/run.cjs; a stale root is not a valid fallback for any of them.
  */
-const PLUGIN_ROOT_REQUIREMENTS = [
-  join('hooks', 'hooks.json'),
-  join('scripts', 'run.cjs'),
-  'scripts',
-];
+const PLUGIN_ROOT_REQUIREMENTS = [join('hooks', 'hooks.json'), join('scripts', 'run.cjs'), 'scripts'];
 
-const OMC_PLUGIN_CACHE_IDENTITIES = new Set([
-  'oh-my-claudecode@omc',
-  'oh-my-claudecode@oh-my-claudecode',
-]);
+const OMC_PLUGIN_CACHE_IDENTITIES = new Set(['oh-my-claudecode@omc', 'oh-my-claudecode@oh-my-claudecode']);
 
 export function isOmcPluginCacheIdentity(pluginName: string, marketplace: string): boolean {
   return OMC_PLUGIN_CACHE_IDENTITIES.has(`${pluginName}@${marketplace}`.toLowerCase());
 }
 
 export function sameFileSystemIdentity(left: Stats, right: Stats): boolean {
-  return typeof left.dev === 'number' && typeof left.ino === 'number' && left.ino !== 0 &&
-    typeof right.dev === 'number' && typeof right.ino === 'number' && right.ino !== 0 &&
-    left.dev === right.dev && left.ino === right.ino;
+  return (
+    typeof left.dev === 'number' &&
+    typeof left.ino === 'number' &&
+    left.ino !== 0 &&
+    typeof right.dev === 'number' &&
+    typeof right.ino === 'number' &&
+    right.ino !== 0 &&
+    left.dev === right.dev &&
+    left.ino === right.ino
+  );
 }
 
 export function hasAncestorWithIdentity(path: string, identity: Stats): boolean {
@@ -52,40 +52,105 @@ export function firstChildBelowDirectoryIdentity(path: string, directoryIdentity
   }
 }
 
-function pathTraversesFileSystemIdentity(
-  path: string,
-  identity: Stats,
-  visitedLinks: Set<string> = new Set(),
-): boolean {
-  let currentPath = resolve(path);
-  while (true) {
-    try {
-      if (sameFileSystemIdentity(statSync(currentPath), identity)) return true;
-    } catch {
-      // A missing suffix can still have an ancestor in the protected tree.
+function pathTraversesFileSystemIdentity(path: string, identity: Stats): boolean {
+  let currentPath: string;
+  let components: string[];
+  const splitComponents = (value: string, root: string): string[] =>
+    value
+      .slice(root.length)
+      .split(process.platform === 'win32' ? /[\\/]+/ : /\/+/)
+      .filter(Boolean);
+
+  if (isAbsolute(path)) {
+    const pathRoot = parse(path).root;
+    currentPath = process.platform === 'win32' && pathRoot === '\\' ? parse(resolve(path)).root : pathRoot;
+    components = splitComponents(path, pathRoot);
+  } else {
+    const pathRoot = parse(path).root;
+    if (process.platform === 'win32' && pathRoot) {
+      // Resolve the drive's current directory without normalizing the target components.
+      const driveCwd = resolve(`${pathRoot}.`);
+      const driveRoot = parse(driveCwd).root;
+      currentPath = driveRoot;
+      components = [...splitComponents(driveCwd, driveRoot), ...splitComponents(path, pathRoot)];
+    } else {
+      const cwd = process.cwd();
+      const cwdRoot = parse(cwd).root;
+      currentPath = cwdRoot;
+      components = [...splitComponents(cwd, cwdRoot), ...splitComponents(path, pathRoot)];
     }
+  }
+
+  type TraversalStep = string | { endLink: string };
+  const steps: TraversalStep[] = [];
+  for (let index = components.length - 1; index >= 0; index--) steps.push(components[index]);
+  const activeLinks = new Set<string>();
+
+  try {
+    if (sameFileSystemIdentity(lstatSync(currentPath), identity)) return true;
+  } catch {
+    return false;
+  }
+
+  while (steps.length > 0) {
+    const step = steps.pop()!;
+    if (typeof step !== 'string') {
+      activeLinks.delete(step.endLink);
+      continue;
+    }
+    if (step === '' || step === '.') continue;
+    if (step === '..') {
+      currentPath = dirname(currentPath);
+      continue;
+    }
+
+    const nextPath = join(currentPath, step);
+    let nextStats: Stats;
     try {
-      const linkStats = lstatSync(currentPath);
-      if (linkStats.isSymbolicLink()) {
-        const key = typeof linkStats.dev === 'number' && typeof linkStats.ino === 'number' && linkStats.ino !== 0
-          ? `inode:${linkStats.dev}:${linkStats.ino}`
-          : `path:${process.platform === 'win32' ? currentPath.toLowerCase() : currentPath}`;
-        if (!visitedLinks.has(key)) {
-          visitedLinks.add(key);
-          const linkTarget = readlinkSync(currentPath);
-          const resolvedTarget = isAbsolute(linkTarget)
-            ? linkTarget
-            : resolve(dirname(currentPath), linkTarget);
-          if (pathTraversesFileSystemIdentity(resolvedTarget, identity, visitedLinks)) return true;
-        }
-      }
+      nextStats = lstatSync(nextPath);
+    } catch {
+      // Earlier components have already been checked; a missing suffix cannot traverse a later link.
+      return false;
+    }
+    if (!nextStats.isSymbolicLink()) {
+      if (sameFileSystemIdentity(nextStats, identity)) return true;
+      currentPath = nextPath;
+      continue;
+    }
+
+    const linkKey =
+      typeof nextStats.dev === 'number' && typeof nextStats.ino === 'number' && nextStats.ino !== 0
+        ? `inode:${nextStats.dev}:${nextStats.ino}`
+        : `path:${process.platform === 'win32' ? nextPath.toLowerCase() : nextPath}`;
+    if (activeLinks.has(linkKey)) return false;
+    let linkTarget: string;
+    try {
+      linkTarget = readlinkSync(nextPath);
     } catch {
       // An unreadable link is rejected by the target's normal usability check.
+      return false;
     }
-    const parentPath = dirname(currentPath);
-    if (parentPath === currentPath) return false;
-    currentPath = parentPath;
+
+    activeLinks.add(linkKey);
+    steps.push({ endLink: linkKey });
+    const targetPathRoot = parse(linkTarget).root;
+    let targetComponents: string[];
+    if (isAbsolute(linkTarget)) {
+      currentPath =
+        process.platform === 'win32' && targetPathRoot === '\\' ? parse(resolve(linkTarget)).root : targetPathRoot;
+      targetComponents = splitComponents(linkTarget, targetPathRoot);
+    } else if (process.platform === 'win32' && targetPathRoot) {
+      const driveCwd = resolve(`${targetPathRoot}.`);
+      const driveRoot = parse(driveCwd).root;
+      currentPath = driveRoot;
+      targetComponents = [...splitComponents(driveCwd, driveRoot), ...splitComponents(linkTarget, targetPathRoot)];
+    } else {
+      targetComponents = splitComponents(linkTarget, targetPathRoot);
+    }
+    for (let index = targetComponents.length - 1; index >= 0; index--) steps.push(targetComponents[index]);
   }
+
+  return false;
 }
 
 /**
@@ -100,10 +165,12 @@ export function isUsableVersionPath(path: string, staleVersionIdentity?: Stats):
     return false;
   }
   if (!stats.isDirectory() && !stats.isSymbolicLink()) return false;
-  return PLUGIN_ROOT_REQUIREMENTS.every(required => {
+  return PLUGIN_ROOT_REQUIREMENTS.every((required) => {
     const requiredPath = join(path, required);
-    return existsSync(requiredPath) &&
-      (staleVersionIdentity === undefined || !pathTraversesFileSystemIdentity(requiredPath, staleVersionIdentity));
+    return (
+      existsSync(requiredPath) &&
+      (staleVersionIdentity === undefined || !pathTraversesFileSystemIdentity(requiredPath, staleVersionIdentity))
+    );
   });
 }
 
@@ -114,7 +181,7 @@ function hasResolvableGenericPluginSymlinks(
   requireNonEmpty = false,
 ): boolean {
   const directoryStats = statSync(directory);
-  if (ancestors.some(identity => sameFileSystemIdentity(directoryStats, identity))) return false;
+  if (ancestors.some((identity) => sameFileSystemIdentity(directoryStats, identity))) return false;
   const branch = [...ancestors, directoryStats];
   const entries = readdirSync(directory, { withFileTypes: true });
   if (requireNonEmpty && entries.length === 0) return false;
@@ -123,12 +190,14 @@ function hasResolvableGenericPluginSymlinks(
     if (entry.isSymbolicLink()) {
       const entryStats = statSync(entryPath);
       if (pathTraversesFileSystemIdentity(entryPath, staleVersionIdentity)) return false;
-      if (entryStats.isDirectory() && (branch.some(identity => sameFileSystemIdentity(entryStats, identity)) ||
-          !hasResolvableGenericPluginSymlinks(entryPath, staleVersionIdentity, branch))) {
+      if (
+        entryStats.isDirectory() &&
+        (branch.some((identity) => sameFileSystemIdentity(entryStats, identity)) ||
+          !hasResolvableGenericPluginSymlinks(entryPath, staleVersionIdentity, branch))
+      ) {
         return false;
       }
-    } else if (entry.isDirectory() &&
-        !hasResolvableGenericPluginSymlinks(entryPath, staleVersionIdentity, branch)) {
+    } else if (entry.isDirectory() && !hasResolvableGenericPluginSymlinks(entryPath, staleVersionIdentity, branch)) {
       return false;
     }
   }
