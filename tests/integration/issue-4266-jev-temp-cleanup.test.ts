@@ -126,15 +126,21 @@ describe("issue #4266: Jev temp directory cleanup", () => {
     }
   });
 
-  it("sweeps stale dirs on an enabled active record without using shared tmp for its marker", () => {
+  it("sweeps stale request dirs and preserves unrelated temp entries", () => {
     const testRoot = mkdtempSync(join(tmpdir(), "issue-4266-"));
     const tempRoot = join(testRoot, "tmp");
     const homeRoot = join(testRoot, "home");
     mkdirSync(tempRoot, { mode: 0o700 });
     mkdirSync(homeRoot, { mode: 0o700 });
     const staleDir = mkdtempSync(join(tempRoot, "omc-jev-"));
+    writeFileSync(join(staleDir, "request.json"), "{}");
     const oldTime = new Date(Date.now() - 48 * 60 * 60 * 1000);
     utimesSync(staleDir, oldTime, oldTime);
+
+    const unrelatedDir = mkdtempSync(join(tempRoot, "omc-jev-"));
+    const unrelatedFile = join(unrelatedDir, "notes.txt");
+    writeFileSync(unrelatedFile, "keep");
+    utimesSync(unrelatedDir, oldTime, oldTime);
 
     const sharedTmpMarker = join(tempRoot, ".omc-jev-sweep-throttle");
     const victimPath = join(homeRoot, "victim");
@@ -156,11 +162,13 @@ describe("issue #4266: Jev temp directory cleanup", () => {
       expect(result.status).toBe(0);
       expect(JSON.parse(result.stdout).result.mode).toBe("degraded");
       expect(existsSync(staleDir)).toBe(false);
+      expect(existsSync(unrelatedDir)).toBe(true);
+      expect(existsSync(unrelatedFile)).toBe(true);
       expect(existsSync(privateMarker)).toBe(true);
       expect(existsSync(victimPath)).toBe(false);
       expect(
         readdirSync(tempRoot).filter((entry) => entry.startsWith("omc-jev-")),
-      ).toEqual([]);
+      ).toHaveLength(1);
       if (createdSymlink)
         expect(lstatSync(sharedTmpMarker).isSymbolicLink()).toBe(true);
     } finally {
@@ -176,6 +184,7 @@ describe("issue #4266: Jev temp directory cleanup", () => {
     mkdirSync(homeRoot, { mode: 0o700 });
     chmodSync(homeRoot, 0o777);
     const staleDir = mkdtempSync(join(tempRoot, "omc-jev-"));
+    writeFileSync(join(staleDir, "request.json"), "{}");
     const oldTime = new Date(Date.now() - 48 * 60 * 60 * 1000);
     utimesSync(staleDir, oldTime, oldTime);
 

@@ -146,9 +146,18 @@ export function sweepStaleTempDirs(maxAgeMs = 24 * 60 * 60 * 1000) {
         const ownedByCurrentUser =
           typeof process.getuid !== "function" ||
           stats.uid === process.getuid();
+        if (!stats.isDirectory() || !ownedByCurrentUser) continue;
+
+        const contents = readdirSync(fullPath);
+        if (contents.length !== 1 || contents[0] !== "request.json") continue;
+
+        const requestStats = lstatSync(join(fullPath, "request.json"));
+        const requestOwnedByCurrentUser =
+          typeof process.getuid !== "function" ||
+          requestStats.uid === process.getuid();
         if (
-          stats.isDirectory() &&
-          ownedByCurrentUser &&
+          requestStats.isFile() &&
+          requestOwnedByCurrentUser &&
           now - stats.mtimeMs > maxAgeMs
         ) {
           rmSync(fullPath, { recursive: true, force: true });
