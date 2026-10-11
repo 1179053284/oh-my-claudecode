@@ -346,6 +346,10 @@ describe('permission-handler', () => {
           cmd: `git commit --amend; git status -m "$(cat <<'EOF'\nCommit message\nEOF\n)"`,
         },
         {
+          desc: 'git commit with message option after the option terminator',
+          cmd: `git commit --amend --no-edit -- -m "$(cat <<'EOF'\nmessage.txt\nEOF\n)"`,
+        },
+        {
           desc: 'git commit with an unbalanced quote in the base options',
           cmd: `git commit ' --amend -m "$(cat <<'EOF'\nCommit message\nEOF\n)"`,
         },
@@ -599,6 +603,13 @@ describe('permission-handler', () => {
         const testResult = processPermissionRequest(createInput('vitest run src/__tests__/safe.test.ts'));
         expect(testResult.continue).toBe(true);
         expect(testResult.hookSpecificOutput?.decision?.behavior).not.toBe('allow');
+      });
+
+      it('should not auto-approve heredoc messages after Git option terminator', () => {
+        const command = `git commit --amend --no-edit -- -m "$(cat <<'EOF'\nmessage.txt\nEOF\n)"`;
+        const result = processPermissionRequest(createInput(command));
+        expect(result.continue).toBe(true);
+        expect(result.hookSpecificOutput?.decision?.behavior).not.toBe('allow');
       });
 
       it('should reject unsafe commands even when pattern matches prefix', () => {

@@ -579,7 +579,12 @@ export function isHeredocWithSafeBase(command: string): boolean {
 
   const lines = trimmed.split(/\r?\n/);
   const match = lines[0].match(SAFE_HEREDOC_COMMAND_PATTERN);
-  if (!match || DANGEROUS_SHELL_CHARS.test(match[1]) || !tokenizeShellCommand(match[1])) {
+  if (!match || DANGEROUS_SHELL_CHARS.test(match[1])) {
+    return false;
+  }
+
+  const prefixTokens = tokenizeShellCommand(match[1]);
+  if (!prefixTokens || prefixTokens.includes('--')) {
     return false;
   }
 
