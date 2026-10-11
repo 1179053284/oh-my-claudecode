@@ -74,6 +74,12 @@ export async function sessionSearchCommand(
     workingDirectory: options.workingDirectory,
   });
 
-  logger.log(options.json ? JSON.stringify(report, null, 2) : formatSessionSearchReport(report));
+  // JSON.stringify already escapes C0 inside strings, but leaves DEL/C1 raw.
+  // Unicode escapes keep terminal output inert without changing parsed data.
+  const serialized = options.json
+    ? JSON.stringify(report, null, 2).replace(/[\x7f-\x9f]/g,
+      character => `\\u${character.charCodeAt(0).toString(16).padStart(4, '0')}`)
+    : formatSessionSearchReport(report);
+  logger.log(serialized);
   return report;
 }

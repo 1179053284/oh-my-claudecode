@@ -56,6 +56,18 @@ describe('session search terminal display boundary', () => {
     expect(JSON.parse(String(jsonLogger.log.mock.calls[0][0])).results).toEqual(report.results);
   });
 
+  it('serializes C1 and DEL bytes as JSON escapes while preserving parsed report values', async () => {
+    transcript('json-needle\x9b2J \x9d52;c;unsafe\x9c \x7f');
+    const logger = { log: vi.fn() };
+    const report = await sessionSearchCommand('json-needle', { workingDirectory: project, json: true }, logger);
+    expect(report.results[0].excerpt).toContain('\x9b');
+    const serialized = String(logger.log.mock.calls[0][0]);
+    expect(serialized).not.toMatch(/[\x7f-\x9f]/);
+    expect(serialized).toContain('\\u009b');
+    expect(serialized).toContain('\\u007f');
+    expect(JSON.parse(serialized)).toEqual(report);
+  });
+
   it('escapes a C1 query in the no-results display branch', async () => {
     const logger = { log: vi.fn() };
     const query = 'missing-needle\x9b';
