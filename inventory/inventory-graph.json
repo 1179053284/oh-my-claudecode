@@ -5,15 +5,15 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "71a26e3bbf8cbdca6c56ea2630a3a0023019a3ed",
-    "sourceSha256": "c043494ab57bde22559d248883bd51509c461488e935e895e0df3a80da184fce",
+    "head": "5b9d3e35f1229e223c5adc6e243a690afc7341d0",
+    "sourceSha256": "020d724aa04bcfa21be13a62c1b8bdfcbb6b00ee38f29234b8d8c5d566ad23f3",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "71a26e3bbf8cbdca6c56ea2630a3a0023019a3ed",
-  "sourceSha256": "c043494ab57bde22559d248883bd51509c461488e935e895e0df3a80da184fce",
+  "head": "5b9d3e35f1229e223c5adc6e243a690afc7341d0",
+  "sourceSha256": "020d724aa04bcfa21be13a62c1b8bdfcbb6b00ee38f29234b8d8c5d566ad23f3",
   "counts": {
     "public": {
       "skills": 47,
@@ -53237,11 +53237,6 @@
       },
       {
         "from": "src/__tests__/rate-limit-wait/daemon-bootstrap.test.ts",
-        "to": "external:node:crypto",
-        "kind": "imports"
-      },
-      {
-        "from": "src/__tests__/rate-limit-wait/daemon-bootstrap.test.ts",
         "to": "external:os",
         "kind": "imports"
       },
@@ -53257,6 +53252,11 @@
       },
       {
         "from": "src/__tests__/rate-limit-wait/daemon-bootstrap.test.ts",
+        "to": "src/features/rate-limit-wait/daemon-state.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/daemon-bootstrap.test.ts",
         "to": "src/features/rate-limit-wait/daemon.ts",
         "kind": "imports"
       },
@@ -53264,16 +53264,6 @@
         "from": "src/__tests__/rate-limit-wait/daemon-bootstrap.test.ts",
         "to": "src/features/rate-limit-wait/types.ts",
         "kind": "type-imports"
-      },
-      {
-        "from": "src/__tests__/rate-limit-wait/daemon-bootstrap.test.ts",
-        "to": "src/hud/usage-api.ts",
-        "kind": "imports"
-      },
-      {
-        "from": "src/__tests__/rate-limit-wait/daemon-bootstrap.test.ts",
-        "to": "src/utils/config-dir.ts",
-        "kind": "imports"
       },
       {
         "from": "src/__tests__/rate-limit-wait/daemon-cache-context.test.ts",
@@ -53338,6 +53328,11 @@
       {
         "from": "src/__tests__/rate-limit-wait/daemon.test.ts",
         "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/daemon.test.ts",
+        "to": "src/features/rate-limit-wait/daemon-state.ts",
         "kind": "imports"
       },
       {
@@ -53412,11 +53407,6 @@
       },
       {
         "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
-        "to": "external:node:crypto",
-        "kind": "imports"
-      },
-      {
-        "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
         "to": "external:node:fs",
         "kind": "imports"
       },
@@ -53437,6 +53427,11 @@
       },
       {
         "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
+        "to": "src/features/rate-limit-wait/daemon-state.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
         "to": "src/features/rate-limit-wait/daemon.ts",
         "kind": "imports"
       },
@@ -53444,16 +53439,6 @@
         "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
         "to": "src/features/rate-limit-wait/types.ts",
         "kind": "type-imports"
-      },
-      {
-        "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
-        "to": "src/hud/usage-api.ts",
-        "kind": "imports"
-      },
-      {
-        "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
-        "to": "src/utils/config-dir.ts",
-        "kind": "imports"
       },
       {
         "from": "src/__tests__/rate-limit-wait/rate-limit-monitor.test.ts",
@@ -60332,17 +60317,17 @@
       },
       {
         "from": "src/features/rate-limit-wait/daemon.ts",
-        "to": "external:node:crypto",
-        "kind": "imports"
-      },
-      {
-        "from": "src/features/rate-limit-wait/daemon.ts",
         "to": "external:path",
         "kind": "imports"
       },
       {
         "from": "src/features/rate-limit-wait/daemon.ts",
         "to": "external:url",
+        "kind": "imports"
+      },
+      {
+        "from": "src/features/rate-limit-wait/daemon.ts",
+        "to": "src/features/rate-limit-wait/daemon-state.ts",
         "kind": "imports"
       },
       {
@@ -60358,21 +60343,11 @@
       {
         "from": "src/features/rate-limit-wait/daemon.ts",
         "to": "src/features/rate-limit-wait/types.ts",
-        "kind": "type-imports"
-      },
-      {
-        "from": "src/features/rate-limit-wait/daemon.ts",
-        "to": "src/hud/usage-api.ts",
         "kind": "imports"
       },
       {
         "from": "src/features/rate-limit-wait/daemon.ts",
         "to": "src/platform/index.ts",
-        "kind": "imports"
-      },
-      {
-        "from": "src/features/rate-limit-wait/daemon.ts",
-        "to": "src/utils/config-dir.ts",
         "kind": "imports"
       },
       {
@@ -87373,11 +87348,11 @@
     ],
     "stats": {
       "nodeCount": 7709,
-      "edgeCount": 8345,
-      "importEdgeCount": 6907,
+      "edgeCount": 8340,
+      "importEdgeCount": 6903,
       "registerEdgeCount": 68
     }
   },
   "inventorySha256": "fb6e928b220abff2cfd0308409f591f3312b6eadf55d1a2db441c155f9026b37",
-  "manifestSha256": "4e5f898f7cceb1162f2b69ee6445bf2132d15f756ceba4d0f66cab433fb3610d"
+  "manifestSha256": "385f85164f395280b3fc0853ae06fc4d39e4bc89eaf70fc4f2428c88796a3d29"
 }

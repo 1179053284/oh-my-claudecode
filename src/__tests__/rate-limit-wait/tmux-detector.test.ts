@@ -525,6 +525,16 @@ describe('tmux-detector', () => {
       '[2] Exit',
       'Enter choice:',
     ].join('\n');
+    const waitAndContinuePrompt = [
+      'Claude Code',
+      "You've reached your usage limit for the 5-hour period.",
+      'Your limit will reset at 3:45 PM.',
+      'What would you like to do?',
+      '[1] Wait and continue automatically when limit resets',
+      '[2] Switch to a different conversation',
+      '[3] Exit',
+      '>',
+    ].join('\n');
 
     function makeTmuxAvailable(): void {
       vi.mocked(tmuxSpawn).mockReturnValue({
@@ -575,6 +585,17 @@ describe('tmux-detector', () => {
       vi.mocked(tmuxExec)
         .mockReturnValueOnce(paneList)
         .mockReturnValueOnce(weeklyLimitChoicePrompt);
+
+      expect(revalidateBlockedPanes([trackedPane])).toMatchObject([
+        { id: '%0', session: 'main', windowName: 'dev' },
+      ]);
+    });
+
+    it('recognizes the supported wait-and-continue prompt with a bare selector', () => {
+      makeTmuxAvailable();
+      vi.mocked(tmuxExec)
+        .mockReturnValueOnce(paneList)
+        .mockReturnValueOnce(waitAndContinuePrompt);
 
       expect(revalidateBlockedPanes([trackedPane])).toMatchObject([
         { id: '%0', session: 'main', windowName: 'dev' },

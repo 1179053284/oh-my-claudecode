@@ -1,10 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createHash } from 'node:crypto';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { getUsageCredentialIdentity } from '../../hud/usage-api.js';
-import { getClaudeConfigDir } from '../../utils/config-dir.js';
 import type { BlockedPane, DaemonConfig, DaemonState, RateLimitStatus } from '../../features/rate-limit-wait/types.js';
 
 const boundary = vi.hoisted(() => ({
@@ -24,16 +21,11 @@ vi.mock('../../features/rate-limit-wait/tmux-detector.js', async importOriginal 
   revalidateBlockedPanes: boundary.revalidate,
   sendResumeSequence: boundary.resume,
 }));
-import { pollLoop, shouldResumeBlockedPanesOnStatusChange } from '../../features/rate-limit-wait/daemon.js';
+import { pollLoop } from '../../features/rate-limit-wait/daemon.js';
+import { getUsageProfileHash, shouldResumeBlockedPanesOnStatusChange } from '../../features/rate-limit-wait/daemon-state.js';
 
-function currentUsageProfileHash(): string {
-  return createHash('sha256')
-    .update(JSON.stringify([
-      process.env.CLAUDE_CONFIG_DIR ?? null,
-      getClaudeConfigDir(),
-      getUsageCredentialIdentity(),
-    ]))
-    .digest('hex');
+function currentUsageProfileHash(): string | null {
+  return getUsageProfileHash();
 }
 
 function status(limited: boolean, degraded = false): RateLimitStatus {
@@ -65,6 +57,11 @@ describe('confirmed quota transitions in the actual daemon polling loop', () => 
   let listeners: Map<'SIGINT' | 'SIGTERM' | 'exit', unknown[]>;
   let originalConfigDir: string | undefined;
   let originalOAuthToken: string | undefined;
+  let originalBaseUrl: string | undefined;
+  let originalAuthToken: string | undefined;
+  let originalAnthropicApiKey: string | undefined;
+  let originalMinimaxApiKey: string | undefined;
+  let originalKimiApiKey: string | undefined;
   beforeEach(() => {
     vi.useFakeTimers();
     boundary.check.mockReset();
@@ -75,6 +72,17 @@ describe('confirmed quota transitions in the actual daemon polling loop', () => 
     boundary.revalidate.mockReturnValue([blockedPane()]);
     originalConfigDir = process.env.CLAUDE_CONFIG_DIR;
     originalOAuthToken = process.env.CLAUDE_CODE_OAUTH_TOKEN;
+    originalBaseUrl = process.env.ANTHROPIC_BASE_URL;
+    originalAuthToken = process.env.ANTHROPIC_AUTH_TOKEN;
+    originalAnthropicApiKey = process.env.ANTHROPIC_API_KEY;
+    originalMinimaxApiKey = process.env.MINIMAX_API_KEY;
+    originalKimiApiKey = process.env.KIMI_API_KEY;
+    delete process.env.ANTHROPIC_BASE_URL;
+    delete process.env.ANTHROPIC_AUTH_TOKEN;
+    delete process.env.ANTHROPIC_API_KEY;
+    delete process.env.MINIMAX_API_KEY;
+    delete process.env.KIMI_API_KEY;
+    process.env.CLAUDE_CODE_OAUTH_TOKEN = 'test-profile-token';
     root = mkdtempSync(join(tmpdir(), 'omc-quota-confirmation-'));
     config = { pollIntervalMs: 1000, paneLinesToCapture: 15, verbose: false,
       stateFilePath: join(root, 'state.json'), pidFilePath: join(root, 'pid'), logFilePath: join(root, 'log') };
@@ -90,6 +98,16 @@ describe('confirmed quota transitions in the actual daemon polling loop', () => 
     else process.env.CLAUDE_CONFIG_DIR = originalConfigDir;
     if (originalOAuthToken === undefined) delete process.env.CLAUDE_CODE_OAUTH_TOKEN;
     else process.env.CLAUDE_CODE_OAUTH_TOKEN = originalOAuthToken;
+    if (originalBaseUrl === undefined) delete process.env.ANTHROPIC_BASE_URL;
+    else process.env.ANTHROPIC_BASE_URL = originalBaseUrl;
+    if (originalAuthToken === undefined) delete process.env.ANTHROPIC_AUTH_TOKEN;
+    else process.env.ANTHROPIC_AUTH_TOKEN = originalAuthToken;
+    if (originalAnthropicApiKey === undefined) delete process.env.ANTHROPIC_API_KEY;
+    else process.env.ANTHROPIC_API_KEY = originalAnthropicApiKey;
+    if (originalMinimaxApiKey === undefined) delete process.env.MINIMAX_API_KEY;
+    else process.env.MINIMAX_API_KEY = originalMinimaxApiKey;
+    if (originalKimiApiKey === undefined) delete process.env.KIMI_API_KEY;
+    else process.env.KIMI_API_KEY = originalKimiApiKey;
     for (const [event, original] of listeners) {
       for (const listener of (event === 'exit' ? process.listeners('exit') : process.listeners(event))) {
         if (!original.includes(listener)) process.removeListener(event, listener);
@@ -249,6 +267,37 @@ describe('confirmed quota transitions in the actual daemon polling loop', () => 
     await next(status(false));
 
     expect(boundary.resume).toHaveBeenCalledExactlyOnceWith('%test');
+  });
+  it('preserves recovery state while the stored credential identity is unavailable', async () => {
+    setStoredOAuthCredentials('account-a', 'access-a', 'refresh-a');
+    seed(status(true));
+    const savedProfileHash = observed().usageProfileHash;
+    rmSync(join(root, 'claude-profile', '.credentials.json'), { force: true });
+
+    await start(status(false));
+
+    expect(boundary.check).not.toHaveBeenCalled();
+    expect(boundary.resume).not.toHaveBeenCalled();
+    expect(observed().lastConfirmedLimited).toBe(true);
+    expect(observed().blockedPanes).toHaveLength(1);
+    expect(observed().usageProfileHash).toBe(savedProfileHash);
+
+    setStoredOAuthCredentials('account-a', 'access-a', 'refresh-a');
+    await next(status(false));
+    expect(boundary.resume).toHaveBeenCalledExactlyOnceWith('%test');
+  });
+  it('discards quota state when the selected provider credential changes', async () => {
+    process.env.ANTHROPIC_BASE_URL = 'https://api.minimax.io/anthropic';
+    process.env.MINIMAX_API_KEY = 'provider-account-a';
+    seed(status(true));
+    await start(null);
+
+    process.env.MINIMAX_API_KEY = 'provider-account-b';
+    await next(status(false));
+
+    expect(boundary.resume).not.toHaveBeenCalled();
+    expect(observed().lastConfirmedLimited).toBe(false);
+    expect(observed().blockedPanes).toEqual([]);
   });
   it('recovers through an initially stale limited sample', async () => {
     seed(null, false);

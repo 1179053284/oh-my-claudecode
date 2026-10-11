@@ -553,7 +553,7 @@ describe('getUsage routing', () => {
     };
 
     mockUsageResponse(10);
-    const firstIdentity = getUsageCredentialIdentity();
+    const firstIdentity = getUsageCredentialIdentity(true, true);
     const first = await getUsage();
 
     credentialsContent = JSON.stringify({
@@ -565,7 +565,7 @@ describe('getUsage routing', () => {
       },
     });
     mockUsageResponse(80);
-    const secondIdentity = getUsageCredentialIdentity();
+    const secondIdentity = getUsageCredentialIdentity(true, true);
     const second = await getUsage();
 
     expect(firstIdentity).not.toBe(secondIdentity);
@@ -576,6 +576,65 @@ describe('getUsage routing', () => {
     expect(cacheContent).not.toContain('stored-access-b');
     expect(cacheContent).not.toContain('stored-refresh-a');
     expect(cacheContent).not.toContain('stored-refresh-b');
+  });
+
+  it('fingerprints the selected third-party provider and API key', () => {
+    process.env.ANTHROPIC_BASE_URL = 'https://api.minimax.io/anthropic';
+    process.env.MINIMAX_API_KEY = 'minimax-account-a';
+    const minimaxIdentity = getUsageCredentialIdentity(true, true);
+
+    process.env.ANTHROPIC_BASE_URL = 'https://api.kimi.com/coding/';
+    process.env.KIMI_API_KEY = 'kimi-account-a';
+    const kimiIdentity = getUsageCredentialIdentity(true, true);
+
+    process.env.KIMI_API_KEY = 'kimi-account-b';
+    const switchedKimiIdentity = getUsageCredentialIdentity(true, true);
+
+    expect(minimaxIdentity).not.toBe(kimiIdentity);
+    expect(kimiIdentity).not.toBe(switchedKimiIdentity);
+    expect(kimiIdentity).not.toContain('kimi-account-a');
+  });
+
+  it('uses the memoized stored credential identity for warm cache hits', async () => {
+    const cachePath = '/tmp/test-claude/plugins/oh-my-claudecode/.usage-cache-anthropic.json';
+    const credentialsPath = '/tmp/test-claude/.credentials.json';
+    const credentialsContent = JSON.stringify({
+      claudeAiOauth: {
+        accessToken: 'warm-access-token',
+        refreshToken: 'warm-refresh-token',
+        expiresAt: Date.now() + 60 * 60 * 1000,
+        oauthAccount: { uuid: 'warm-account', emailAddress: 'warm@example.test' },
+      },
+    });
+    let cacheContent = '{}';
+
+    process.env.CLAUDE_CONFIG_DIR = '/tmp/test-claude';
+    vi.mocked(fs.existsSync).mockImplementation(path =>
+      String(path) === cachePath || String(path) === credentialsPath,
+    );
+    vi.mocked(fs.readFileSync).mockImplementation(path => {
+      if (String(path) === cachePath) return cacheContent;
+      if (String(path) === credentialsPath) return credentialsContent;
+      return '{}';
+    });
+
+    const credentialIdentity = getUsageCredentialIdentity(true, true);
+    cacheContent = JSON.stringify({
+      timestamp: Date.now(),
+      lastSuccessAt: Date.now(),
+      source: 'anthropic',
+      credentialIdentity,
+      data: { fiveHourPercent: 25, weeklyPercent: 50 },
+    });
+    vi.mocked(childProcess.execFileSync).mockClear();
+
+    const first = await getUsage();
+    const second = await getUsage();
+
+    expect(first.rateLimits?.fiveHourPercent).toBe(25);
+    expect(second.rateLimits?.weeklyPercent).toBe(50);
+    expect(vi.mocked(childProcess.execFileSync)).not.toHaveBeenCalled();
+    expect(httpsModule.default.request).not.toHaveBeenCalled();
   });
 
   it('uses the raw ~-prefixed CLAUDE_CONFIG_DIR value for Keychain service lookup', async () => {
@@ -1295,6 +1354,8 @@ describe('getUsage routing', () => {
   it('reuses successful cached usage data for 90 seconds to avoid excessive polling', async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-03-07T00:00:00Z'));
+    process.env.CLAUDE_CODE_OAUTH_TOKEN = 'cache-test-token';
+    const credentialIdentity = getUsageCredentialIdentity(true, true);
 
     const mockedExistsSync = vi.mocked(fs.existsSync);
     const mockedReadFileSync = vi.mocked(fs.readFileSync);
@@ -1305,6 +1366,7 @@ describe('getUsage routing', () => {
         return JSON.stringify({
           timestamp: Date.now() - 60_000,
           source: 'anthropic',
+          credentialIdentity,
           data: {
             fiveHourPercent: 42,
             weeklyPercent: 17,
@@ -1333,6 +1395,8 @@ describe('getUsage routing', () => {
   });
 
   it('rehydrates scoped reset dates from serialized cache before rendering', async () => {
+    process.env.CLAUDE_CODE_OAUTH_TOKEN = 'cache-test-token';
+    const credentialIdentity = getUsageCredentialIdentity(true, true);
     const mockedExistsSync = vi.mocked(fs.existsSync);
     const mockedReadFileSync = vi.mocked(fs.readFileSync);
     const resetsAt = new Date(Date.now() + 3_600_000).toISOString();
@@ -1343,6 +1407,7 @@ describe('getUsage routing', () => {
         return JSON.stringify({
           timestamp: Date.now() - 60_000,
           source: 'anthropic',
+          credentialIdentity,
           data: {
             scopedWeeklyBuckets: [
               { id: 'fable', label: 'Fable', percent: 61, resetsAt, isActive: true },
@@ -1365,6 +1430,8 @@ describe('getUsage routing', () => {
   it('respects configured usageApiPollIntervalMs for successful cache reuse', async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-03-07T00:00:00Z'));
+    process.env.CLAUDE_CODE_OAUTH_TOKEN = 'cache-test-token';
+    const credentialIdentity = getUsageCredentialIdentity(true, true);
 
     const mockedExistsSync = vi.mocked(fs.existsSync);
     const mockedReadFileSync = vi.mocked(fs.readFileSync);
@@ -1386,6 +1453,7 @@ describe('getUsage routing', () => {
         return JSON.stringify({
           timestamp: Date.now() - 120_000,
           source: 'anthropic',
+          credentialIdentity,
           data: {
             fiveHourPercent: 42,
             weeklyPercent: 17,
@@ -1473,6 +1541,7 @@ describe('getUsage routing', () => {
 
     process.env.ANTHROPIC_BASE_URL = 'https://api.z.ai/v1';
     process.env.ANTHROPIC_AUTH_TOKEN = 'test-token';
+    const credentialIdentity = getUsageCredentialIdentity(true, true);
 
     const mockedExistsSync = vi.mocked(fs.existsSync);
     const mockedReadFileSync = vi.mocked(fs.readFileSync);
@@ -1498,6 +1567,7 @@ describe('getUsage routing', () => {
           rateLimited: true,
           rateLimitedCount: 4,
           source: 'zai',
+          credentialIdentity,
           data: null,
         });
       }
@@ -1532,6 +1602,7 @@ describe('getUsage routing', () => {
 
     process.env.ANTHROPIC_BASE_URL = 'https://api.z.ai/v1';
     process.env.ANTHROPIC_AUTH_TOKEN = 'test-token';
+    const credentialIdentity = getUsageCredentialIdentity(true, true);
 
     const mockedExistsSync = vi.mocked(fs.existsSync);
     const mockedReadFileSync = vi.mocked(fs.readFileSync);
@@ -1553,6 +1624,7 @@ describe('getUsage routing', () => {
         return JSON.stringify({
           timestamp: Date.now() - 90_000,
           source: 'zai',
+          credentialIdentity,
           data: null,
           error: true,
           errorReason: 'network',

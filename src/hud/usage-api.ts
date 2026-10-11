@@ -80,7 +80,7 @@ interface UsageCache {
   lastSuccessAt?: number;
   /** User-Agent identity that received a rate-limit response (Anthropic only) */
   rateLimitIdentity?: string;
-  /** Non-reversible identity of the OAuth account associated with this cache. */
+  /** Non-reversible identity of the selected usage provider's credential. */
   credentialIdentity?: string;
   /** Active Anthropic rate-limit backoffs keyed by User-Agent identity */
   rateLimitBackoffs?: Record<string, RateLimitBackoff>;
@@ -101,6 +101,25 @@ interface OAuthCredentials {
   /** Rate limit tier from OAuth credentials (e.g. 'default_claude_zero') */
   rateLimitTier?: string;
 }
+
+interface ResolvedUsageProfile {
+  currentSource: UsageSource;
+  authToken: string | undefined;
+  minimaxApiKey: string | undefined;
+  kimiApiKey: string | undefined;
+  credentials: OAuthCredentials | null;
+  credentialIdentity: string | undefined;
+  storedCredentialsRead: boolean;
+}
+
+interface StoredCredentialCache {
+  configKey: string;
+  checkedAt: number;
+  credentials: OAuthCredentials | null;
+}
+
+let storedCredentialCache: StoredCredentialCache | undefined;
+let storedCredentialLookupGeneration = 0;
 
 interface UsageApiResponse {
   five_hour?: { utilization?: number; resets_at?: string };
@@ -416,7 +435,7 @@ interface WriteCacheOptions {
   lastSuccessAt?: number;
   /** User-Agent identity associated with an Anthropic rate-limit response */
   rateLimitIdentity?: string;
-  /** Non-reversible identity of the OAuth account associated with this cache. */
+  /** Non-reversible identity of the selected usage provider's credential. */
   credentialIdentity?: string;
   /** Active Anthropic rate-limit backoffs keyed by User-Agent identity */
   rateLimitBackoffs?: Record<string, RateLimitBackoff>;
@@ -584,7 +603,9 @@ function getOAuthAccountProfileIdentity(credentials: Record<string, unknown>): s
 }
 
 function isCacheForCredential(cache: UsageCache | null, credentialIdentity?: string): boolean {
-  return cache?.credentialIdentity === credentialIdentity;
+  if (!cache) return false;
+  if (credentialIdentity !== undefined) return cache.credentialIdentity === credentialIdentity;
+  return cache.credentialIdentity === undefined && cache.data === null;
 }
 
 function isCacheValid(cache: UsageCache, pollIntervalMs: number, rateLimitIdentity?: string): boolean {
@@ -820,38 +841,113 @@ function readFileCredentials(): OAuthCredentials | null {
 /**
  * Get OAuth credentials (Keychain first, then file fallback)
  */
-function getStoredCredentials(): OAuthCredentials | null {
-  // Try Keychain first (macOS)
-  const keychainCreds = readKeychainCredentials();
-  if (keychainCreds) return keychainCreds;
-
-  // Fall back to file
-  return readFileCredentials();
+function getStoredCredentialCacheKey(): string {
+  return JSON.stringify([process.env.CLAUDE_CONFIG_DIR ?? null, getClaudeConfigDir()]);
 }
 
-function getCredentials(): OAuthCredentials | null {
+function getStoredCredentials(refresh = false): OAuthCredentials | null {
+  const configKey = getStoredCredentialCacheKey();
+  if (
+    !refresh &&
+    storedCredentialCache?.configKey === configKey &&
+    Date.now() - storedCredentialCache.checkedAt < getUsagePollIntervalMs() + CACHE_TTL_FAILURE_MS
+  ) {
+    return storedCredentialCache.credentials;
+  }
+
+  // Try Keychain first (macOS)
+  const keychainCreds = readKeychainCredentials();
+  const credentials = keychainCreds ?? readFileCredentials();
+  storedCredentialCache = { configKey, checkedAt: Date.now(), credentials };
+  storedCredentialLookupGeneration++;
+  return credentials;
+}
+
+function rememberStoredCredentials(credentials: OAuthCredentials): void {
+  storedCredentialCache = {
+    configKey: getStoredCredentialCacheKey(),
+    checkedAt: Date.now(),
+    credentials,
+  };
+}
+
+function getCredentials(
+  includeDirectOAuthToken = true,
+  refreshStoredCredentials = false,
+): OAuthCredentials | null {
   // Respect an explicit CLAUDE_CODE_OAUTH_TOKEN override, matching how Claude Code itself
   // authenticates. Multi-account setups launch each session with a per-account token via this
   // env var; without honoring it here the HUD always reads the default Keychain login and shows
   // the wrong account's usage. Setup-tokens are long-lived and carry no refresh token, so leave
   // expiresAt/refreshToken unset — isCredentialExpired() then treats them as non-expiring and no
   // token refresh or Keychain write-back is attempted.
-  const envToken = process.env.CLAUDE_CODE_OAUTH_TOKEN?.trim();
+  const envToken = includeDirectOAuthToken ? process.env.CLAUDE_CODE_OAUTH_TOKEN?.trim() : undefined;
   if (envToken) {
     return { accessToken: envToken, source: 'env' };
   }
 
-  return getStoredCredentials();
+  return getStoredCredentials(refreshStoredCredentials);
 }
 
-/** Return a non-reversible identity for the credential used by the usage API. */
-export function getUsageCredentialIdentity(includeDirectOAuthToken = true): string | null {
-  const credentials = includeDirectOAuthToken ? getCredentials() : getStoredCredentials();
-  if (!credentials) return null;
+function resolveUsageProfile(
+  includeEnvironmentCredentials = true,
+  refreshStoredCredentials = false,
+): ResolvedUsageProfile {
+  const baseUrl = includeEnvironmentCredentials ? process.env.ANTHROPIC_BASE_URL : undefined;
+  const authToken = includeEnvironmentCredentials ? process.env.ANTHROPIC_AUTH_TOKEN : undefined;
+  const isMinimax = baseUrl != null && isMinimaxHost(baseUrl);
+  const isKimi = baseUrl != null && isKimiHost(baseUrl);
+  const isZai = baseUrl != null && isZaiHost(baseUrl);
+  const minimaxApiKey = includeEnvironmentCredentials
+    ? process.env.MINIMAX_API_KEY || authToken
+    : undefined;
+  // Preserve Kimi's documented credential precedence: provider key, Anthropic
+  // API key, then auth token. A leftover auth token must not mask the Kimi key.
+  const kimiApiKey = includeEnvironmentCredentials
+    ? process.env.KIMI_API_KEY || process.env.ANTHROPIC_API_KEY || authToken
+    : undefined;
+  const currentSource: UsageSource =
+    isMinimax ? 'minimax' : isKimi ? 'kimi' : isZai && authToken ? 'zai' : 'anthropic';
+  const previousLookupGeneration = storedCredentialLookupGeneration;
+  const credentials = currentSource === 'anthropic'
+    ? getCredentials(includeEnvironmentCredentials, refreshStoredCredentials)
+    : null;
+  const providerCredential = currentSource === 'minimax'
+    ? minimaxApiKey
+    : currentSource === 'kimi'
+      ? kimiApiKey
+      : currentSource === 'zai'
+        ? authToken
+        : undefined;
+  const credentialIdentity = credentials
+    ? hashCredentialIdentity(JSON.stringify([
+      currentSource,
+      baseUrl ?? null,
+      credentials.profileIdentity ?? hashCredentialIdentity(
+        credentials.refreshToken ?? credentials.accessToken,
+      ),
+    ]))
+    : providerCredential
+      ? hashCredentialIdentity(JSON.stringify([currentSource, baseUrl ?? null, providerCredential]))
+      : undefined;
 
-  return credentials.profileIdentity ?? hashCredentialIdentity(
-    credentials.refreshToken ?? credentials.accessToken,
-  );
+  return {
+    currentSource,
+    authToken,
+    minimaxApiKey,
+    kimiApiKey,
+    credentials,
+    credentialIdentity,
+    storedCredentialsRead: storedCredentialLookupGeneration !== previousLookupGeneration,
+  };
+}
+
+/** Return a non-reversible identity for the source and credential used by getUsage. */
+export function getUsageCredentialIdentity(
+  includeEnvironmentCredentials = true,
+  refreshStoredCredentials = false,
+): string | null {
+  return resolveUsageProfile(includeEnvironmentCredentials, refreshStoredCredentials).credentialIdentity ?? null;
 }
 
 /**
@@ -2169,30 +2265,10 @@ async function fetchAndCacheUsage<T>(opts: {
  *   and the header is left off rather than guessed.
  */
 export async function getUsage(opts?: { clientVersion?: string }): Promise<UsageResult> {
-  const baseUrl = process.env.ANTHROPIC_BASE_URL;
-  const authToken = process.env.ANTHROPIC_AUTH_TOKEN;
-  const isMinimax = baseUrl != null && isMinimaxHost(baseUrl);
-  const isKimi = baseUrl != null && isKimiHost(baseUrl);
-  const isZai = baseUrl != null && isZaiHost(baseUrl);
-  const minimaxApiKey = process.env.MINIMAX_API_KEY || authToken;
-  // Kimi For Coding documents `ANTHROPIC_BASE_URL=https://api.kimi.com/coding/`
-  // paired with `ANTHROPIC_API_KEY`; the Moonshot open platform and the
-  // kimi-code CLI use `ANTHROPIC_AUTH_TOKEN` instead. Both reach this branch,
-  // so try them in order of specificity to this host:
-  //   1. KIMI_API_KEY        — explicit, provider-scoped override
-  //   2. ANTHROPIC_API_KEY   — the documented credential for api.kimi.com
-  //   3. ANTHROPIC_AUTH_TOKEN — OAuth access tokens / platform-style setups
-  // (2) outranks (3) because Moonshot warns the two conflict and tells users on
-  // this endpoint to unset ANTHROPIC_AUTH_TOKEN — a leftover one must not mask
-  // the key the documented setup actually authenticates with.
-  const kimiApiKey =
-    process.env.KIMI_API_KEY || process.env.ANTHROPIC_API_KEY || authToken;
-  const currentSource: UsageSource =
-    isMinimax ? 'minimax' : isKimi ? 'kimi' : isZai && authToken ? 'zai' : 'anthropic';
-  const credentials = currentSource === 'anthropic' ? getCredentials() : null;
-  const credentialIdentity = credentials
-    ? credentials.profileIdentity ?? hashCredentialIdentity(credentials.refreshToken ?? credentials.accessToken)
-    : undefined;
+  let profile = resolveUsageProfile();
+  const { currentSource, authToken, minimaxApiKey, kimiApiKey } = profile;
+  let credentials = profile.credentials;
+  let credentialIdentity = profile.credentialIdentity;
   const pollIntervalMs = getUsagePollIntervalMs();
   const rateLimitIdentity = currentSource === 'anthropic'
     ? buildUserAgent(opts?.clientVersion) ?? 'anonymous'
@@ -2202,7 +2278,7 @@ export async function getUsage(opts?: { clientVersion?: string }): Promise<Usage
   migrateLegacyCache(currentSource);
 
   const initialCache = readCache(currentSource);
-  const initialMatchingCache = isCacheForCredential(initialCache, credentialIdentity)
+  let initialMatchingCache = isCacheForCredential(initialCache, credentialIdentity)
     ? initialCache
     : null;
   if (
@@ -2211,6 +2287,26 @@ export async function getUsage(opts?: { clientVersion?: string }): Promise<Usage
     initialMatchingCache.source === currentSource
   ) {
     return getCachedUsageResult(initialMatchingCache, rateLimitIdentity);
+  }
+
+  if (
+    currentSource === 'anthropic' &&
+    credentials?.source !== 'env' &&
+    !profile.storedCredentialsRead
+  ) {
+    profile = resolveUsageProfile(true, true);
+    credentials = profile.credentials;
+    credentialIdentity = profile.credentialIdentity;
+    initialMatchingCache = isCacheForCredential(initialCache, credentialIdentity)
+      ? initialCache
+      : null;
+    if (
+      initialMatchingCache &&
+      isCacheValid(initialMatchingCache, pollIntervalMs, rateLimitIdentity) &&
+      initialMatchingCache.source === currentSource
+    ) {
+      return getCachedUsageResult(initialMatchingCache, rateLimitIdentity);
+    }
   }
 
   try {
@@ -2226,9 +2322,9 @@ export async function getUsage(opts?: { clientVersion?: string }): Promise<Usage
       }
 
       // MiniMax path (must precede z.ai and OAuth checks)
-      if (isMinimax) {
+      if (currentSource === 'minimax') {
         if (!minimaxApiKey) {
-          writeCache({ data: null, error: true, source: 'minimax', errorReason: 'no_credentials' });
+          writeCache({ data: null, error: true, source: 'minimax', errorReason: 'no_credentials', credentialIdentity });
           return { rateLimits: null, error: 'no_credentials' };
         }
         return fetchAndCacheUsage({
@@ -2237,13 +2333,14 @@ export async function getUsage(opts?: { clientVersion?: string }): Promise<Usage
           parseFn: parseMinimaxResponse,
           cache: matchingCache,
           pollIntervalMs,
+          credentialIdentity,
         });
       }
 
       // Kimi path (must precede z.ai and OAuth checks)
-      if (isKimi) {
+      if (currentSource === 'kimi') {
         if (!kimiApiKey) {
-          writeCache({ data: null, error: true, source: 'kimi', errorReason: 'no_credentials' });
+          writeCache({ data: null, error: true, source: 'kimi', errorReason: 'no_credentials', credentialIdentity });
           return { rateLimits: null, error: 'no_credentials' };
         }
         return fetchAndCacheUsage({
@@ -2252,17 +2349,19 @@ export async function getUsage(opts?: { clientVersion?: string }): Promise<Usage
           parseFn: parseKimiResponse,
           cache: matchingCache,
           pollIntervalMs,
+          credentialIdentity,
         });
       }
 
       // z.ai path (must precede OAuth check to avoid stale Anthropic credentials)
-      if (isZai && authToken) {
+      if (currentSource === 'zai' && authToken) {
         return fetchAndCacheUsage({
           source: 'zai',
           fetchFn: () => fetchUsageFromZai(),
           parseFn: parseZaiResponse,
           cache: matchingCache,
           pollIntervalMs,
+          credentialIdentity,
         });
       }
 
@@ -2275,6 +2374,7 @@ export async function getUsage(opts?: { clientVersion?: string }): Promise<Usage
             if (refreshed) {
               creds = { ...creds, ...refreshed };
               writeBackCredentials(creds);
+              if (creds.source !== 'env') rememberStoredCredentials(creds);
             } else {
               writeCache({
                 data: null,

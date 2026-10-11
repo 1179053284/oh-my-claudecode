@@ -13,13 +13,10 @@
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync, chmodSync, statSync, appendFileSync, renameSync } from 'fs';
-import { createHash } from 'node:crypto';
 import { join, dirname } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { spawn } from 'child_process';
-import { getUsageCredentialIdentity } from '../../hud/usage-api.js';
 import { resolveDaemonModulePath } from '../../utils/daemon-module-path.js';
-import { getClaudeConfigDir } from '../../utils/config-dir.js';
 import { getGlobalOmcStatePath } from '../../utils/paths.js';
 import {
   checkRateLimitStatus,
@@ -34,13 +31,18 @@ import {
   sendResumeSequence,
   formatBlockedPanesSummary,
 } from './tmux-detector.js';
-import type {
+import {
   DaemonState,
   DaemonConfig,
   DaemonResponse,
-  RateLimitStatus,
 } from './types.js';
 import { isProcessAlive } from '../../platform/index.js';
+import {
+  createInitialState,
+  getUsageProfileHash,
+  scopeStateToCurrentUsageProfile,
+  shouldResumeBlockedPanesOnStatusChange,
+} from './daemon-state.js';
 
 // ESM compatibility: __filename is not available in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -286,78 +288,7 @@ function log(message: string, config: Required<DaemonConfig>): void {
 }
 
 /**
- * Create initial daemon state
- */
-function createInitialState(): DaemonState {
-  return {
-    isRunning: true,
-    pid: process.pid,
-    startedAt: new Date(),
-    lastPollAt: null,
-    rateLimitStatus: null,
-    resumePending: false,
-    blockedPanes: [],
-    resumedPaneIds: [],
-    totalResumeAttempts: 0,
-    successfulResumes: 0,
-    errorCount: 0,
-  };
-}
-
-/**
- * Fingerprint the active Claude profile without persisting its path in global state.
- * The raw value matters because credential lookup distinguishes explicit profile
- * paths from the default even when both resolve to the same directory.
- */
-function getUsageProfileHash(includeDirectOAuthToken = true): string {
-  const credentialIdentity = getUsageCredentialIdentity(includeDirectOAuthToken);
-  return createHash('sha256')
-    .update(JSON.stringify([
-      process.env.CLAUDE_CONFIG_DIR ?? null,
-      getClaudeConfigDir(),
-      credentialIdentity,
-    ]))
-    .digest('hex');
-}
-
-/** Do not carry quota or pane state between Claude profiles sharing OMC state. */
-function scopeStateToCurrentUsageProfile(
-  state: DaemonState,
-  includeDirectOAuthToken = true,
-): DaemonState {
-  const usageProfileHash = getUsageProfileHash(includeDirectOAuthToken);
-  if (state.usageProfileHash !== usageProfileHash) {
-    state.lastPollAt = null;
-    state.rateLimitStatus = null;
-    state.lastConfirmedLimited = false;
-    state.resumePending = false;
-    state.blockedPanes = [];
-    state.resumedPaneIds = [];
-    state.totalResumeAttempts = 0;
-    state.successfulResumes = 0;
-    state.errorCount = 0;
-    state.lastError = undefined;
-  }
-  state.usageProfileHash = usageProfileHash;
-  return state;
-}
-
-/**
- * Only a confirmed transition out of quota exhaustion should trigger pane resume.
- * Degraded/stale usage-api 429 responses are visible to users but must not act
- * like a real all-clear signal for blocked panes.
- */
-export function shouldResumeBlockedPanesOnStatusChange(
-  previousStatus: Pick<RateLimitStatus, 'isLimited'> | null,
-  nextStatus: RateLimitStatus | null,
-): boolean {
-  const wasLimited = !!previousStatus?.isLimited;
-  const isNowLimited = shouldMonitorBlockedPanes(nextStatus);
-  return wasLimited && nextStatus !== null && !isNowLimited && !isRateLimitStatusDegraded(nextStatus);
-}
-
-/**
- * Register cleanup handlers for the daemon process.
+ * Register daemon cleanup handlers for the daemon process.
  * Ensures PID file and state are cleaned up on exit signals.
  */
 function registerDaemonCleanup(config: Required<DaemonConfig>): void {
@@ -388,7 +319,7 @@ function registerDaemonCleanup(config: Required<DaemonConfig>): void {
  * Main daemon polling loop
  */
 async function pollLoop(config: Required<DaemonConfig>): Promise<void> {
-  const state = scopeStateToCurrentUsageProfile(readDaemonState(config) || createInitialState());
+  const state = readDaemonState(config) || createInitialState();
   state.isRunning = true;
   state.pid = process.pid;
   state.startedAt = new Date();
@@ -404,8 +335,9 @@ async function pollLoop(config: Required<DaemonConfig>): Promise<void> {
   while (state.isRunning) {
     try {
       const previousProfileHash = state.usageProfileHash;
-      scopeStateToCurrentUsageProfile(state);
-      if (state.usageProfileHash !== previousProfileHash) {
+      const usageProfileHash = getUsageProfileHash();
+      scopeStateToCurrentUsageProfile(state, usageProfileHash);
+      if (usageProfileHash !== null && state.usageProfileHash !== previousProfileHash) {
         lastConfirmedLimited = state.lastConfirmedLimited === true;
         log('Claude usage profile changed; discarded saved quota and pane state', config);
       }
@@ -413,12 +345,14 @@ async function pollLoop(config: Required<DaemonConfig>): Promise<void> {
       state.lastPollAt = new Date();
 
       // Check rate limit status with a 30s timeout to prevent poll loop stalls
-      const rateLimitStatus = await Promise.race([
-        checkRateLimitStatus(),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('checkRateLimitStatus timed out after 30s')), 30_000)
-        ),
-      ]);
+      const rateLimitStatus = usageProfileHash === null
+        ? null
+        : await Promise.race([
+          checkRateLimitStatus(),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('checkRateLimitStatus timed out after 30s')), 30_000)
+          ),
+        ]);
       const isNowLimited = shouldMonitorBlockedPanes(rateLimitStatus);
       const isConfirmedClear =
         rateLimitStatus !== null && !isNowLimited && !isRateLimitStatusDegraded(rateLimitStatus);
@@ -440,8 +374,10 @@ async function pollLoop(config: Required<DaemonConfig>): Promise<void> {
 
       if (rateLimitStatus) {
         log(`Rate limit status: ${formatRateLimitStatus(rateLimitStatus)}`, config);
+      } else if (usageProfileHash === null) {
+        log('Rate limit status unavailable (usage credential identity unknown)', config);
       } else {
-        log('Rate limit status unavailable (no OAuth credentials?)', config);
+        log('Rate limit status unavailable', config);
       }
 
       // If currently rate limited, scan for blocked panes
@@ -600,7 +536,7 @@ export function startDaemon(config?: DaemonConfig): DaemonResponse {
       // Detached children intentionally omit direct OAuth tokens from their environment.
       const state = scopeStateToCurrentUsageProfile(
         readDaemonState(cfg) || createInitialState(),
-        false,
+        getUsageProfileHash(false),
       );
       state.isRunning = true;
       state.pid = pid;
