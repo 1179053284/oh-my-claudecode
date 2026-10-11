@@ -200,6 +200,14 @@ Final draft.`);
       expect(result).toContain('hello');
     });
 
+    it('should strip matching XML tags with attributes on the closing tag', () => {
+      const result = sanitizeForKeywordDetection(
+        '<pasted_content id="ab12">ralph</pasted_content id="ab12"> visible',
+      );
+      expect(result).not.toContain('ralph');
+      expect(result).toContain('visible');
+    });
+
     it('should strip nested matching XML tags', () => {
       const result = sanitizeForKeywordDetection('<outer>some <inner>text</inner> ralph</outer> visible');
       expect(result).not.toContain('ralph');

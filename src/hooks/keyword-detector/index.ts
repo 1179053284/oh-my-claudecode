@@ -374,7 +374,7 @@ export function sanitizeForKeywordDetection(text: string): string {
   // Remove HTML/markdown comments first so keywords inside comments cannot trigger modes
   result = result.replace(/<!--[\s\S]*?-->/g, '');
   // Remove XML tag blocks (opening + content + closing; tag names must match)
-  result = result.replace(/<(\w[\w-]*)[\s>][\s\S]*?<\/\1>/g, '');
+  result = result.replace(/<(\w[\w-]*)[\s>][\s\S]*?<\/\1(?:\s[^>]*)?>/g, '');
   // Remove self-closing XML tags
   result = result.replace(/<\w[\w-]*(?:\s[^>]*)?\s*\/>/g, '');
   // Remove URLs
