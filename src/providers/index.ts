@@ -6,6 +6,7 @@
  */
 
 import { execFileSync } from 'node:child_process';
+import { resolve } from 'node:path';
 import type { ProviderName, RemoteUrlInfo, GitProvider } from './types.js';
 import { GitHubProvider } from './github.js';
 import { GitLabProvider } from './gitlab.js';
@@ -48,7 +49,7 @@ function setCachedRemoteUrl(cwd: string, url: string | null): void {
 }
 
 function getRemoteUrl(cwd?: string): string | null {
-  const resolvedCwd = cwd ?? process.cwd();
+  const resolvedCwd = resolve(cwd ?? process.cwd());
   const cached = getCachedRemoteUrl(resolvedCwd);
   if (cached !== undefined) return cached;
 

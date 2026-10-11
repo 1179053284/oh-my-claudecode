@@ -5,15 +5,15 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "86025770e705e8c67b02f85af9a9e43e46317629",
-    "sourceSha256": "4284f7a6b373563ccb8659bed45cad79d30def5b4c99b6409cafa45f356c2887",
+    "head": "2f49286b202ddf0530035501f7285df52d9bfdc9",
+    "sourceSha256": "0c717b6ffa0c0add9d652e69c3232141459f6f58984752377f87c5f9831b0b66",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "86025770e705e8c67b02f85af9a9e43e46317629",
-  "sourceSha256": "4284f7a6b373563ccb8659bed45cad79d30def5b4c99b6409cafa45f356c2887",
+  "head": "2f49286b202ddf0530035501f7285df52d9bfdc9",
+  "sourceSha256": "0c717b6ffa0c0add9d652e69c3232141459f6f58984752377f87c5f9831b0b66",
   "counts": {
     "public": {
       "skills": 47,
@@ -28,8 +28,8 @@
       "toolFiles": 61,
       "libFiles": 48,
       "templateHooks": 23,
-      "srcFiles": 1452,
-      "total": 1475
+      "srcFiles": 1454,
+      "total": 1477
     },
     "generated": {
       "distFiles": 5611,
@@ -52942,6 +52942,26 @@
       },
       {
         "from": "src/__tests__/providers/detection.test.ts",
+        "to": "external:node:child_process",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/providers/detection.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/providers/detection.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/providers/detection.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/providers/detection.test.ts",
         "to": "external:vitest",
         "kind": "imports"
       },
@@ -76117,6 +76137,11 @@
       },
       {
         "from": "src/providers/index.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/providers/index.ts",
         "to": "src/providers/azure-devops.ts",
         "kind": "imports"
       },
@@ -87463,11 +87488,11 @@
     ],
     "stats": {
       "nodeCount": 7714,
-      "edgeCount": 8358,
-      "importEdgeCount": 6917,
+      "edgeCount": 8363,
+      "importEdgeCount": 6922,
       "registerEdgeCount": 68
     }
   },
-  "inventorySha256": "6104e0e79dd11c1112c1cf75cfe4a2b0035350e93c1dbcbccfdc7ec9d1c109ba",
-  "manifestSha256": "ced3c221bcff8f55a6c664f9be57be6b5ba52e92a98bf30cbdbc90cf3955130b"
+  "inventorySha256": "a1c47ca663e93d0f116f9ccf0c9d41ca8bba2d71afa181706d9af383094fdf61",
+  "manifestSha256": "ee7cfadab6d7748e2785937f53786ed8101e5b2157509e052a77c16a3c631528"
 }
