@@ -16,6 +16,7 @@ const NAVIGATOR = readFileSync(join(ROOT, 'skills', 'ask-navigator', 'SKILL.md')
 const LOFT = readFileSync(join(ROOT, 'skills', 'loft', 'SKILL.md'), 'utf-8');
 const HARBOR = readFileSync(join(ROOT, 'skills', 'harbor', 'SKILL.md'), 'utf-8');
 const SHIPYARD_DOC = readFileSync(join(ROOT, 'docs', 'shipyard.md'), 'utf-8');
+const GLOSSARY = readFileSync(join(ROOT, 'GLOSSARY.md'), 'utf-8');
 const DISCIPLINE = readFileSync(join(ROOT, 'skills', 'agent-doc-discipline', 'SKILL.md'), 'utf-8');
 const SURVEY = readFileSync(join(ROOT, 'skills', 'architecture-survey', 'SKILL.md'), 'utf-8');
 const PLUGIN = JSON.parse(readFileSync(join(ROOT, '.claude-plugin', 'plugin.json'), 'utf-8'));
@@ -127,8 +128,11 @@ describe('shipyard skills — behavior & packaging contract', () => {
 
   it('ask-navigator keeps the map ring in the tracker (map issue, resolution comments, brief in the map body)', () => {
     // T67: map = tracker issue, decisions = resolution comments on closed tickets,
-    // handoff pointer folded into the map issue body. No local map/decisions/brief trio.
-    expect(NAVIGATOR).not.toContain('.omc/wayfinder');
+    // handoff pointer folded into the map issue body. Legacy local maps are import-only.
+    expect(NAVIGATOR).toContain('One-time migration for existing local maps');
+    expect(NAVIGATOR).toContain('.omc/wayfinder/<slug>/map.md');
+    expect(NAVIGATOR).toContain('never start a second map');
+    expect(NAVIGATOR).toContain('Keep the local files unchanged as the audit source');
     expect(NAVIGATOR).not.toContain('brief.md');
     expect(NAVIGATOR).not.toContain('decisions/NN-');
     expect(NAVIGATOR).not.toContain('Local markdown fallback');
@@ -136,8 +140,17 @@ describe('shipyard skills — behavior & packaging contract', () => {
     expect(NAVIGATOR).toContain('resolution comment');
     expect(NAVIGATOR).toContain('**Mission brief**');
     expect(NAVIGATOR).toContain('map issue body');
-    // launch's map check reads the map from the tracker only
+    // launch's map check reads tracker state and routes legacy maps to migration
     expect(LAUNCH).not.toContain('.omc/wayfinder');
+    expect(LAUNCH).toContain('legacy local map is present');
+  });
+
+  it('Scout findings are session-only and folded into tracker tickets', () => {
+    expect(GLOSSARY).toContain('findings stay in the session and are folded into the relevant tracker tickets at dispatch');
+    expect(GLOSSARY).not.toContain('.omc/specs/');
+    expect(LAUNCH).toContain('notes stay in the conversation, never written to disk');
+    expect(LAUNCH).toContain('the latest handoff comment');
+    expect(LAUNCH).toContain('Do not create a local handoff artifact');
   });
 
   it('ask-navigator research findings never become permanent repo files', () => {
@@ -189,7 +202,8 @@ describe('shipyard skills — behavior & packaging contract', () => {
     expect(LAUNCH).toContain('consensus audit');
     expect(LAUNCH).toContain('skipping the interview never skips a signature');
     expect(LAUNCH).toContain('**Planned session handoff**');
-    expect(LAUNCH).toContain('No raw transcript, no chat history');
+    expect(LAUNCH).toContain('latest handoff comment');
+    expect(LAUNCH).toContain('Do not create a local handoff artifact');
   });
 
   it('harbor and navigator carry the round-3 disciplines (external extraction, ask-a-person, environment face, repair)', () => {
@@ -523,6 +537,7 @@ describe('shipyard skills — behavior & packaging contract', () => {
     expect(LAUNCH).toContain('**child tracker issues** (native sub-issues of the parent spec issue)');
     expect(LAUNCH).toContain('notes stay in the conversation, never written to disk');
     expect(LAUNCH).toContain('as a comment on the parent spec issue');
+    expect(LAUNCH).toContain('parent issue, native child issues and their status/dependency/evidence, plus the latest handoff comment');
   });
 
   it('launch keeps the canonical path canonical and itself opt-in (no seeded default override)', () => {
@@ -545,8 +560,12 @@ describe('shipyard skills — behavior & packaging contract', () => {
     expect(LAUNCH).toContain('never silently swallow a high-confidence actionable finding');
     expect(LAUNCH).toContain('No general bypass');
     expect(LAUNCH).toContain('Current audit contract');
+    expect(LAUNCH).toContain('version 2');
+    expect(LAUNCH).toContain('`contractVersion: 2`');
+    expect(LAUNCH).toContain('`shipyard.yard.unlaid`');
+    expect(LAUNCH).toContain('`shipyard.surface.missing.*` IDs are retired');
     expect(LAUNCH).toContain('node scripts/shipyard-audit.mjs');
-    expect(LAUNCH).toContain('exit 0 = clean, 1 = high-confidence actionable findings present');
+    expect(LAUNCH).toContain('Exit 0 = clean, 1 = high-confidence actionable findings present');
     expect(LAUNCH).toContain('The rules entry is `CLAUDE.md` — the shipyard map recognizes no substitute');
     expect(LAUNCH).not.toContain('No override flag, no confirm-to-continue path');
     expect(LAUNCH).not.toContain('no exception for throwaway prototypes — laying the yard is one command away');
@@ -583,14 +602,13 @@ describe('shipyard skills — behavior & packaging contract', () => {
     expect(LAUNCH).not.toContain('缺失表面');
     expect(NAVIGATOR).not.toContain('un-laid surfaces as findings');
     // the existence-as-declaration gate wording is pinned
-    expect(LAUNCH).toContain('an absent surface is not adopted, never a finding');
-    expect(LAUNCH).toContain('never an absent surface, which is un-adopted, not missing');
-    // the paper-trail slot wording is pinned: CONTEXT.md day one, the rest on first use
-    expect(LAUNCH).toContain('`CONTEXT.md` exists from the day the yard was laid');
+    expect(LAUNCH).toContain('an absent optional surface is not a finding');
+    // the paper-trail slot wording is pinned: required faces day one, the rest on first use
+    expect(LAUNCH).toContain('day-one base faces `CLAUDE.md` and `GLOSSARY.md`');
     expect(LAUNCH).toContain('`docs/adr/` and `docs/business/` appear on first use');
     expect(LAUNCH).toContain('never creates a slot speculatively');
     // the navigator defers without turning un-adopted surfaces into findings
-    expect(NAVIGATOR).toContain('an un-adopted surface never becomes a finding');
+    expect(NAVIGATOR).toContain('an un-adopted optional surface never becomes a finding');
   });
 
   it('launch closeout re-runs the yard audit as yard drift instead of the retired gap list', () => {
@@ -647,7 +665,7 @@ describe('shipyard skills — behavior & packaging contract', () => {
 
   it('launch C5 completion report states the run numbers (facts, not telemetry)', () => {
     // the loop had no measurements; C5 records the run's numbers as plain facts
-    // in the report text — disk is the primary source, no telemetry machinery
+    // in the report text — canonical artifacts are the source, no telemetry machinery
     expect(LAUNCH).toContain('**run numbers**');
     expect(LAUNCH).toContain('tickets completed, C4 decisions surfaced, three-strike halts, and sediment lines proposed');
     expect(LAUNCH).toContain('no telemetry system, no state files');
@@ -663,13 +681,13 @@ describe('shipyard skills — behavior & packaging contract', () => {
   });
 
   it('drydock seeds exactly two faces on day one and defers every other surface to first use', () => {
-    // T68 lazy seeding: drydock writes CLAUDE.md + CONTEXT.md and nothing else;
+    // T68 lazy seeding: drydock writes CLAUDE.md + GLOSSARY.md and nothing else;
     // every other surface carries a first-use trigger instead of a scaffold
     // instruction, so a freshly seeded yard contains only what has a real use.
     const scaffold = DRYDOCK.match(/### 3\.[\s\S]*?```\n([\s\S]*?)\n```/)?.[1];
     expect(scaffold).toBeDefined();
     expect(scaffold).toContain('CLAUDE.md');
-    expect(scaffold).toContain('CONTEXT.md');
+    expect(scaffold).toContain('GLOSSARY.md');
     for (const deferred of [
       'docs/adr/',
       'docs/standards/',
@@ -700,7 +718,7 @@ describe('shipyard skills — behavior & packaging contract', () => {
     // the thin entry must not name deferred surface paths: the audit's
     // dead-path check reads CLAUDE.md, and a pointer at an absent surface is
     // a high-confidence finding on a freshly seeded yard
-    const seedA = DRYDOCK.match(/<!-- shipyard-seed-a:en:start -->[\s\S]*?<!-- shipyard-seed-a:en:end -->/)?.[1] ?? '';
+    const seedA = DRYDOCK.match(/<!-- shipyard-seed-a:en:start -->([\s\S]*?)<!-- shipyard-seed-a:en:end -->/)?.[1] ?? '';
     expect(seedA).not.toMatch(/(?:docs|design-system|scripts|\.omc)\/[\w./-]+/);
   });
 
@@ -824,8 +842,9 @@ describe('shipyard skills — behavior & packaging contract', () => {
     expect(HARBOR).toContain('Match rejections by concept, not by title');
   });
 
-  it('launch and navigator state the primary-source-on-disk boundary cost model', () => {
-    expect(LAUNCH).toContain('Disk is the primary source; conversation memory is secondary');
+  it('launch and navigator state the canonical-artifact boundary cost model', () => {
+    expect(LAUNCH).toContain('Canonical artifacts are the primary source; conversation memory is secondary');
+    expect(LAUNCH).toContain('Re-read tracker issues and comments');
     expect(LAUNCH).toContain('The four-way boundary choice');
     expect(NAVIGATOR).toContain('every session re-orients from the map, never from the previous session');
   });

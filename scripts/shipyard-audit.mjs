@@ -13,9 +13,9 @@
 // declaration syntax, so the former shipyard.surface.missing.* finding class
 // no longer exists.
 //
-// Current classes: a missing/invalid `documentLanguage`
-// tag, dead paths in `CLAUDE.md`, project-skill triggers present, and intent
-// statuses within the documented vocabulary.
+// Current contract version: required day-one yard faces, duplicate glossary
+// authority, a missing/invalid `documentLanguage` tag, dead paths in
+// `CLAUDE.md`, project-skill triggers, and intent statuses.
 //
 // Usage: node scripts/shipyard-audit.mjs [repoRoot]
 // Exit 0 = clean (no high-confidence actionable findings)
@@ -31,6 +31,7 @@ import { resolveOmcStateRoot } from './lib/state-root.mjs';
 const toPosix = (value) => value.replace(/\\/g, '/');
 
 const SEVERITY = { high: 'high', medium: 'medium', low: 'low', info: 'info' };
+const AUDIT_CONTRACT_VERSION = 2;
 const TAG_PATTERN = /^[a-z]{2,3}(?:-[A-Z][a-z]{3})?(?:-(?:[A-Z]{2}|[0-9]{3}))?$/;
 
 function finding(id, title, severity, confidence, actionable, evidence, advice) {
@@ -68,6 +69,24 @@ function isLegacyGlossary(root) {
 function glossaryPath(root) {
   if (existsSync(join(root, 'GLOSSARY.md'))) return join(root, 'GLOSSARY.md');
   return isLegacyGlossary(root) ? join(root, 'CONTEXT.md') : null;
+}
+
+function checkYardBaseFaces(root) {
+  const missing = [];
+  if (!existsSync(join(root, 'CLAUDE.md'))) missing.push('CLAUDE.md');
+  if (!glossaryPath(root)) missing.push('GLOSSARY.md');
+  if (missing.length === 0) return [];
+  return [
+    finding(
+      'shipyard.yard.unlaid',
+      'The shipyard is missing required day-one faces',
+      SEVERITY.high,
+      'high',
+      true,
+      missing,
+      'Run `/oh-my-claudecode:drydock` to seed CLAUDE.md and GLOSSARY.md; a recognizable legacy CONTEXT.md glossary is accepted until drydock migrates it.',
+    ),
+  ];
 }
 
 function checkDuplicateGlossaryAuthority(root) {
@@ -300,6 +319,7 @@ function checkIntentStatuses(root) {
 
 export async function auditYard(root) {
   return [
+    ...checkYardBaseFaces(root),
     ...checkDuplicateGlossaryAuthority(root),
     ...checkDocumentLanguage(root),
     ...checkClaudeMdDeadPaths(root),
@@ -328,6 +348,7 @@ async function main() {
   console.log(
     JSON.stringify(
       {
+        contractVersion: AUDIT_CONTRACT_VERSION,
         scannedRoot: root,
         findings,
         summary: { counts, verdict: clean ? 'clear' : 'review-recommended' },

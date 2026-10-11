@@ -19,6 +19,7 @@ interface AuditFinding {
 }
 
 interface AuditReport {
+  contractVersion: number;
   scannedRoot: string;
   findings: AuditFinding[];
   summary: { counts: Record<string, number>; verdict: string };
@@ -41,9 +42,7 @@ function runAudit(root: string): { status: number; report: AuditReport | null; s
   }
 }
 
-// glossaryFile defaults to the legacy name so the pre-rename fixtures keep
-// passing; the bilingual cases pass 'GLOSSARY.md' to lock the expand semantics.
-function seedCleanYard(root: string, glossaryFile: 'GLOSSARY.md' | 'CONTEXT.md' = 'CONTEXT.md'): void {
+function seedCleanYard(root: string, glossaryFile: 'GLOSSARY.md' | 'CONTEXT.md' = 'GLOSSARY.md'): void {
   writeFileSync(
     join(root, 'CLAUDE.md'),
     '# Project\n\n## Project conventions\n\n- conventions\n\n## Standards index\n\n- Architecture: docs/standards/architecture.md\n',
@@ -71,21 +70,45 @@ describe('shipyard-audit script (the --check structured finding contract)', () =
     seedCleanYard(yard);
     const { status, report } = runAudit(yard);
     expect(status).toBe(0);
+    expect(report!.contractVersion).toBe(2);
     expect(report!.findings).toEqual([]);
     expect(report!.summary.verdict).toBe('clear');
   });
 
-  it('exits 0 with no findings on an empty directory (absence is not a claim)', () => {
+  it('rejects an unlaid yard when both required day-one faces are absent', () => {
     const { status, report } = runAudit(yard);
-    expect(status).toBe(0);
-    expect(report!.summary.verdict).toBe('clear');
-    expect(report!.findings).toEqual([]);
+    expect(status).toBe(1);
+    expect(report!.summary.verdict).toBe('review-recommended');
+    expect(report!.findings).toEqual([
+      expect.objectContaining({
+        id: 'shipyard.yard.unlaid',
+        evidence: ['CLAUDE.md', 'GLOSSARY.md'],
+      }),
+    ]);
+  });
+
+  it('requires both day-one faces while accepting only a recognizable legacy glossary', () => {
+    writeFileSync(join(yard, 'GLOSSARY.md'), '---\ndocumentLanguage: en\n---\n\n# Glossary\n');
+    const glossaryOnly = runAudit(yard);
+    expect(glossaryOnly.status).toBe(1);
+    expect(glossaryOnly.report!.findings.map((f) => f.id)).toEqual(['shipyard.yard.unlaid']);
+    expect(glossaryOnly.report!.findings[0].evidence).toEqual(['CLAUDE.md']);
+
+    rmSync(join(yard, 'GLOSSARY.md'));
+    writeFileSync(join(yard, 'CLAUDE.md'), '# Project\n');
+    const claudeOnly = runAudit(yard);
+    expect(claudeOnly.status).toBe(1);
+    expect(claudeOnly.report!.findings.map((f) => f.id)).toEqual(['shipyard.yard.unlaid']);
+    expect(claudeOnly.report!.findings[0].evidence).toEqual(['GLOSSARY.md']);
+
+    writeFileSync(join(yard, 'CONTEXT.md'), '---\ndocumentLanguage: en\n---\n\n# Glossary\n');
+    expect(runAudit(yard).report!.findings).toEqual([]);
   });
 
   it('exits 0 with zero findings on a yard seeded per the drydock two-face form (end-to-end)', () => {
     // T68 e2e: the fixture is built from drydock's own seed blocks, so the audit
     // must bless exactly what the skill text's lazy two-face seeding produces —
-    // CLAUDE.md (Seed A) + CONTEXT.md (Seed B) and nothing else.
+    // CLAUDE.md (Seed A) + GLOSSARY.md (Seed B) and nothing else.
     const DRYDOCK = readFileSync(join(REPO, 'skills', 'drydock', 'SKILL.md'), 'utf-8');
     const seedBlock = (name: string): string => {
       const pattern = `<!-- shipyard-seed-${name}:en:start -->\\n\`\`\`markdown\\n([\\s\\S]*?)\\n\`\`\`\\n<!-- shipyard-seed-${name}:en:end -->`;
@@ -94,35 +117,35 @@ describe('shipyard-audit script (the --check structured finding contract)', () =
       return m![1];
     };
     writeFileSync(join(yard, 'CLAUDE.md'), seedBlock('a'));
-    writeFileSync(join(yard, 'CONTEXT.md'), seedBlock('b'));
+    writeFileSync(join(yard, 'GLOSSARY.md'), seedBlock('b'));
     const { status, report } = runAudit(yard);
     expect(status).toBe(0);
     expect(report!.findings).toEqual([]);
     expect(report!.summary.verdict).toBe('clear');
   });
 
-  it('exits 0 with no missing-surface findings on a minimal two-surface yard', () => {
+  it('accepts the required two-face yard without flagging absent optional surfaces', () => {
     writeFileSync(
       join(yard, 'CLAUDE.md'),
       '# Project\n\n## Project conventions\n\n- conventions\n',
     );
-    writeFileSync(join(yard, 'GLOSSARY.md'), '# Glossary\n');
+    writeFileSync(join(yard, 'GLOSSARY.md'), '---\ndocumentLanguage: en\n---\n\n# Glossary\n');
     const { status, report } = runAudit(yard);
     expect(status).toBe(0);
     expect(report!.summary.verdict).toBe('clear');
-    expect(report!.findings.filter((f) => f.id.startsWith('shipyard.surface.missing'))).toEqual([]);
+    expect(report!.findings).toEqual([]);
   });
 
-  it('checks all surfaces of a full nine-surface yard without missing-surface findings', () => {
+  it('checks adopted surfaces without flagging absent optional surfaces', () => {
     seedCleanYard(yard);
     const { status, report } = runAudit(yard);
     expect(status).toBe(0);
     expect(report!.summary.verdict).toBe('clear');
-    expect(report!.findings.filter((f) => f.id.startsWith('shipyard.surface.missing'))).toEqual([]);
+    expect(report!.findings).toEqual([]);
   });
 
   it('on a partially adopted yard, checks only the surfaces that exist', () => {
-    // Adopted: CLAUDE.md + CONTEXT.md + scripts/. Everything else absent —
+    // Adopted: CLAUDE.md + legacy CONTEXT.md + scripts/. Everything else absent —
     // under adoption-is-declaration, absence means "not adopted", not "missing".
     writeFileSync(
       join(yard, 'CLAUDE.md'),
@@ -132,22 +155,22 @@ describe('shipyard-audit script (the --check structured finding contract)', () =
     mkdirSync(join(yard, 'scripts'), { recursive: true });
     const { status, report } = runAudit(yard);
     expect(status).toBe(0);
-    expect(report!.findings.filter((f) => f.id.startsWith('shipyard.surface.missing'))).toEqual([]);
+    expect(report!.findings).toEqual([]);
   });
 
   it('still checks the integrity of an adopted surface', () => {
-    // Partial yard, but the adopted CONTEXT.md is malformed: the audit must
+    // Partial yard, but the adopted GLOSSARY.md is malformed: the audit must
     // still flag it — lazy seeding removes missing-surface noise, not quality
     // gates on surfaces a yard chose to adopt.
     writeFileSync(
       join(yard, 'CLAUDE.md'),
       '# Project\n\n## Project conventions\n\n- conventions\n',
     );
-    writeFileSync(join(yard, 'CONTEXT.md'), '# Glossary (no frontmatter)\n');
+    writeFileSync(join(yard, 'GLOSSARY.md'), '# Glossary (no frontmatter)\n');
     const { status, report } = runAudit(yard);
     expect(status).toBe(1);
     expect(report!.findings.some((f) => f.id === 'shipyard.document-language.missing-frontmatter')).toBe(true);
-    expect(report!.findings.filter((f) => f.id.startsWith('shipyard.surface.missing'))).toEqual([]);
+    expect(report!.findings.map((f) => f.id)).not.toContain('shipyard.surface.missing.CONTEXT-md');
   });
 
   it('exits 0 on a yard with only the new GLOSSARY.md name', () => {
@@ -190,7 +213,8 @@ describe('shipyard-audit script (the --check structured finding contract)', () =
     const alone = runAudit(yard);
     expect(alone.status).toBe(1);
     const ids = alone.report!.findings.map((f) => f.id);
-    expect(ids).toContain('shipyard.surface.missing.CONTEXT-md');
+    expect(ids).toContain('shipyard.yard.unlaid');
+    expect(alone.report!.findings.find((f) => f.id === 'shipyard.yard.unlaid')?.evidence).toEqual(['GLOSSARY.md']);
     expect(ids.some((id) => id.startsWith('shipyard.document-language.'))).toBe(false);
   });
 
@@ -198,10 +222,10 @@ describe('shipyard-audit script (the --check structured finding contract)', () =
     for (const heading of ['Glossary', '术语表', '詞彙表']) {
       rmSync(yard, { recursive: true, force: true });
       yard = mkdtempSync(join(tmpdir(), 'shipyard-audit-'));
+      writeFileSync(join(yard, 'CLAUDE.md'), '# Project\n');
       writeFileSync(join(yard, 'CONTEXT.md'), `# ${heading}\n\n## term\n`);
       const alone = runAudit(yard);
       const ids = alone.report!.findings.map((f) => f.id);
-      expect(ids).not.toContain('shipyard.surface.missing.CONTEXT-md');
       expect(ids).toContain('shipyard.document-language.missing-frontmatter');
 
       seedCleanYard(yard, 'GLOSSARY.md');
@@ -212,9 +236,9 @@ describe('shipyard-audit script (the --check structured finding contract)', () =
   });
 
   it('an empty frontmatter block before the seed heading still marks a legacy glossary', () => {
+    writeFileSync(join(yard, 'CLAUDE.md'), '# Project\n');
     writeFileSync(join(yard, 'CONTEXT.md'), '---\n---\n\n# Glossary\n');
     const ids = runAudit(yard).report!.findings.map((f) => f.id);
-    expect(ids).not.toContain('shipyard.surface.missing.CONTEXT-md');
     expect(ids).toContain('shipyard.document-language.missing-tag');
   });
 
@@ -231,9 +255,10 @@ describe('shipyard-audit script (the --check structured finding contract)', () =
     for (const content of ['\uFEFF# Glossary\n\n## term\n', '<!-- provenance: drydock -->\n# Glossary\n\n## term\n']) {
       rmSync(yard, { recursive: true, force: true });
       yard = mkdtempSync(join(tmpdir(), 'shipyard-audit-'));
+      writeFileSync(join(yard, 'CLAUDE.md'), '# Project\n');
       writeFileSync(join(yard, 'CONTEXT.md'), content);
       const ids = runAudit(yard).report!.findings.map((f) => f.id);
-      expect(ids).not.toContain('shipyard.surface.missing.CONTEXT-md');
+      expect(ids).not.toContain('shipyard.yard.unlaid');
     }
   });
 
@@ -284,10 +309,11 @@ describe('shipyard-audit script (the --check structured finding contract)', () =
   });
 
   it('reports an invalid documentLanguage tag on a legacy CONTEXT.md glossary', () => {
+    writeFileSync(join(yard, 'CLAUDE.md'), '# Project\n');
     writeFileSync(join(yard, 'CONTEXT.md'), '---\ndocumentLanguage: not-a-tag!\n---\n\n# Glossary\n');
     const { report } = runAudit(yard);
     expect(report!.findings.some((f) => f.id === 'shipyard.document-language.invalid-tag')).toBe(true);
-    expect(report!.findings.some((f) => f.id === 'shipyard.surface.missing.CONTEXT-md')).toBe(false);
+    expect(report!.findings.some((f) => f.id === 'shipyard.yard.unlaid')).toBe(false);
   });
 
   it('reports dead paths referenced from CLAUDE.md', () => {
