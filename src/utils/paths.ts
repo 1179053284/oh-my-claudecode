@@ -378,14 +378,14 @@ function describeError(err: unknown): string {
  *
  * `rename()` cannot swap a directory for a symlink (POSIX requires both sides to
  * be the same type), so the stale directory is moved aside first and only
- * discarded once the symlink is in place. If the symlink cannot be created —
- * something re-created the path inside the window — the stale directory is moved
- * back, keeping `CLAUDE_PLUGIN_ROOT`-pinned sessions alive.
+ * discarded once the symlink is in place and its target remains usable. If the
+ * target breaks through the stale path during the move, the stale directory is
+ * moved back, keeping `CLAUDE_PLUGIN_ROOT`-pinned sessions alive.
  *
  * Invariant: on return the path is either the redirect symlink or the original
  * directory. It is never an empty directory and never absent.
  */
-function relinkStaleVersionDir(versionDir: string, target: string): void {
+function relinkStaleVersionDir(versionDir: string, target: string, isTargetUsable: () => boolean): void {
   const symlinkType = process.platform === 'win32' ? 'junction' : 'dir';
   const asideDir = `${versionDir}${ASIDE_SUFFIX}${process.pid}`;
   const pluginDir = dirname(versionDir);
@@ -404,12 +404,16 @@ function relinkStaleVersionDir(versionDir: string, target: string): void {
   try {
     const placed = placeClearingSquatters(versionDir, () => symlinkSync(target, versionDir, symlinkType), pluginDir);
     if (placed.ok) {
-      safeRmSync(asideDir);
-      return;
+      if (isTargetUsable()) {
+        safeRmSync(asideDir);
+        return;
+      }
+      failure = new Error('registered active plugin target became unusable during relink');
+    } else {
+      failure = new Error(
+        `could not place redirect symlink after ${RELINK_ATTEMPTS} attempts (${describeError(placed.last)})`,
+      );
     }
-    failure = new Error(
-      `could not place redirect symlink after ${RELINK_ATTEMPTS} attempts (${describeError(placed.last)})`,
-    );
   } catch (err) {
     // Not a contended path (EPERM, EACCES, …) — restore and report as-is.
     failure = err;
@@ -699,13 +703,13 @@ export function purgeStalePluginCacheVersions(options?: { skipGracePeriod?: bool
               hasAncestorWithIdentity(resolvedTarget, staleVersionStats) ||
               hasAncestorWithIdentity(resolvedStaleVersion, targetStats);
             const pluginIdentity = `${pluginName}@${marketplace}`.toLowerCase();
-            const targetHasUsablePayload = OMC_PLUGIN_CACHE_IDENTITIES.has(pluginIdentity)
-              ? isUsableVersionPath(target)
-              : readdirSync(target).length > 0;
-            if (targetOverlapsStaleVersion || !targetHasUsablePayload) {
+            const isOmcPlugin = OMC_PLUGIN_CACHE_IDENTITIES.has(pluginIdentity);
+            const isTargetUsable = () => statSync(target).isDirectory() &&
+              (isOmcPlugin ? isUsableVersionPath(target) : readdirSync(target).length > 0);
+            if (targetOverlapsStaleVersion || !isTargetUsable()) {
               throw new Error('Registered active plugin target is unusable or overlaps the stale version tree');
             }
-            relinkStaleVersionDir(versionDir, target);
+            relinkStaleVersionDir(versionDir, target, isTargetUsable);
             result.symlinked++;
             result.symlinkPaths.push(versionDir);
           } catch (err) {

@@ -183,6 +183,31 @@ describe('purgeStalePluginCacheVersions on a real filesystem', () => {
     expect(readdirSync(pluginDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
   });
 
+  it('restores stale payload when the active symlink chain passes through it', () => {
+    const stale = writeVersion(STALE);
+    const forward = join(stale, 'forward');
+    const externalRoot = join(configDir, 'external-valid-root');
+    mkdirSync(join(externalRoot, 'scripts'), { recursive: true });
+    writeFileSync(join(externalRoot, 'scripts', 'run.cjs'), '// valid plugin root\n');
+    mkdirSync(join(externalRoot, 'hooks'), { recursive: true });
+    writeFileSync(join(externalRoot, 'hooks', 'hooks.json'), '{}\n');
+    symlinkSync(externalRoot, forward, 'dir');
+    const active = join(pluginDir, LEGACY[0]);
+    symlinkSync(forward, active, 'dir');
+    makeStale(stale);
+    installedPlugins(active);
+
+    const result = purgeStalePluginCacheVersions();
+
+    expect(result.symlinked).toBe(0);
+    expect(result.errors).toHaveLength(1);
+    expect(lstatSync(stale).isDirectory()).toBe(true);
+    expect(hookResolves(STALE)).toBe(true);
+    expect(readlinkSync(active)).toBe(forward);
+    expect(readlinkSync(forward)).toBe(externalRoot);
+    expect(readdirSync(pluginDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
+  });
+
   it('retains support for other plugins without OMC hook entry points', () => {
     const genericDir = join(configDir, 'plugins', 'cache', 'official', 'hookify');
     const active = join(genericDir, ACTIVE);
