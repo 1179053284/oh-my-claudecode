@@ -75,7 +75,7 @@ function dirent(name: string): { name: string; isDirectory: () => boolean } {
 /** Return a stat result with mtime N ms ago.
  * Default must exceed STALE_THRESHOLD_MS (24 h) in src/utils/paths.ts. */
 function staleStats(ageMs: number = 25 * 60 * 60 * 1000) {
-  return { mtimeMs: Date.now() - ageMs } as ReturnType<typeof statSync>;
+  return { mtimeMs: Date.now() - ageMs, isDirectory: () => true } as ReturnType<typeof statSync>;
 }
 
 /** Return a stat result modified very recently */
@@ -367,7 +367,7 @@ describe('purgeStalePluginCacheVersions', () => {
       const ps = String(p);
       if (ps.includes('installed_plugins.json')) return true;
       if (ps === cacheDir) return true;
-      if (ps === staleVersion || ps === activeVersion) return true;
+      if (ps === staleVersion || ps === activeVersion || ps.startsWith(activeVersion + '/')) return true;
       return false;
     });
 

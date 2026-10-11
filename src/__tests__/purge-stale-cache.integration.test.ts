@@ -100,6 +100,43 @@ afterEach(() => {
 });
 
 describe('purgeStalePluginCacheVersions on a real filesystem', () => {
+  it.each(['missing', 'incomplete'])('preserves pinned paths when the registered active target is %s', (state) => {
+    const stale = writeVersion(STALE);
+    for (const version of LEGACY) symlinkSync(stale, join(pluginDir, version), 'dir');
+    makeStale(stale);
+    rmSync(join(pluginDir, ACTIVE), { recursive: true, force: true });
+    if (state === 'incomplete') mkdirSync(join(pluginDir, ACTIVE));
+
+    const result = purgeStalePluginCacheVersions();
+
+    expect(result.symlinked).toBe(0);
+    expect(result.errors).toHaveLength(1);
+    expect(lstatSync(stale).isDirectory()).toBe(true);
+    for (const version of [STALE, ...LEGACY]) expect(hookResolves(version)).toBe(true);
+    expect(readdirSync(pluginDir).filter(name => name.includes('.omc-stale-'))).toEqual([]);
+  });
+
+  it('retains support for other plugins without OMC hook entry points', () => {
+    const genericDir = join(configDir, 'plugins', 'cache', 'official', 'hookify');
+    const active = join(genericDir, ACTIVE);
+    const stale = join(genericDir, STALE);
+    mkdirSync(active, { recursive: true });
+    writeFileSync(join(active, 'README.md'), 'generic plugin payload');
+    mkdirSync(stale);
+    writeFileSync(join(stale, 'README.md'), 'old plugin payload');
+    makeStale(stale);
+    writeFileSync(join(configDir, 'plugins', 'installed_plugins.json'), JSON.stringify({
+      version: 2, plugins: { 'hookify@official': [{ installPath: active }] },
+    }));
+
+    const result = purgeStalePluginCacheVersions();
+
+    expect(result.errors).toEqual([]);
+    expect(result.symlinkPaths).toContain(stale);
+    expect(readlinkSync(stale)).toBe(active);
+    expect(existsSync(join(stale, 'README.md'))).toBe(true);
+  });
+
   it('demotes a stale version to a redirect and keeps every pinned path resolving', () => {
     const stale = writeVersion(STALE);
     for (const v of LEGACY) symlinkSync(stale, join(pluginDir, v), 'dir');
