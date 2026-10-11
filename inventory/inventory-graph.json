@@ -5,15 +5,15 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "e13e7d81a985fbe3f1490c9592d97dbf700255aa",
-    "sourceSha256": "170b4ffc43308da6b32b13ba7e9d6873c33eadd9636a5df75b08db6471a707e2",
+    "head": "e51d5b9bf82cd4f3954180cc58b8f5a327e6156e",
+    "sourceSha256": "d53b7b707cb46b42ebc2496c6630c829fe8dc5373e88497a2e65a72bde164616",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "e13e7d81a985fbe3f1490c9592d97dbf700255aa",
-  "sourceSha256": "170b4ffc43308da6b32b13ba7e9d6873c33eadd9636a5df75b08db6471a707e2",
+  "head": "e51d5b9bf82cd4f3954180cc58b8f5a327e6156e",
+  "sourceSha256": "d53b7b707cb46b42ebc2496c6630c829fe8dc5373e88497a2e65a72bde164616",
   "counts": {
     "public": {
       "skills": 48,
@@ -24,12 +24,12 @@
     },
     "internal": {
       "hookFiles": 339,
-      "featureFiles": 84,
+      "featureFiles": 85,
       "toolFiles": 63,
       "libFiles": 48,
       "templateHooks": 23,
-      "srcFiles": 1462,
-      "total": 1485
+      "srcFiles": 1465,
+      "total": 1488
     },
     "generated": {
       "distFiles": 5611,
@@ -562,6 +562,7 @@
       "src/features/notepad-wisdom/extractor.ts",
       "src/features/notepad-wisdom/index.ts",
       "src/features/notepad-wisdom/types.ts",
+      "src/features/rate-limit-wait/daemon-state.ts",
       "src/features/rate-limit-wait/daemon.ts",
       "src/features/rate-limit-wait/index.ts",
       "src/features/rate-limit-wait/pane-fresh-capture.ts",
@@ -7016,6 +7017,7 @@
       "src/features/notepad-wisdom/extractor.ts",
       "src/features/notepad-wisdom/index.ts",
       "src/features/notepad-wisdom/types.ts",
+      "src/features/rate-limit-wait/daemon-state.ts",
       "src/features/rate-limit-wait/daemon.ts",
       "src/features/rate-limit-wait/index.ts",
       "src/features/rate-limit-wait/pane-fresh-capture.ts",
@@ -39109,6 +39111,11 @@
         "path": "src/__tests__/rate-limit-wait/pane-fresh-capture.test.ts"
       },
       {
+        "id": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
+        "kind": "src",
+        "path": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts"
+      },
+      {
         "id": "src/__tests__/rate-limit-wait/rate-limit-monitor.test.ts",
         "kind": "src",
         "path": "src/__tests__/rate-limit-wait/rate-limit-monitor.test.ts"
@@ -39974,6 +39981,11 @@
         "path": "src/cli/commands/__tests__/ultragoal.test.ts"
       },
       {
+        "id": "src/cli/commands/__tests__/wait.test.ts",
+        "kind": "src",
+        "path": "src/cli/commands/__tests__/wait.test.ts"
+      },
+      {
         "id": "src/cli/commands/alias-retirement.ts",
         "kind": "src",
         "path": "src/cli/commands/alias-retirement.ts"
@@ -40552,6 +40564,11 @@
         "id": "src/features/notepad-wisdom/types.ts",
         "kind": "feature",
         "path": "src/features/notepad-wisdom/types.ts"
+      },
+      {
+        "id": "src/features/rate-limit-wait/daemon-state.ts",
+        "kind": "feature",
+        "path": "src/features/rate-limit-wait/daemon-state.ts"
       },
       {
         "id": "src/features/rate-limit-wait/daemon.ts",
@@ -53527,6 +53544,11 @@
       },
       {
         "from": "src/__tests__/rate-limit-wait/daemon-bootstrap.test.ts",
+        "to": "src/features/rate-limit-wait/daemon-state.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/daemon-bootstrap.test.ts",
         "to": "src/features/rate-limit-wait/daemon.ts",
         "kind": "imports"
       },
@@ -53602,6 +53624,11 @@
       },
       {
         "from": "src/__tests__/rate-limit-wait/daemon.test.ts",
+        "to": "src/features/rate-limit-wait/daemon-state.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/daemon.test.ts",
         "to": "src/features/rate-limit-wait/daemon.ts",
         "kind": "imports"
       },
@@ -53669,6 +53696,41 @@
         "from": "src/__tests__/rate-limit-wait/pane-fresh-capture.test.ts",
         "to": "src/features/rate-limit-wait/pane-fresh-capture.ts",
         "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
+        "to": "src/features/rate-limit-wait/daemon-state.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
+        "to": "src/features/rate-limit-wait/daemon.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
+        "to": "src/features/rate-limit-wait/types.ts",
+        "kind": "type-imports"
       },
       {
         "from": "src/__tests__/rate-limit-wait/rate-limit-monitor.test.ts",
@@ -57831,6 +57893,16 @@
         "kind": "imports"
       },
       {
+        "from": "src/cli/commands/__tests__/wait.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/cli/commands/__tests__/wait.test.ts",
+        "to": "src/cli/commands/wait.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/cli/commands/alias-retirement.ts",
         "to": "external:node:fs",
         "kind": "imports"
@@ -60571,6 +60643,36 @@
         "kind": "type-imports"
       },
       {
+        "from": "src/features/rate-limit-wait/daemon-state.ts",
+        "to": "external:node:crypto",
+        "kind": "imports"
+      },
+      {
+        "from": "src/features/rate-limit-wait/daemon-state.ts",
+        "to": "src/features/rate-limit-wait/pane-fresh-capture.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/features/rate-limit-wait/daemon-state.ts",
+        "to": "src/features/rate-limit-wait/rate-limit-monitor.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/features/rate-limit-wait/daemon-state.ts",
+        "to": "src/features/rate-limit-wait/types.ts",
+        "kind": "type-imports"
+      },
+      {
+        "from": "src/features/rate-limit-wait/daemon-state.ts",
+        "to": "src/hud/usage-api.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/features/rate-limit-wait/daemon-state.ts",
+        "to": "src/utils/config-dir.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/features/rate-limit-wait/daemon.ts",
         "to": "external:child_process",
         "kind": "imports"
@@ -60592,6 +60694,11 @@
       },
       {
         "from": "src/features/rate-limit-wait/daemon.ts",
+        "to": "src/features/rate-limit-wait/daemon-state.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/features/rate-limit-wait/daemon.ts",
         "to": "src/features/rate-limit-wait/rate-limit-monitor.ts",
         "kind": "imports"
       },
@@ -60603,7 +60710,7 @@
       {
         "from": "src/features/rate-limit-wait/daemon.ts",
         "to": "src/features/rate-limit-wait/types.ts",
-        "kind": "type-imports"
+        "kind": "imports"
       },
       {
         "from": "src/features/rate-limit-wait/daemon.ts",
@@ -88032,12 +88139,12 @@
       }
     ],
     "stats": {
-      "nodeCount": 7730,
-      "edgeCount": 8455,
-      "importEdgeCount": 7010,
+      "nodeCount": 7733,
+      "edgeCount": 8473,
+      "importEdgeCount": 7027,
       "registerEdgeCount": 69
     }
   },
-  "inventorySha256": "0af4f0404937a40316bf0ab47fc378b8345f5c559b24384faa2088e3cdf6cda3",
-  "manifestSha256": "4e6c1ad9fe6f49ffcde87958c345be6deae417aca8424b11cea8f006ee611a75"
+  "inventorySha256": "ce806a74606e197fdfb181aa2d6018b865debd3b90a7c8270cc9603719a9a9e8",
+  "manifestSha256": "88c7ecfe5853d050495e693a7f7ab95de4e974b983ce3ae5979d670b7081d415"
 }
