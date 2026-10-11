@@ -58,6 +58,14 @@ function normalizeNoProxyEntry(entry: string): string {
   }
   try {
     const url = new URL(entry);
+    // URL.port drops explicit scheme-default ports, so inspect the raw authority.
+    const authority = entry
+      .slice(entry.indexOf("://") + 3)
+      .split(/[/?#]/, 1)[0] ?? "";
+    const hostPort = authority.slice(authority.lastIndexOf("@") + 1);
+    const hasExplicitPort = /:\d+$/.test(hostPort);
+    if (!url.port && !hasExplicitPort) return url.hostname.toLowerCase();
+
     const port = url.port || (url.protocol === "https:" ? "443" : "80");
     return `${url.hostname.toLowerCase()}:${port}`;
   } catch {

@@ -576,6 +576,7 @@ describe("sendTelegram", () => {
     ["api.telegram.org:443", true],
     ["api.telegram.org", true],
     ["unrelated.example:443", false],
+    ["http://api.telegram.org", true],
     ["http://api.telegram.org:80", false],
     ["https://api.telegram.org:443", true],
     ["https://api.telegram.org:8443", false],
