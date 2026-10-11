@@ -48,6 +48,17 @@ describe("custom webhook body interpolation", () => {
     expect(body).toBe(`{ "id": 9223372036854775807, "small":1e-40, "summary":${JSON.stringify(payload.contextSummary)} }`);
   });
 
+  it("preserves JSON-escaped literal placeholders", async () => {
+    let body: unknown;
+    vi.stubGlobal("fetch", vi.fn(async (_url: string, options: RequestInit) => {
+      body = JSON.parse(String(options.body));
+      return new Response(null, { status: 204 });
+    }));
+    const template = '{"literal":"\\u007b\\u007bcustomer\\u007d\\u007d","project":"{{projectName}}"}';
+    expect((await sendCustomWebhook(webhook(template, jsonHeaders[0]), payload)).success).toBe(true);
+    expect(body).toEqual({ literal: "{{customer}}", project: payload.projectName });
+  });
+
   it.each(jsonHeaders)("serializes JSON string placeholders safely for %j", async headers => {
     let body: unknown;
     vi.stubGlobal("fetch", vi.fn(async (_url: string, options: RequestInit) => {

@@ -220,6 +220,23 @@ export function interpolateTemplate(
   return result;
 }
 
+function interpolateJsonStringToken(
+  token: string,
+  vars: Record<string, string>,
+): string {
+  const contents = token.slice(1, -1);
+  let value = "";
+  let cursor = 0;
+  for (const match of contents.matchAll(/\{\{(\w+)\}\}/g)) {
+    const start = match.index!;
+    value += JSON.parse(`"${contents.slice(cursor, start)}"`);
+    value += vars[match[1]] ?? "";
+    cursor = start + match[0].length;
+  }
+  value += JSON.parse(`"${contents.slice(cursor)}"`);
+  return JSON.stringify(value);
+}
+
 /** Interpolate JSON string values without injecting payload text into JSON syntax. */
 export function interpolateJsonTemplate(
   template: string,
@@ -235,7 +252,7 @@ export function interpolateJsonTemplate(
     const start = match.index!;
     result += replaceVariables(conditioned.slice(cursor, start), vars);
     try {
-      result += JSON.stringify(replaceVariables(JSON.parse(match[0]), vars));
+      result += interpolateJsonStringToken(match[0], vars);
     } catch {
       result += replaceVariables(match[0], vars);
     }
