@@ -5,15 +5,15 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "506b6548d9c392bbd23588e504e1d6a121c25c0d",
-    "sourceSha256": "867e5fb21d87aa2ea9dc365e204c8be250d758297190f38e45d8ab3035b32b0d",
+    "head": "a720eabd02a9816cf22d5f3ce74edbeaaaa92f45",
+    "sourceSha256": "7a2084880c911beaa41a2c91d3861bef19ec47a70500399c2bb591e8dfc0c5d8",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "506b6548d9c392bbd23588e504e1d6a121c25c0d",
-  "sourceSha256": "867e5fb21d87aa2ea9dc365e204c8be250d758297190f38e45d8ab3035b32b0d",
+  "head": "a720eabd02a9816cf22d5f3ce74edbeaaaa92f45",
+  "sourceSha256": "7a2084880c911beaa41a2c91d3861bef19ec47a70500399c2bb591e8dfc0c5d8",
   "counts": {
     "public": {
       "skills": 47,
@@ -25,11 +25,11 @@
     "internal": {
       "hookFiles": 339,
       "featureFiles": 84,
-      "toolFiles": 61,
+      "toolFiles": 62,
       "libFiles": 48,
       "templateHooks": 23,
-      "srcFiles": 1446,
-      "total": 1469
+      "srcFiles": 1447,
+      "total": 1470
     },
     "generated": {
       "distFiles": 5611,
@@ -612,6 +612,7 @@
       "src/tools/lsp/__tests__/client-timeout-env.test.ts",
       "src/tools/lsp/__tests__/client-win32-spawn.test.ts",
       "src/tools/lsp/__tests__/devcontainer.test.ts",
+      "src/tools/lsp/__tests__/utils-file-uri.test.ts",
       "src/tools/lsp/client.ts",
       "src/tools/lsp/devcontainer.ts",
       "src/tools/lsp/index.ts",
@@ -7064,6 +7065,7 @@
       "src/tools/lsp/__tests__/client-timeout-env.test.ts",
       "src/tools/lsp/__tests__/client-win32-spawn.test.ts",
       "src/tools/lsp/__tests__/devcontainer.test.ts",
+      "src/tools/lsp/__tests__/utils-file-uri.test.ts",
       "src/tools/lsp/client.ts",
       "src/tools/lsp/devcontainer.ts",
       "src/tools/lsp/index.ts",
@@ -44892,6 +44894,11 @@
         "id": "src/tools/lsp/__tests__/devcontainer.test.ts",
         "kind": "tool",
         "path": "src/tools/lsp/__tests__/devcontainer.test.ts"
+      },
+      {
+        "id": "src/tools/lsp/__tests__/utils-file-uri.test.ts",
+        "kind": "tool",
+        "path": "src/tools/lsp/__tests__/utils-file-uri.test.ts"
       },
       {
         "id": "src/tools/lsp/client.ts",
@@ -84396,6 +84403,36 @@
         "kind": "imports"
       },
       {
+        "from": "src/tools/lsp/__tests__/utils-file-uri.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/lsp/__tests__/utils-file-uri.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/lsp/__tests__/utils-file-uri.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/lsp/__tests__/utils-file-uri.test.ts",
+        "to": "external:node:url",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/lsp/__tests__/utils-file-uri.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/lsp/__tests__/utils-file-uri.test.ts",
+        "to": "src/tools/lsp/utils.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/tools/lsp/client.ts",
         "to": "external:child_process",
         "kind": "imports"
@@ -84508,6 +84545,11 @@
       {
         "from": "src/tools/lsp/servers.ts",
         "to": "external:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/lsp/utils.ts",
+        "to": "external:node:url",
         "kind": "imports"
       },
       {
@@ -87277,12 +87319,12 @@
       }
     ],
     "stats": {
-      "nodeCount": 7707,
-      "edgeCount": 8328,
-      "importEdgeCount": 6891,
+      "nodeCount": 7708,
+      "edgeCount": 8335,
+      "importEdgeCount": 6898,
       "registerEdgeCount": 68
     }
   },
-  "inventorySha256": "68c854b413f1396b5cba321f0de6ac876579513b781bbe60b2ef6895c4a9cdf8",
-  "manifestSha256": "4f7475859dd7389c0498f504215edc379ce378ac8b9d3e5776a55ac2b19aaf73"
+  "inventorySha256": "cd4db3eea69b5275a811e0076ba1edac41ea8401103b0fc33a28bd96659daec5",
+  "manifestSha256": "10307c4f7a6fd993155d94c8ed0a43aed5790ba5f5b8dc82e9b96eb9e2b534ab"
 }
