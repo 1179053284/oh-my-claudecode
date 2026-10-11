@@ -180,18 +180,18 @@ function exceedsDurationRoundingTolerance(actual: ExactDecimal, expected: ExactD
 }
 
 function durationAdditionLosesPrecision(
-  previousTotal: ExactDecimal,
+  previousReportedTotal: number,
   duration: ExactDecimal,
-  nextTotal: ExactDecimal,
   roundedNextTotal: number,
 ): boolean {
   if (duration.coefficient === 0n) return false;
 
+  const reportedPreviousTotal = exactDecimalFromNumber(previousReportedTotal);
   const reportedTotal = exactDecimalFromNumber(roundedNextTotal);
-  const reportedDuration = subtractExactDecimals(reportedTotal, previousTotal);
+  const reportedDuration = subtractExactDecimals(reportedTotal, reportedPreviousTotal);
   const recoveredPreviousTotal = subtractExactDecimals(reportedTotal, duration);
   return exceedsDurationRoundingTolerance(reportedDuration, duration)
-    || exceedsDurationRoundingTolerance(recoveredPreviousTotal, previousTotal);
+    || exceedsDurationRoundingTolerance(recoveredPreviousTotal, reportedPreviousTotal);
 }
 
 /**
@@ -244,9 +244,9 @@ export function generateUsageReport(
     const nextWallClockMs = exactDecimalToNumber(nextWallClockMsExact);
     const nextTotalWallClockMs = exactDecimalToNumber(nextTotalWallClockMsExact);
     const losesDurationPrecision = durationAdditionLosesPrecision(
-      currentWallClockMsExact, durationExact, nextWallClockMsExact, nextWallClockMs,
+      existing?.totalWallClockMs ?? 0, durationExact, nextWallClockMs,
     ) || durationAdditionLosesPrecision(
-      totalWallClockMsExact, durationExact, nextTotalWallClockMsExact, nextTotalWallClockMs,
+      totalWallClockMs, durationExact, nextTotalWallClockMs,
     );
     // Skip the whole record if adding it would corrupt totals; retain later valid siblings.
     if (!Number.isFinite(nextWallClockMs) || !Number.isFinite(nextTotalWallClockMs)
