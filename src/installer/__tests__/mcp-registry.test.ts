@@ -834,6 +834,7 @@ describe('unified MCP registry sync', () => {
       quotedTypeMismatch: { url: 'https://mcp.example.com/quoted', type: 'http' },
       httpAlias: { url: 'https://mcp.example.com/http-alias', type: 'http' },
       streamableAlias: { url: 'https://mcp.example.com/streamable-alias', type: 'streamable-http' },
+      streamableOmitted: { url: 'https://mcp.example.com/streamable-omitted', type: 'streamable-http' },
       unicodeTypeMismatch: { url: 'https://mcp.example.com/unicode', type: 'http' },
     };
 
@@ -877,6 +878,9 @@ describe('unified MCP registry sync', () => {
       '[mcp_servers.streamableAlias]',
       'url = "https://mcp.example.com/streamable-alias"',
       'type = "http"',
+      '',
+      '[mcp_servers.streamableOmitted]',
+      'url = "https://mcp.example.com/streamable-omitted"',
       '',
       '[mcp_servers.unicodeTypeMismatch]',
       'url = "https://mcp.example.com/unicode"',
