@@ -25,15 +25,25 @@ npm view oh-my-claude-sisyphus version 2>/dev/null || echo "Latest: (unavailable
 - If INSTALLED != LATEST: WARN - outdated plugin
 - If multiple versions exist: WARN - stale cache
 
-### Step 2: Check for Legacy Hooks in settings.json
+### Step 2: Check for Legacy Hooks in settings files
 
-Read both `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json` (profile-level) and `./.claude/settings.json` (project-level) and check if there's a `"hooks"` key with entries like:
+Read all three applicable files—`${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json` (profile-level), `./.claude/settings.json` (project-level), and `./.claude/settings.local.json` (project-local, with precedence over project settings)—and check whether any has a `"hooks"` key with entries like:
 - `bash ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/keyword-detector.sh`
 - `bash ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/persistent-mode.sh`
 - `bash ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/session-start.sh`
+- `bash ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/stop-continuation.sh`
+- `bash ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/silent-auto-update.sh`
+
+Also recognize standalone Node hook registrations under the active config directory's `hooks/` folder: `.mjs` files named `keyword-detector`, `persistent-mode`, `session-start`, `session-end`, `pre-tool-use`, `post-tool-use`, `post-tool-use-failure`, `code-simplifier`, or `stop-continuation`. For the historical `keyword-detector`, `persistent-mode`, `session-start`, and `stop-continuation` basenames, `.cjs` and `.js` variants are legacy too. For example, `node "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/keyword-detector.mjs"` is a legacy registration. On Windows, recognize paths such as `node "%USERPROFILE%\.claude\hooks\keyword-detector.mjs"` and `%CLAUDE_CONFIG_DIR%\hooks\<filename>` (or their expanded absolute equivalents) with backslash separators as the same active config directory. Match only exact listed filenames invoked with `node` from that directory; do not match plugin-root commands or similarly named scripts in other directories.
+
+A command is an auto-fix candidate only when it is a plain direct invocation of exactly one listed file: `bash <exact .sh path>` or `node <exact Node path>`, with no extra arguments, shell operators, or other commands. If a command merely mentions the path, adds custom behavior (for example, `bash legacy.sh && run-my-check`), or cannot be parsed unambiguously, report it for manual cleanup and leave the hook object unchanged.
+
+Before diagnosing a standalone registration as a duplicate, confirm the OMC plugin is enabled for this context (`enabledPlugins` or legacy `plugins` in effective settings, or an active OMC `CLAUDE_PLUGIN_ROOT`) and the resolved active plugin root has `hooks/hooks.json` declaring a hook for the same event. A cached plugin version is insufficient. Also resolve the standalone script file and compare its bytes or SHA-256 with the shipped OMC payload for that exact filename. A matching name or path alone does not prove ownership. If the plugin is inactive, does not provide that event, the payload is missing, the target cannot be read, or the content differs, treat the entry as potentially active or user-owned and leave it for manual review.
 
 **Diagnosis**:
-- If found: CRITICAL - legacy hooks causing duplicates
+- If a direct command is verified as OMC-owned and the active plugin provides the same event: CRITICAL - duplicate legacy hook
+- If a composite or ambiguous command mentions a legacy path: WARN - manual cleanup required; never remove it automatically
+- If the plugin is inactive, does not provide the event, or ownership cannot be verified: WARN - standalone hook may be active or user-owned; do not recommend removal
 
 ### Step 3: Check for Legacy Bash Hook Scripts
 
@@ -42,7 +52,7 @@ ls -la "${CLAUDE_CONFIG_DIR:-$HOME/.claude}"/hooks/*.sh 2>/dev/null
 ```
 
 **Diagnosis**:
-- If `keyword-detector.sh`, `persistent-mode.sh`, `session-start.sh`, or `stop-continuation.sh` exist: WARN - legacy scripts (can cause confusion)
+- If a listed script exists, call it a duplicate only when the active plugin provides the matching event and the file matches its shipped OMC payload; otherwise mark ownership as unknown or treat it as an active standalone hook.
 
 ### Step 4: Check CLAUDE.md
 
@@ -170,18 +180,15 @@ After running all checks, output a report:
 
 If issues found, ask user: "Would you like me to fix these issues automatically?"
 
-If yes, apply fixes:
+If yes, apply fixes. For each affected profile-level, project-level, or project-local settings file, approval of this general question is not enough to authorize removing hooks: show the exact matching hook objects and the non-OMC entries/groups that will remain, then ask for explicit confirmation of that scoped change. Before writing, create a timestamped backup beside the original without overwriting an existing backup. If no legacy entries match, leave the file untouched.
 
 ### Fix: Legacy Hooks in settings.json
-Remove the `"hooks"` section from `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json` (keep other settings intact)
+For each affected profile-level, project-level, or project-local settings file:
+1. Remove a hook only when all Step 2 checks pass: the command is a plain direct invocation with the listed script as its sole target, the active plugin provides the same event, and the target file matches the shipped OMC payload. Do not match other scripts merely because they are under a `hooks/` directory, plugin-root commands, or similarly named scripts in other directories.
+2. Remove only those matching objects from their `hooks.<event>[].hooks[]` arrays. Preserve every unmatched hook object and every matcher group that still has hooks, including user and third-party hooks. If a command is composite or ambiguous, leave it unchanged and report it for manual cleanup. If removing matched objects leaves a matcher group with no hooks, remove that now-empty group; remove an event key when no groups remain and remove the top-level `"hooks"` key when no events remain. Leave all other settings unchanged.
 
-### Fix: Legacy Bash Scripts
-```bash
-rm -f "${CLAUDE_CONFIG_DIR:-$HOME/.claude}"/hooks/keyword-detector.sh
-rm -f "${CLAUDE_CONFIG_DIR:-$HOME/.claude}"/hooks/persistent-mode.sh
-rm -f "${CLAUDE_CONFIG_DIR:-$HOME/.claude}"/hooks/session-start.sh
-rm -f "${CLAUDE_CONFIG_DIR:-$HOME/.claude}"/hooks/stop-continuation.sh
-```
+### Fix: Legacy Script Files
+After handling every relevant settings file, re-check `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json`, `./.claude/settings.json`, and `./.claude/settings.local.json` for any reference to each legacy script, including references in composite or ambiguous commands. Remove a script only when no configured hook references remain and its content matches the shipped OMC payload already verified in Step 2. If the user declined the relevant settings change, a file could not be updated, any reference remains, no shipped payload exists, or verification is inconclusive, leave the corresponding script in place. Never run an unconditional `rm -f` based on basename.
 
 ### Fix: Outdated Plugin
 ```bash

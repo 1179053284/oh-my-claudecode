@@ -435,6 +435,49 @@ describe('Builtin Skills', () => {
       expect(t).not.toContain('"ambiguityThreshold": 0.2,');
     });
 
+    it('preserves non-OMC hooks when fixing legacy settings hooks (issue #4277)', () => {
+      const raw = readFileSync(join(originalCwd, 'skills', 'omc-doctor', 'SKILL.md'), 'utf-8');
+      expect(raw).toContain('ask for explicit confirmation of that scoped change');
+      expect(raw).toContain('create a timestamped backup');
+      expect(raw).toContain('`./.claude/settings.local.json` (project-local, with precedence over project settings)');
+      expect(raw).toContain('Do not match other scripts merely because they are under a `hooks/` directory');
+      expect(raw).toContain('keyword-detector.sh');
+      expect(raw).toContain('persistent-mode.sh');
+      expect(raw).toContain('session-start.sh');
+      expect(raw).toContain('stop-continuation.sh');
+      expect(raw).toContain('`bash ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/silent-auto-update.sh`');
+      expect(raw).toContain('If a listed script exists, call it a duplicate only when the active plugin provides the matching event');
+      expect(raw).toContain('standalone Node hook registrations under the active config directory');
+      expect(raw).toContain('`keyword-detector`, `persistent-mode`, `session-start`, `session-end`, `pre-tool-use`, `post-tool-use`, `post-tool-use-failure`, `code-simplifier`, or `stop-continuation`');
+      expect(raw).toContain('`.cjs` and `.js` variants are legacy too');
+      expect(raw).toContain('`node "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/keyword-detector.mjs"` is a legacy registration');
+      expect(raw).toContain('`node "%USERPROFILE%\\.claude\\hooks\\keyword-detector.mjs"`');
+      expect(raw).toContain('`%CLAUDE_CONFIG_DIR%\\hooks\\<filename>`');
+      expect(raw).toContain('with backslash separators as the same active config directory');
+      expect(raw).toContain('Before diagnosing a standalone registration as a duplicate, confirm the OMC plugin is enabled for this context');
+      expect(raw).toContain('the resolved active plugin root has `hooks/hooks.json` declaring a hook for the same event');
+      expect(raw).toContain('A cached plugin version is insufficient');
+      expect(raw).toContain('compare its bytes or SHA-256 with the shipped OMC payload for that exact filename');
+      expect(raw).toContain('A matching name or path alone does not prove ownership');
+      expect(raw).toContain('If the plugin is inactive, does not provide that event, the payload is missing');
+      expect(raw).toContain('Never run an unconditional `rm -f` based on basename');
+      expect(raw).toContain('plain direct invocation of exactly one listed file');
+      expect(raw).toContain('with no extra arguments, shell operators, or other commands');
+      expect(raw).toContain('`bash legacy.sh && run-my-check`');
+      expect(raw).toContain('report it for manual cleanup and leave the hook object unchanged');
+      expect(raw).toContain('If a composite or ambiguous command mentions a legacy path: WARN - manual cleanup required; never remove it automatically');
+      expect(raw).toContain('Match only exact listed filenames invoked with `node`');
+      expect(raw).toContain('do not match plugin-root commands or similarly named scripts in other directories');
+      expect(raw).toContain('Remove only those matching objects from their `hooks.<event>[].hooks[]` arrays');
+      expect(raw).toContain('Preserve every unmatched hook object and every matcher group that still has hooks, including user and third-party hooks');
+      expect(raw).toContain('If removing matched objects leaves a matcher group with no hooks, remove that now-empty group');
+      expect(raw).toContain('remove an event key when no groups remain and remove the top-level `"hooks"` key when no events remain');
+      expect(raw).toContain('For each affected profile-level, project-level, or project-local settings file');
+      expect(raw).toContain('If the user declined the relevant settings change, a file could not be updated, any reference remains, no shipped payload exists, or verification is inconclusive, leave the corresponding script in place');
+      expect(raw).toContain('re-check `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json`, `./.claude/settings.json`, and `./.claude/settings.local.json`');
+      expect(raw).not.toContain('Remove the `"hooks"` section');
+    });
+
     it('ships a config-aware deep-interview SKILL.md for native skill-loader paths (issues #2723, #3030)', () => {
       const raw = readFileSync(join(originalCwd, 'skills', 'deep-interview', 'SKILL.md'), 'utf-8');
       expect(raw).toContain('Native Plugin Invocation Guard (Issue #3030)');
