@@ -44,6 +44,30 @@ function writeVersion(version: string): string {
   return directory;
 }
 
+function writeSessionStartManifest(versionPath: string): void {
+  writeFileSync(
+    join(versionPath, 'hooks', 'hooks.json'),
+    JSON.stringify({
+      description: 'OMC session-start hook',
+      hooks: {
+        SessionStart: [
+          {
+            matcher: '*',
+            hooks: [
+              {
+                type: 'command',
+                command:
+                  'node "${CLAUDE_PLUGIN_ROOT}"/scripts/run.cjs "${CLAUDE_PLUGIN_ROOT}"/scripts/session-start.mjs',
+                timeout: 5,
+              },
+            ],
+          },
+        ],
+      },
+    }),
+  );
+}
+
 function hookResolves(version: string): boolean {
   const root = join(pluginDir, version);
   return (
@@ -122,27 +146,7 @@ describe('purgeStalePluginCacheVersions symlink payload validation', () => {
     const active = join(pluginDir, ACTIVE);
     const activeScript = join(active, 'scripts', 'session-start.mjs');
     writeFileSync(staleScript, '// only stale hook script');
-    writeFileSync(
-      join(active, 'hooks', 'hooks.json'),
-      JSON.stringify({
-        description: 'OMC session-start hook',
-        hooks: {
-          SessionStart: [
-            {
-              matcher: '*',
-              hooks: [
-                {
-                  type: 'command',
-                  command:
-                    'node "${CLAUDE_PLUGIN_ROOT}"/scripts/run.cjs "${CLAUDE_PLUGIN_ROOT}"/scripts/session-start.mjs',
-                  timeout: 5,
-                },
-              ],
-            },
-          ],
-        },
-      }),
-    );
+    writeSessionStartManifest(active);
     symlinkSync(staleScript, activeScript, 'file');
     makeStale(stale);
     installPath(active);
@@ -157,9 +161,30 @@ describe('purgeStalePluginCacheVersions symlink payload validation', () => {
     expect(readdirSync(pluginDir).filter((name) => name.includes('.omc-stale-'))).toEqual([]);
   });
 
+  it('preserves OMC payload when a manifest-referenced hook script is missing', () => {
+    const stale = writeVersion(STALE);
+    const staleScript = join(stale, 'scripts', 'session-start.mjs');
+    const active = join(pluginDir, ACTIVE);
+    writeFileSync(staleScript, '// complete stale hook script');
+    writeSessionStartManifest(stale);
+    writeSessionStartManifest(active);
+    makeStale(stale);
+    installPath(active);
+
+    const result = purgeStalePluginCacheVersions();
+
+    expect(result.symlinked).toBe(0);
+    expect(result.errors).toHaveLength(1);
+    expect(lstatSync(stale).isDirectory()).toBe(true);
+    expect(existsSync(join(active, 'scripts', 'session-start.mjs'))).toBe(false);
+    expect(readdirSync(pluginDir).filter((name) => name.includes('.omc-stale-'))).toEqual([]);
+  });
+
   it('allows a directory symlink back to an ancestor when validating OMC payload', () => {
     const stale = writeVersion(STALE);
     const active = join(pluginDir, ACTIVE);
+    writeFileSync(join(active, 'scripts', 'session-start.mjs'), '// active hook script');
+    writeSessionStartManifest(active);
     const docs = join(active, 'docs');
     const backLink = join(docs, 'back');
     mkdirSync(docs);
@@ -209,6 +234,33 @@ describe('purgeStalePluginCacheVersions symlink payload validation', () => {
     const active = join(genericDir, ACTIVE);
     const stale = join(genericDir, STALE);
     mkdirSync(join(active, 'commands'), { recursive: true });
+    mkdirSync(stale, { recursive: true });
+    writeFileSync(join(stale, 'README.md'), 'only stale payload');
+    makeStale(stale);
+    writeFileSync(
+      join(configDir, 'plugins', 'installed_plugins.json'),
+      JSON.stringify({
+        version: 2,
+        plugins: { 'hookify@official': [{ installPath: active }] },
+      }),
+    );
+
+    const result = purgeStalePluginCacheVersions();
+
+    expect(result.symlinked).toBe(0);
+    expect(result.errors).toHaveLength(1);
+    expect(lstatSync(stale).isDirectory()).toBe(true);
+    expect(readFileSync(join(stale, 'README.md'), 'utf8')).toBe('only stale payload');
+    expect(readdirSync(genericDir).filter((name) => name.includes('.omc-stale-'))).toEqual([]);
+  });
+
+  it('rejects a generic target containing only zero-byte files', () => {
+    const genericDir = join(configDir, 'plugins', 'cache', 'official', 'hookify');
+    const active = join(genericDir, ACTIVE);
+    const stale = join(genericDir, STALE);
+    mkdirSync(active, { recursive: true });
+    writeFileSync(join(active, 'README.md'), '');
+    symlinkSync(join(active, 'README.md'), join(active, 'README-link.md'), 'file');
     mkdirSync(stale, { recursive: true });
     writeFileSync(join(stale, 'README.md'), 'only stale payload');
     makeStale(stale);

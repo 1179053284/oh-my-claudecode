@@ -1,5 +1,5 @@
 import { basename, dirname, isAbsolute, join, parse, resolve } from 'path';
-import { existsSync, lstatSync, readlinkSync, readdirSync, statSync, type Stats } from 'fs';
+import { existsSync, lstatSync, readFileSync, readlinkSync, readdirSync, statSync, type Stats } from 'fs';
 
 /**
  * The hook runner's required entry points. Keep this aligned with isPluginRoot()
@@ -183,10 +183,60 @@ export function isUsableVersionPath(path: string, staleVersionIdentity?: Stats):
       (staleVersionIdentity === undefined || !pathTraversesFileSystemIdentity(requiredPath, staleVersionIdentity))
     );
   });
+  if (!hasRequiredEntries) return false;
+  if (staleVersionIdentity === undefined) return true;
   return (
-    hasRequiredEntries &&
-    (staleVersionIdentity === undefined || hasResolvablePluginSymlinks(path, staleVersionIdentity))
+    hasResolvablePluginSymlinks(path, staleVersionIdentity) &&
+    hasUsableOmcHookTargets(path, staleVersionIdentity)
   );
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function hasUsableOmcHookTargets(path: string, staleVersionIdentity: Stats): boolean {
+  let manifest: unknown;
+  try {
+    manifest = JSON.parse(readFileSync(join(path, 'hooks', 'hooks.json'), 'utf8'));
+  } catch {
+    return false;
+  }
+  if (!isRecord(manifest)) return false;
+  if (manifest.hooks === undefined) return true;
+  if (!isRecord(manifest.hooks)) return false;
+
+  // A partial extraction must not pass validation while a manifest target is absent.
+  for (const groups of Object.values(manifest.hooks)) {
+    if (!Array.isArray(groups)) return false;
+    for (const group of groups) {
+      if (!isRecord(group) || !Array.isArray(group.hooks)) return false;
+      for (const hook of group.hooks) {
+        if (!isRecord(hook)) return false;
+        if (typeof hook.command !== 'string') continue;
+        for (const match of hook.command.matchAll(/\$\{CLAUDE_PLUGIN_ROOT\}["']?([\\/][^"'`\s]+)/g)) {
+          const reference = match[1];
+          if (!reference) return false;
+          const pathParts = reference.split(/[\\/]+/).filter(Boolean);
+          if (pathParts.includes('..')) return false;
+          const targetPath = join(path, ...pathParts);
+          try {
+            const targetStats = statSync(targetPath);
+            if (
+              !targetStats.isFile() ||
+              targetStats.size <= 0 ||
+              pathTraversesFileSystemIdentity(targetPath, staleVersionIdentity)
+            ) {
+              return false;
+            }
+          } catch {
+            return false;
+          }
+        }
+      }
+    }
+  }
+  return true;
 }
 
 interface PayloadScan {
@@ -211,13 +261,18 @@ function hasResolvablePluginSymlinks(
       if (entryStats.isDirectory()) {
         if (branch.some((identity) => sameFileSystemIdentity(entryStats, identity))) continue;
         if (!hasResolvablePluginSymlinks(entryPath, staleVersionIdentity, branch, payload)) return false;
-      } else if (payload && entryStats.isFile() && !FILESYSTEM_JUNK_NAMES.has(entry.name.toLowerCase())) {
+      } else if (
+        payload &&
+        entryStats.isFile() &&
+        entryStats.size > 0 &&
+        !FILESYSTEM_JUNK_NAMES.has(entry.name.toLowerCase())
+      ) {
         payload.found = true;
       }
     } else if (entry.isDirectory()) {
       if (!hasResolvablePluginSymlinks(entryPath, staleVersionIdentity, branch, payload)) return false;
     } else if (payload && entry.isFile() && !FILESYSTEM_JUNK_NAMES.has(entry.name.toLowerCase())) {
-      payload.found = true;
+      if (statSync(entryPath).size > 0) payload.found = true;
     }
   }
   return true;

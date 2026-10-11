@@ -76,7 +76,7 @@ function fileDirent(name: string): {
 /** Return a stat result with mtime N ms ago.
  * Default must exceed STALE_THRESHOLD_MS (24 h) in src/utils/paths.ts. */
 function staleStats(ageMs: number = 25 * 60 * 60 * 1000) {
-  return { mtimeMs: Date.now() - ageMs, isDirectory: () => true } as ReturnType<typeof statSync>;
+  return { mtimeMs: Date.now() - ageMs, size: 1, isDirectory: () => true } as ReturnType<typeof statSync>;
 }
 
 describe('purgeStalePluginCacheVersions validation', () => {
