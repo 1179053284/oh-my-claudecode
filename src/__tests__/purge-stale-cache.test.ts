@@ -98,8 +98,9 @@ function fileDirent(name: string): {
   name: string;
   isDirectory: () => boolean;
   isSymbolicLink: () => boolean;
+  isFile: () => boolean;
 } {
-  return { name, isDirectory: () => false, isSymbolicLink: () => false };
+  return { name, isDirectory: () => false, isSymbolicLink: () => false, isFile: () => true };
 }
 
 /** Return a stat result with mtime N ms ago.

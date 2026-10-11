@@ -211,12 +211,12 @@ function hasResolvablePluginSymlinks(
       if (entryStats.isDirectory()) {
         if (branch.some((identity) => sameFileSystemIdentity(entryStats, identity))) continue;
         if (!hasResolvablePluginSymlinks(entryPath, staleVersionIdentity, branch, payload)) return false;
-      } else if (payload && !FILESYSTEM_JUNK_NAMES.has(entry.name.toLowerCase())) {
+      } else if (payload && entryStats.isFile() && !FILESYSTEM_JUNK_NAMES.has(entry.name.toLowerCase())) {
         payload.found = true;
       }
     } else if (entry.isDirectory()) {
       if (!hasResolvablePluginSymlinks(entryPath, staleVersionIdentity, branch, payload)) return false;
-    } else if (payload && !FILESYSTEM_JUNK_NAMES.has(entry.name.toLowerCase())) {
+    } else if (payload && entry.isFile() && !FILESYSTEM_JUNK_NAMES.has(entry.name.toLowerCase())) {
       payload.found = true;
     }
   }

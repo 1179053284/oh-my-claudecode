@@ -15,6 +15,7 @@ import {
 } from 'fs';
 import { dirname, join, relative, sep } from 'path';
 import { tmpdir } from 'os';
+import { createServer } from 'net';
 
 let configDir: string;
 vi.mock('../utils/config-dir.js', () => ({
@@ -252,6 +253,43 @@ describe('purgeStalePluginCacheVersions symlink payload validation', () => {
     expect(lstatSync(stale).isDirectory()).toBe(true);
     expect(readFileSync(join(stale, 'README.md'), 'utf8')).toBe('only stale payload');
     expect(readdirSync(genericDir).filter((name) => name.includes('.omc-stale-'))).toEqual([]);
+  });
+
+  it.skipIf(process.platform === 'win32')('rejects a generic target containing only a Unix socket', async () => {
+    const genericDir = join(configDir, 'plugins', 'cache', 'official', 'hookify');
+    const active = join(genericDir, ACTIVE);
+    const stale = join(genericDir, STALE);
+    const socketPath = join(active, 'only.sock');
+    mkdirSync(active, { recursive: true });
+    mkdirSync(stale, { recursive: true });
+    writeFileSync(join(stale, 'README.md'), 'only stale payload');
+    makeStale(stale);
+    writeFileSync(
+      join(configDir, 'plugins', 'installed_plugins.json'),
+      JSON.stringify({
+        version: 2,
+        plugins: { 'hookify@official': [{ installPath: active }] },
+      }),
+    );
+    const server = createServer();
+    try {
+      await new Promise<void>((resolve, reject) => {
+        server.once('error', reject);
+        server.listen(socketPath, resolve);
+      });
+
+      const result = purgeStalePluginCacheVersions();
+
+      expect(result.symlinked).toBe(0);
+      expect(result.errors).toHaveLength(1);
+      expect(lstatSync(stale).isDirectory()).toBe(true);
+      expect(readFileSync(join(stale, 'README.md'), 'utf8')).toBe('only stale payload');
+      expect(readdirSync(genericDir).filter((name) => name.includes('.omc-stale-'))).toEqual([]);
+    } finally {
+      if (server.listening) {
+        await new Promise<void>((resolve) => server.close(() => resolve()));
+      }
+    }
   });
 
   it('preserves generic payload when a child symlink traverses the stale version', () => {
