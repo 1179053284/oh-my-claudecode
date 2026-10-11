@@ -25,6 +25,8 @@ export interface SpawnNextChain {
   tracker?: SpawnNextTracker;
   /** Per-stage link counts carried forward so the enqueuer can cap route loops. */
   visits?: Record<string, number>;
+  /** User setting-source opt-in captured at the first link and carried by its ledger. */
+  includeUserSettings?: boolean;
 }
 
 export interface SpawnNextPlan {
@@ -63,13 +65,23 @@ export const AFK_ALLOWED_TOOLS = [
   'WebFetch(domain:github.com)',
 ].join(',');
 
+export const AFK_INCLUDE_USER_SETTINGS_ENV = 'OMC_AFK_INCLUDE_USER_SETTINGS';
+
 export const AFK_SPAWN_FLAGS = [
   '--permission-mode', 'acceptEdits',
   '--allowedTools', AFK_ALLOWED_TOOLS,
-  // Isolation: AFK links run with project+local settings only — user-level
-  // hooks/settings must never fire in a headless chain link.
+  // Default isolation: user-level hooks/settings do not fire in a headless
+  // chain link unless OMC_AFK_INCLUDE_USER_SETTINGS=1 opts them in.
   '--setting-sources', 'project,local',
 ];
+
+function afkSpawnFlags(includeUserSettings: boolean): string[] {
+  const flags = [...AFK_SPAWN_FLAGS];
+  if (includeUserSettings) {
+    flags[flags.indexOf('--setting-sources') + 1] = 'user,project,local';
+  }
+  return flags;
+}
 
 /**
  * Args (command excluded) for one factory chain link: intent prompt + AFK
@@ -83,9 +95,10 @@ export function factoryLinkArgv(
   sessionId: string,
   verifyCommands: readonly string[] = [],
   fixedBashCommands: readonly string[] = [],
+  includeUserSettings = process.env[AFK_INCLUDE_USER_SETTINGS_ENV] === '1',
 ): string[] {
   if (verifyCommands.length === 0 && fixedBashCommands.length === 0) {
-    return ['-p', prompt, '--session-id', sessionId, ...AFK_SPAWN_FLAGS];
+    return ['-p', prompt, '--session-id', sessionId, ...afkSpawnFlags(includeUserSettings)];
   }
   const isValid = (command: string) => command.length <= MAX_VERIFY_COMMAND_LENGTH && VERIFY_COMMAND_PATTERN.test(command);
   // fixedBashCommands are caller-owned constants (e.g. ralph's read-only git
@@ -98,7 +111,7 @@ export function factoryLinkArgv(
       .slice(0, MAX_VERIFY_COMMANDS)
       .map((command) => `Bash(${command})`),
   ].join(',');
-  const flags = [...AFK_SPAWN_FLAGS];
+  const flags = afkSpawnFlags(includeUserSettings);
   flags[flags.indexOf('--allowedTools') + 1] = allowedTools;
   return ['-p', prompt, '--session-id', sessionId, ...flags];
 }
@@ -114,6 +127,9 @@ export const LABEL_PATTERN = /^[\w.-]+$/;
  */
 export function validateChainFields(chain: SpawnNextChain): void {
   validateSessionId(chain.sessionId);
+  if (chain.includeUserSettings !== undefined && typeof chain.includeUserSettings !== 'boolean') {
+    throw new Error('invalid chain user settings option');
+  }
   const tracker = chain.tracker;
   if (tracker) {
     if (!REPO_PATTERN.test(tracker.repo)) throw new Error(`invalid tracker repo: ${tracker.repo}`);
@@ -149,7 +165,7 @@ export function planSpawnNext(chain: SpawnNextChain, omcRoot: string): SpawnNext
   return {
     directive,
     handoffPath,
-    spawnArgv: ['claude', ...factoryLinkArgv(`/${directive.skill} 继续 ${directive.stage} 环；交接上下文：${path.basename(handoffPath)}`, nextSessionId, directive.verify)],
+    spawnArgv: ['claude', ...factoryLinkArgv(`/${directive.skill} 继续 ${directive.stage} 环；交接上下文：${path.basename(handoffPath)}`, nextSessionId, directive.verify, [], chain.includeUserSettings === true)],
     nextSessionId,
     trackerCommands,
   };
@@ -179,6 +195,7 @@ export function executeSpawnNext(chain: SpawnNextChain, directory: string, spawn
       routeTable: chain.routeTable,
       tracker: chain.tracker,
       visits: { ...(chain.visits ?? {}), [plan.directive.stage]: (chain.visits?.[plan.directive.stage] ?? 0) + 1 },
+      includeUserSettings: chain.includeUserSettings === true,
     }, null, 2), 'utf8');
     spawnFn(plan.spawnArgv[0], plan.spawnArgv.slice(1), { cwd: directory });
   } catch (error) {

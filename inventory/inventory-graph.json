@@ -5,31 +5,31 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "a12656bce3e40379420cc47cbe646cebba26dfe5",
-    "sourceSha256": "83984d31f357600ee5fc25287716a062a520a0b5031cacb3074983b6905b79f5",
+    "head": "a720eabd02a9816cf22d5f3ce74edbeaaaa92f45",
+    "sourceSha256": "4e5da41368f30c704f7e43b430290f389f134e3488911d5848639f4b11554ce5",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "a12656bce3e40379420cc47cbe646cebba26dfe5",
-  "sourceSha256": "83984d31f357600ee5fc25287716a062a520a0b5031cacb3074983b6905b79f5",
+  "head": "a720eabd02a9816cf22d5f3ce74edbeaaaa92f45",
+  "sourceSha256": "4e5da41368f30c704f7e43b430290f389f134e3488911d5848639f4b11554ce5",
   "counts": {
     "public": {
-      "skills": 47,
+      "skills": 48,
       "commands": 21,
       "workflows": 8,
       "agents": 20,
-      "total": 96
+      "total": 97
     },
     "internal": {
       "hookFiles": 339,
       "featureFiles": 85,
-      "toolFiles": 61,
+      "toolFiles": 63,
       "libFiles": 48,
       "templateHooks": 23,
-      "srcFiles": 1449,
-      "total": 1472
+      "srcFiles": 1465,
+      "total": 1488
     },
     "generated": {
       "distFiles": 5611,
@@ -39,7 +39,7 @@
     "prompt": {
       "promptLikeFiles": 61
     },
-    "skills": 47,
+    "skills": 48,
     "commands": 21,
     "hookFiles": 339,
     "workflows": 8,
@@ -86,6 +86,7 @@
       "research",
       "review",
       "self-improve",
+      "session-flow",
       "skill",
       "skillify",
       "tdd",
@@ -597,6 +598,7 @@
       "src/tools/deepinit-manifest.ts",
       "src/tools/diagnostics/AGENTS.md",
       "src/tools/diagnostics/__tests__/lsp-aggregator.test.ts",
+      "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
       "src/tools/diagnostics/index.ts",
       "src/tools/diagnostics/lsp-aggregator.ts",
       "src/tools/diagnostics/tsc-runner.ts",
@@ -613,6 +615,7 @@
       "src/tools/lsp/__tests__/client-timeout-env.test.ts",
       "src/tools/lsp/__tests__/client-win32-spawn.test.ts",
       "src/tools/lsp/__tests__/devcontainer.test.ts",
+      "src/tools/lsp/__tests__/utils-file-uri.test.ts",
       "src/tools/lsp/client.ts",
       "src/tools/lsp/devcontainer.ts",
       "src/tools/lsp/index.ts",
@@ -7050,6 +7053,7 @@
       "src/tools/deepinit-manifest.ts",
       "src/tools/diagnostics/AGENTS.md",
       "src/tools/diagnostics/__tests__/lsp-aggregator.test.ts",
+      "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
       "src/tools/diagnostics/index.ts",
       "src/tools/diagnostics/lsp-aggregator.ts",
       "src/tools/diagnostics/tsc-runner.ts",
@@ -7066,6 +7070,7 @@
       "src/tools/lsp/__tests__/client-timeout-env.test.ts",
       "src/tools/lsp/__tests__/client-win32-spawn.test.ts",
       "src/tools/lsp/__tests__/devcontainer.test.ts",
+      "src/tools/lsp/__tests__/utils-file-uri.test.ts",
       "src/tools/lsp/client.ts",
       "src/tools/lsp/devcontainer.ts",
       "src/tools/lsp/index.ts",
@@ -36596,6 +36601,11 @@
         "path": "node:stream"
       },
       {
+        "id": "external:node:string_decoder",
+        "kind": "external",
+        "path": "node:string_decoder"
+      },
+      {
         "id": "external:node:url",
         "kind": "external",
         "path": "node:url"
@@ -36604,6 +36614,11 @@
         "id": "external:node:util",
         "kind": "external",
         "path": "node:util"
+      },
+      {
+        "id": "external:node:vm",
+        "kind": "external",
+        "path": "node:vm"
       },
       {
         "id": "external:node:worker_threads",
@@ -37941,6 +37956,11 @@
         "path": "skills/self-improve/templates/settings.json"
       },
       {
+        "id": "skills/session-flow/SKILL.md",
+        "kind": "skill",
+        "path": "skills/session-flow/SKILL.md"
+      },
+      {
         "id": "skills/skill/SKILL.md",
         "kind": "skill",
         "path": "skills/skill/SKILL.md"
@@ -38366,6 +38386,11 @@
         "path": "src/__tests__/hud/background-cleanup.test.ts"
       },
       {
+        "id": "src/__tests__/hud/background-history-cap.test.ts",
+        "kind": "src",
+        "path": "src/__tests__/hud/background-history-cap.test.ts"
+      },
+      {
         "id": "src/__tests__/hud/background-tasks.test.ts",
         "kind": "src",
         "path": "src/__tests__/hud/background-tasks.test.ts"
@@ -38394,6 +38419,11 @@
         "id": "src/__tests__/hud/custom-rate-provider.test.ts",
         "kind": "src",
         "path": "src/__tests__/hud/custom-rate-provider.test.ts"
+      },
+      {
+        "id": "src/__tests__/hud/cwd-hyperlink-boundary.test.ts",
+        "kind": "src",
+        "path": "src/__tests__/hud/cwd-hyperlink-boundary.test.ts"
       },
       {
         "id": "src/__tests__/hud/cwd.test.ts",
@@ -38999,6 +39029,21 @@
         "id": "src/__tests__/psm-tmux-naming.test.ts",
         "kind": "src",
         "path": "src/__tests__/psm-tmux-naming.test.ts"
+      },
+      {
+        "id": "src/__tests__/purge-stale-cache-relink.test.ts",
+        "kind": "src",
+        "path": "src/__tests__/purge-stale-cache-relink.test.ts"
+      },
+      {
+        "id": "src/__tests__/purge-stale-cache-symlink.integration.test.ts",
+        "kind": "src",
+        "path": "src/__tests__/purge-stale-cache-symlink.integration.test.ts"
+      },
+      {
+        "id": "src/__tests__/purge-stale-cache-validation.test.ts",
+        "kind": "src",
+        "path": "src/__tests__/purge-stale-cache-validation.test.ts"
       },
       {
         "id": "src/__tests__/purge-stale-cache.integration.test.ts",
@@ -39784,6 +39829,11 @@
         "id": "src/cli/__tests__/session-search-help.test.ts",
         "kind": "src",
         "path": "src/cli/__tests__/session-search-help.test.ts"
+      },
+      {
+        "id": "src/cli/__tests__/session-search-terminal.test.ts",
+        "kind": "src",
+        "path": "src/cli/__tests__/session-search-terminal.test.ts"
       },
       {
         "id": "src/cli/__tests__/session-search.test.ts",
@@ -42526,6 +42576,11 @@
         "path": "src/hud/__tests__/autopilot-profile.test.ts"
       },
       {
+        "id": "src/hud/__tests__/custom-provider-cache-identity.test.ts",
+        "kind": "src",
+        "path": "src/hud/__tests__/custom-provider-cache-identity.test.ts"
+      },
+      {
         "id": "src/hud/__tests__/custom-rate-provider.test.ts",
         "kind": "src",
         "path": "src/hud/__tests__/custom-rate-provider.test.ts"
@@ -43341,9 +43396,19 @@
         "path": "src/notifications/__tests__/config.test.ts"
       },
       {
+        "id": "src/notifications/__tests__/custom-config-shapes.test.ts",
+        "kind": "src",
+        "path": "src/notifications/__tests__/custom-config-shapes.test.ts"
+      },
+      {
         "id": "src/notifications/__tests__/custom-integration.test.ts",
         "kind": "src",
         "path": "src/notifications/__tests__/custom-integration.test.ts"
+      },
+      {
+        "id": "src/notifications/__tests__/custom-webhook-body.test.ts",
+        "kind": "src",
+        "path": "src/notifications/__tests__/custom-webhook-body.test.ts"
       },
       {
         "id": "src/notifications/__tests__/dispatcher.test.ts",
@@ -43394,6 +43459,11 @@
         "id": "src/notifications/__tests__/reply-listener.test.ts",
         "kind": "src",
         "path": "src/notifications/__tests__/reply-listener.test.ts"
+      },
+      {
+        "id": "src/notifications/__tests__/session-registry-durability.test.ts",
+        "kind": "src",
+        "path": "src/notifications/__tests__/session-registry-durability.test.ts"
       },
       {
         "id": "src/notifications/__tests__/session-registry.test.ts",
@@ -44316,9 +44386,19 @@
         "path": "src/team/__tests__/unified-team.test.ts"
       },
       {
+        "id": "src/team/__tests__/usage-record-shape.test.ts",
+        "kind": "src",
+        "path": "src/team/__tests__/usage-record-shape.test.ts"
+      },
+      {
         "id": "src/team/__tests__/usage-tracker.test.ts",
         "kind": "src",
         "path": "src/team/__tests__/usage-tracker.test.ts"
+      },
+      {
+        "id": "src/team/__tests__/usage-unicode-counts.test.ts",
+        "kind": "src",
+        "path": "src/team/__tests__/usage-unicode-counts.test.ts"
       },
       {
         "id": "src/team/__tests__/worker-activation-gate.test.ts",
@@ -44831,6 +44911,11 @@
         "path": "src/tools/diagnostics/__tests__/lsp-aggregator.test.ts"
       },
       {
+        "id": "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
+        "kind": "tool",
+        "path": "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts"
+      },
+      {
         "id": "src/tools/diagnostics/index.ts",
         "kind": "tool",
         "path": "src/tools/diagnostics/index.ts"
@@ -44909,6 +44994,11 @@
         "id": "src/tools/lsp/__tests__/devcontainer.test.ts",
         "kind": "tool",
         "path": "src/tools/lsp/__tests__/devcontainer.test.ts"
+      },
+      {
+        "id": "src/tools/lsp/__tests__/utils-file-uri.test.ts",
+        "kind": "tool",
+        "path": "src/tools/lsp/__tests__/utils-file-uri.test.ts"
       },
       {
         "id": "src/tools/lsp/client.ts",
@@ -45141,6 +45231,11 @@
         "path": "src/utils/jsonc.ts"
       },
       {
+        "id": "src/utils/node-version.ts",
+        "kind": "src",
+        "path": "src/utils/node-version.ts"
+      },
+      {
         "id": "src/utils/omc-cli-rendering.ts",
         "kind": "src",
         "path": "src/utils/omc-cli-rendering.ts"
@@ -45149,6 +45244,11 @@
         "id": "src/utils/paths.ts",
         "kind": "src",
         "path": "src/utils/paths.ts"
+      },
+      {
+        "id": "src/utils/plugin-cache-validation.ts",
+        "kind": "src",
+        "path": "src/utils/plugin-cache-validation.ts"
       },
       {
         "id": "src/utils/resolve-node.ts",
@@ -45471,6 +45571,11 @@
         "path": "tests/integration/git-guardrails-hook.test.ts"
       },
       {
+        "id": "tests/integration/issue-4266-jev-temp-cleanup.test.ts",
+        "kind": "other",
+        "path": "tests/integration/issue-4266-jev-temp-cleanup.test.ts"
+      },
+      {
         "id": "tests/integration/jev-active-mode-repro.test.ts",
         "kind": "other",
         "path": "tests/integration/jev-active-mode-repro.test.ts"
@@ -45484,6 +45589,11 @@
         "id": "tests/integration/runs-reconciler.test.ts",
         "kind": "other",
         "path": "tests/integration/runs-reconciler.test.ts"
+      },
+      {
+        "id": "tests/integration/session-flow-skill.test.ts",
+        "kind": "other",
+        "path": "tests/integration/session-flow-skill.test.ts"
       },
       {
         "id": "tests/integration/skill-map-references.test.ts",
@@ -45579,6 +45689,11 @@
         "id": "tests/lint/issue-4156-windows-dev-zero.test.ts",
         "kind": "other",
         "path": "tests/lint/issue-4156-windows-dev-zero.test.ts"
+      },
+      {
+        "id": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts",
+        "kind": "other",
+        "path": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts"
       },
       {
         "id": "tests/lint/session-end-forwarder-no-op.test.ts",
@@ -46670,6 +46785,11 @@
       {
         "from": "scripts/jev-resolve.mjs",
         "to": "external:node:fs/promises",
+        "kind": "imports"
+      },
+      {
+        "from": "scripts/jev-resolve.mjs",
+        "to": "external:node:os",
         "kind": "imports"
       },
       {
@@ -48498,6 +48618,11 @@
         "kind": "imports"
       },
       {
+        "from": "skills/session-flow/SKILL.md",
+        "to": "src/features/builtin-skills/skills.ts",
+        "kind": "registers"
+      },
+      {
         "from": "skills/skill/SKILL.md",
         "to": "src/features/builtin-skills/skills.ts",
         "kind": "registers"
@@ -50193,6 +50318,31 @@
         "kind": "imports"
       },
       {
+        "from": "src/__tests__/hud/background-history-cap.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/background-history-cap.test.ts",
+        "to": "src/hud/background-cleanup.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/background-history-cap.test.ts",
+        "to": "src/hud/background-tasks.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/background-history-cap.test.ts",
+        "to": "src/hud/state.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/background-history-cap.test.ts",
+        "to": "src/hud/types.ts",
+        "kind": "type-imports"
+      },
+      {
         "from": "src/__tests__/hud/background-tasks.test.ts",
         "to": "external:vitest",
         "kind": "imports"
@@ -50294,6 +50444,11 @@
       },
       {
         "from": "src/__tests__/hud/custom-rate-provider.test.ts",
+        "to": "external:node:crypto",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/custom-rate-provider.test.ts",
         "to": "external:vitest",
         "kind": "imports"
       },
@@ -50306,6 +50461,36 @@
         "from": "src/__tests__/hud/custom-rate-provider.test.ts",
         "to": "src/hud/types.ts",
         "kind": "type-imports"
+      },
+      {
+        "from": "src/__tests__/hud/cwd-hyperlink-boundary.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/cwd-hyperlink-boundary.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/cwd-hyperlink-boundary.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/cwd-hyperlink-boundary.test.ts",
+        "to": "external:node:url",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/cwd-hyperlink-boundary.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/cwd-hyperlink-boundary.test.ts",
+        "to": "src/hud/elements/cwd.ts",
+        "kind": "imports"
       },
       {
         "from": "src/__tests__/hud/cwd.test.ts",
@@ -52924,6 +53109,26 @@
       },
       {
         "from": "src/__tests__/providers/detection.test.ts",
+        "to": "external:node:child_process",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/providers/detection.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/providers/detection.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/providers/detection.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/providers/detection.test.ts",
         "to": "external:vitest",
         "kind": "imports"
       },
@@ -53015,6 +53220,81 @@
       {
         "from": "src/__tests__/psm-tmux-naming.test.ts",
         "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-relink.test.ts",
+        "to": "external:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-relink.test.ts",
+        "to": "external:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-relink.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-relink.test.ts",
+        "to": "src/utils/paths.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-symlink.integration.test.ts",
+        "to": "external:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-symlink.integration.test.ts",
+        "to": "external:net",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-symlink.integration.test.ts",
+        "to": "external:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-symlink.integration.test.ts",
+        "to": "external:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-symlink.integration.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-symlink.integration.test.ts",
+        "to": "src/utils/paths.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-validation.test.ts",
+        "to": "external:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-validation.test.ts",
+        "to": "external:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-validation.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-validation.test.ts",
+        "to": "src/utils/paths.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-validation.test.ts",
+        "to": "src/utils/plugin-cache-validation.ts",
         "kind": "imports"
       },
       {
@@ -53710,6 +53990,11 @@
       {
         "from": "src/__tests__/resolve-transcript-path.test.ts",
         "to": "src/utils/encode-project-path.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/resolve-transcript-path.test.ts",
+        "to": "src/utils/plugin-cache-validation.ts",
         "kind": "imports"
       },
       {
@@ -56858,6 +57143,41 @@
         "kind": "imports"
       },
       {
+        "from": "src/cli/__tests__/session-search-terminal.test.ts",
+        "to": "external:chalk",
+        "kind": "imports"
+      },
+      {
+        "from": "src/cli/__tests__/session-search-terminal.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/cli/__tests__/session-search-terminal.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/cli/__tests__/session-search-terminal.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/cli/__tests__/session-search-terminal.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/cli/__tests__/session-search-terminal.test.ts",
+        "to": "src/cli/commands/session-search.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/cli/__tests__/session-search-terminal.test.ts",
+        "to": "src/utils/encode-project-path.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/cli/__tests__/session-search.test.ts",
         "to": "external:fs",
         "kind": "imports"
@@ -58841,6 +59161,11 @@
         "from": "src/factory/__tests__/listener.test.ts",
         "to": "src/factory/listener.ts",
         "kind": "type-imports"
+      },
+      {
+        "from": "src/factory/__tests__/listener.test.ts",
+        "to": "src/hooks/session-end/spawn-next.ts",
+        "kind": "imports"
       },
       {
         "from": "src/factory/__tests__/listener.test.ts",
@@ -68348,6 +68673,11 @@
         "kind": "type-imports"
       },
       {
+        "from": "src/hooks/session-end/__tests__/chain-enqueuer.test.ts",
+        "to": "src/hooks/session-end/spawn-next.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/hooks/session-end/__tests__/check-evidence.test.ts",
         "to": "external:child_process",
         "kind": "imports"
@@ -70813,6 +71143,31 @@
         "kind": "imports"
       },
       {
+        "from": "src/hud/__tests__/custom-provider-cache-identity.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hud/__tests__/custom-provider-cache-identity.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hud/__tests__/custom-provider-cache-identity.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hud/__tests__/custom-provider-cache-identity.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hud/__tests__/custom-provider-cache-identity.test.ts",
+        "to": "src/hud/custom-rate-provider.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/hud/__tests__/custom-rate-provider.test.ts",
         "to": "external:node:fs",
         "kind": "imports"
@@ -70915,6 +71270,11 @@
       {
         "from": "src/hud/custom-rate-provider.ts",
         "to": "external:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hud/custom-rate-provider.ts",
+        "to": "external:node:crypto",
         "kind": "imports"
       },
       {
@@ -71050,6 +71410,11 @@
       {
         "from": "src/hud/elements/cwd.ts",
         "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hud/elements/cwd.ts",
+        "to": "external:node:url",
         "kind": "imports"
       },
       {
@@ -72879,6 +73244,11 @@
       },
       {
         "from": "src/installer/index.ts",
+        "to": "src/utils/node-version.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/installer/index.ts",
         "to": "src/utils/resolve-node.ts",
         "kind": "imports"
       },
@@ -72905,6 +73275,11 @@
       {
         "from": "src/installer/mcp-registry.ts",
         "to": "external:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/installer/mcp-registry.ts",
+        "to": "external:util",
         "kind": "imports"
       },
       {
@@ -74773,6 +75148,46 @@
         "kind": "imports"
       },
       {
+        "from": "src/notifications/__tests__/custom-config-shapes.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/custom-config-shapes.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/custom-config-shapes.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/custom-config-shapes.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/custom-config-shapes.test.ts",
+        "to": "src/notifications/config.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/custom-config-shapes.test.ts",
+        "to": "src/notifications/dispatcher.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/custom-config-shapes.test.ts",
+        "to": "src/notifications/types.ts",
+        "kind": "type-imports"
+      },
+      {
+        "from": "src/notifications/__tests__/custom-config-shapes.test.ts",
+        "to": "src/notifications/validation.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/notifications/__tests__/custom-integration.test.ts",
         "to": "external:vitest",
         "kind": "imports"
@@ -74801,6 +75216,21 @@
         "from": "src/notifications/__tests__/custom-integration.test.ts",
         "to": "src/notifications/validation.ts",
         "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/custom-webhook-body.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/custom-webhook-body.test.ts",
+        "to": "src/notifications/dispatcher.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/custom-webhook-body.test.ts",
+        "to": "src/notifications/types.ts",
+        "kind": "type-imports"
       },
       {
         "from": "src/notifications/__tests__/dispatcher.test.ts",
@@ -75010,6 +75440,31 @@
       {
         "from": "src/notifications/__tests__/reply-listener.test.ts",
         "to": "src/notifications/reply-listener.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/session-registry-durability.test.ts",
+        "to": "external:node:child_process",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/session-registry-durability.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/session-registry-durability.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/session-registry-durability.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/session-registry-durability.test.ts",
+        "to": "external:vitest",
         "kind": "imports"
       },
       {
@@ -75500,6 +75955,11 @@
       {
         "from": "src/notifications/session-registry.ts",
         "to": "external:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/session-registry.ts",
+        "to": "src/lib/atomic-write.ts",
         "kind": "imports"
       },
       {
@@ -76089,6 +76549,11 @@
       },
       {
         "from": "src/providers/index.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/providers/index.ts",
         "to": "src/providers/azure-devops.ts",
         "kind": "imports"
       },
@@ -76530,6 +76995,11 @@
       {
         "from": "src/team/__tests__/api-interop.cwd-resolution.test.ts",
         "to": "src/team/recovery-request-store.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/api-interop.cwd-resolution.test.ts",
+        "to": "src/team/state-paths.ts",
         "kind": "imports"
       },
       {
@@ -79958,6 +80428,16 @@
         "kind": "imports"
       },
       {
+        "from": "src/team/__tests__/tmux-session-liveness.test.ts",
+        "to": "src/team/tmux-session.ts",
+        "kind": "type-imports"
+      },
+      {
+        "from": "src/team/__tests__/tmux-session-liveness.test.ts",
+        "to": "src/team/types.ts",
+        "kind": "type-imports"
+      },
+      {
         "from": "src/team/__tests__/tmux-session-prereqs.test.ts",
         "to": "external:child_process",
         "kind": "imports"
@@ -80218,6 +80698,41 @@
         "kind": "imports"
       },
       {
+        "from": "src/team/__tests__/usage-record-shape.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-record-shape.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-record-shape.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-record-shape.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-record-shape.test.ts",
+        "to": "src/lib/worktree-paths.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-record-shape.test.ts",
+        "to": "src/team/usage-tracker.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-record-shape.test.ts",
+        "to": "src/team/usage-tracker.ts",
+        "kind": "type-imports"
+      },
+      {
         "from": "src/team/__tests__/usage-tracker.test.ts",
         "to": "external:fs",
         "kind": "imports"
@@ -80246,6 +80761,31 @@
         "from": "src/team/__tests__/usage-tracker.test.ts",
         "to": "src/team/usage-tracker.ts",
         "kind": "type-imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-unicode-counts.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-unicode-counts.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-unicode-counts.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-unicode-counts.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-unicode-counts.test.ts",
+        "to": "src/team/usage-tracker.ts",
+        "kind": "imports"
       },
       {
         "from": "src/team/__tests__/worker-activation-gate.test.ts",
@@ -83499,6 +84039,16 @@
       },
       {
         "from": "src/team/usage-tracker.ts",
+        "to": "external:node:string_decoder",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/usage-tracker.ts",
+        "to": "external:zod",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/usage-tracker.ts",
         "to": "src/lib/worktree-paths.ts",
         "kind": "imports"
       },
@@ -84168,6 +84718,31 @@
         "kind": "type-imports"
       },
       {
+        "from": "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
+        "to": "src/tools/diagnostics/index.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/tools/diagnostics/index.ts",
         "to": "external:fs",
         "kind": "imports"
@@ -84503,6 +85078,36 @@
         "kind": "imports"
       },
       {
+        "from": "src/tools/lsp/__tests__/utils-file-uri.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/lsp/__tests__/utils-file-uri.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/lsp/__tests__/utils-file-uri.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/lsp/__tests__/utils-file-uri.test.ts",
+        "to": "external:node:url",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/lsp/__tests__/utils-file-uri.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/lsp/__tests__/utils-file-uri.test.ts",
+        "to": "src/tools/lsp/utils.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/tools/lsp/client.ts",
         "to": "external:child_process",
         "kind": "imports"
@@ -84615,6 +85220,11 @@
       {
         "from": "src/tools/lsp/servers.ts",
         "to": "external:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/lsp/utils.ts",
+        "to": "external:node:url",
         "kind": "imports"
       },
       {
@@ -85488,6 +86098,11 @@
         "kind": "imports"
       },
       {
+        "from": "src/utils/__tests__/cache-occupancy.test.ts",
+        "to": "src/utils/paths.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/utils/__tests__/encode-project-path.test.ts",
         "to": "external:vitest",
         "kind": "imports"
@@ -85505,6 +86120,16 @@
       {
         "from": "src/utils/__tests__/frontmatter.test.ts",
         "to": "src/utils/frontmatter.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/__tests__/jsonc.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/__tests__/jsonc.test.ts",
+        "to": "external:node:vm",
         "kind": "imports"
       },
       {
@@ -85530,6 +86155,11 @@
       {
         "from": "src/utils/__tests__/string-width.test.ts",
         "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/__tests__/string-width.test.ts",
+        "to": "src/hud/elements/background.ts",
         "kind": "imports"
       },
       {
@@ -85613,6 +86243,26 @@
         "kind": "imports"
       },
       {
+        "from": "src/utils/paths.ts",
+        "to": "src/utils/plugin-cache-validation.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/plugin-cache-validation.ts",
+        "to": "external:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/plugin-cache-validation.ts",
+        "to": "external:fs",
+        "kind": "type-imports"
+      },
+      {
+        "from": "src/utils/plugin-cache-validation.ts",
+        "to": "external:path",
+        "kind": "imports"
+      },
+      {
         "from": "src/utils/resolve-node.ts",
         "to": "external:child_process",
         "kind": "imports"
@@ -85630,6 +86280,11 @@
       {
         "from": "src/utils/resolve-node.ts",
         "to": "external:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/resolve-node.ts",
+        "to": "src/utils/node-version.ts",
         "kind": "imports"
       },
       {
@@ -86643,6 +87298,36 @@
         "kind": "imports"
       },
       {
+        "from": "tests/integration/issue-4266-jev-temp-cleanup.test.ts",
+        "to": "external:node:child_process",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/issue-4266-jev-temp-cleanup.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/issue-4266-jev-temp-cleanup.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/issue-4266-jev-temp-cleanup.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/issue-4266-jev-temp-cleanup.test.ts",
+        "to": "external:node:url",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/issue-4266-jev-temp-cleanup.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
         "from": "tests/integration/jev-active-mode-repro.test.ts",
         "to": "external:node:child_process",
         "kind": "imports"
@@ -86730,6 +87415,31 @@
       {
         "from": "tests/integration/runs-reconciler.test.ts",
         "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/session-flow-skill.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/session-flow-skill.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/session-flow-skill.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/session-flow-skill.test.ts",
+        "to": "src/features/builtin-skills/skills.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/session-flow-skill.test.ts",
+        "to": "src/workflow/registry.ts",
         "kind": "imports"
       },
       {
@@ -87193,6 +87903,46 @@
         "kind": "imports"
       },
       {
+        "from": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts",
+        "to": "external:node:child_process",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts",
+        "to": "external:node:url",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts",
+        "to": "src/team/team-owner-epoch.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts",
+        "to": "src/team/tmux-session.ts",
+        "kind": "imports"
+      },
+      {
         "from": "tests/lint/session-end-forwarder-no-op.test.ts",
         "to": "external:fs",
         "kind": "imports"
@@ -87384,12 +88134,12 @@
       }
     ],
     "stats": {
-      "nodeCount": 7710,
-      "edgeCount": 8346,
-      "importEdgeCount": 6908,
-      "registerEdgeCount": 68
+      "nodeCount": 7732,
+      "edgeCount": 8473,
+      "importEdgeCount": 7027,
+      "registerEdgeCount": 69
     }
   },
-  "inventorySha256": "66daac59c9beaf17d07f6573f54ad3cbaa587734bb9bafd56a93e4ba567b444d",
-  "manifestSha256": "cd6a73aef6b9e3e61f193299cef2c749f314ba17c576818b8157615001c1ee32"
+  "inventorySha256": "6a3025781f40302f9a52fdb9000cbfc1466f4acd2de6953152ceda628a184e82",
+  "manifestSha256": "9943b9ebd711c3743dd5f5e3ec2834b44e89c84279d3e5b35bd507cb05e99cf0"
 }

@@ -25086,6 +25086,380 @@
           "previousFilename": null
         }
       ]
+    },
+    {
+      "pullNumber": 4260,
+      "targetRef": "dev",
+      "mergeBaseSha": "a720eabd02a9816cf22d5f3ce74edbeaaaa92f45",
+      "headSha": "5fc1609ca21bf62fe3a2ece53600f9cf2d25413d",
+      "owner": "Yeachan-Heo",
+      "expiresAt": "2026-11-11T00:00:00.000Z",
+      "generatedDelta": {
+        "count": 60,
+        "sha256": "770069e51439f4df6a626cd623810ebc7275c6e41280e3cce33b25b9f5874717"
+      },
+      "generatedFiles": [
+        {
+          "status": "modified",
+          "filename": "bridge/cli.cjs",
+          "sha": "a4744c050a8e77726c511338464a683f6f7ebdee",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "bridge/runtime-cli.cjs",
+          "sha": "5c8aa3fa5557922d52873c19a675a159b2de69f2",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "bridge/team-mcp.cjs",
+          "sha": "fbfe412a1a9aae5b69b398a6f26b0686c329b0f3",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "bridge/team.js",
+          "sha": "5c4d87e02dc0817af4c7a85f5af0c758b157e8e0",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/__tests__/hud/watch-mode-init.test.js",
+          "sha": "a350f07892ab1c0506fcab8505c70b3b61f5c784",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/__tests__/hud/watch-mode-init.test.js.map",
+          "sha": "8dbb68cce28ad498f933a33feca7e870a1d31e59",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/__tests__/keyword-detector-echo-guard.test.js",
+          "sha": "b1b5ff0a83fd91396f72efc0768b1ef236ee455a",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/__tests__/keyword-detector-echo-guard.test.js.map",
+          "sha": "6663509816bd5747b4a6f3371ff87b45b6cbffdd",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/__tests__/session-end-process-exit.test.js",
+          "sha": "3ca79d80320c7d4db864608c4ef5e68a3bc037d9",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/__tests__/session-end-process-exit.test.js.map",
+          "sha": "30ea074d49cabb858cf6e96ab1bf0434e862edaa",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/cli/__tests__/ask.test.js",
+          "sha": "82fb4b14d38490d60e78a1e811787d9831bd09f3",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/cli/__tests__/ask.test.js.map",
+          "sha": "3c832999519913b77d85fc75bbaad833864c49f9",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/cli/__tests__/team.test.js",
+          "sha": "8b21236e5aeb247b5146e99bbb12cc3a43405552",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/cli/__tests__/team.test.js.map",
+          "sha": "1eae1fab08b748b85778e69dcd3476a8cae36941",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hooks/autopilot/enforcement.d.ts",
+          "sha": "299922b6998623f9ca4ecac498c5ff771d20028c",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hooks/autopilot/enforcement.d.ts.map",
+          "sha": "f74725ce284e27ad08c3340c7d7fa8376c980a0c",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hooks/autopilot/enforcement.js",
+          "sha": "2de15e087c58d8b9bcb415bce81450c67819fe00",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hooks/autopilot/enforcement.js.map",
+          "sha": "e945409b3dd622add9b469c8e2cd3177ee8ca040",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hooks/persistent-mode/stop-hook-blocking.test.js",
+          "sha": "de569f92c7e50dc4bbaea1b8df15b1ad7954ab45",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hooks/persistent-mode/stop-hook-blocking.test.js.map",
+          "sha": "cba679bb08767c0d13e5d8de8dbea72c949610cb",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hooks/session-end/index.d.ts",
+          "sha": "ed56e0bd3c72dc9c0219dcd8d026bc4c17cd6f3d",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hooks/session-end/index.d.ts.map",
+          "sha": "583fba23fc295c733025611a5e6ec0a65ab4854f",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hooks/session-end/index.js",
+          "sha": "15703fe9f632e9490c464b25fe2e38bea06324b0",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hooks/session-end/index.js.map",
+          "sha": "534fb8f09f12703ab91630f9f7178c61512bef56",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hud/elements/index.d.ts",
+          "sha": "31512918d897bb604b4a7d349850cb68952a6ef9",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hud/elements/index.d.ts.map",
+          "sha": "aa9f12a3c9fb361e177f59767d67ea20fe33b211",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hud/elements/index.js",
+          "sha": "2c47e0b6138c9be8216422ddf8312e0560428f8a",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hud/elements/index.js.map",
+          "sha": "072119c0bcea86e471101445eb2b1a7f409d5448",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hud/index.d.ts.map",
+          "sha": "d114de0f7373de002a8272615fb2867c37128b7b",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hud/index.js",
+          "sha": "879c13dcb265a7024de07a0fcf314ca718b89a65",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hud/index.js.map",
+          "sha": "d8d13c149b07e7f40b713ef14796fb044987b8fc",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hud/render.d.ts.map",
+          "sha": "a09877dafdae4562b419a5a88c5d57bea9a00738",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hud/render.js",
+          "sha": "58257a80426fa46f6d6b5ef298ef8d0f5097dcb1",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hud/render.js.map",
+          "sha": "b0f99860548fc4818cff8bf259ca799ee8ad9682",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hud/stdin.d.ts",
+          "sha": "2a9d7ab06af15200eeb7dc560c8814903bab54ec",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hud/stdin.d.ts.map",
+          "sha": "97fc4ef50f4c873f82eb9aff735b75caec0f911a",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hud/stdin.js",
+          "sha": "ee3824b410009ea4e82cf6c474cd834f9fea6a77",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hud/stdin.js.map",
+          "sha": "06d2ad46b98ede93e014bee6fed16754e4c72a34",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hud/transcript.d.ts.map",
+          "sha": "56939d6762ab8debf53541c861ce07ef4d1ab1e4",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hud/transcript.js",
+          "sha": "27bd23b4ff88d3df1c9907649f9960076dbe9c1c",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hud/transcript.js.map",
+          "sha": "a9a6da838c752e5453728fba922f776e365bf1a7",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hud/types.d.ts",
+          "sha": "e13e39ade35db91c2d1d87bd9de927c96c37a772",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hud/types.d.ts.map",
+          "sha": "cc8584ca314eef603b67ca6db06006d3af0f4946",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hud/types.js",
+          "sha": "e0554b07e78e7ea207dc9e933055ddcb01681ddc",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hud/types.js.map",
+          "sha": "15633c1c116f9b663d55b220d4496a84616f411d",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/team/__tests__/model-contract.test.js",
+          "sha": "b26f736b5e7bb5f6e040a65d644af07c29297f80",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/team/__tests__/model-contract.test.js.map",
+          "sha": "b5b340c76b53818c11cf85d45f2b05fb1b439948",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/team/__tests__/tmux-session.create-team.test.js",
+          "sha": "feea5d6df29015c23b84d10bf7736ccf526ac772",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/team/__tests__/tmux-session.create-team.test.js.map",
+          "sha": "286a88d0023a4a86eb384144ee7f7b1690839780",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/team/model-contract.d.ts",
+          "sha": "34cfb4fa4d95105c9caa4f12a889898098464f54",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/team/model-contract.d.ts.map",
+          "sha": "12c4c8e19ddc3bd026b4a942efe367ae81f4378d",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/team/model-contract.js",
+          "sha": "6d69e3c80244497389c7f41c3438c36d33c7f500",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/team/model-contract.js.map",
+          "sha": "9f076f0467b70c14f8e3eb41422fb7072c623753",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/team/runtime-v2.d.ts",
+          "sha": "e1c9224eb3a1867ce42587a58e02c2e9c645ca41",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/team/runtime-v2.d.ts.map",
+          "sha": "f790038a24c41865e07f6657b55b931556a8f322",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/team/runtime-v2.js",
+          "sha": "053e606da124ec5361996527431d3e722763d6aa",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/team/runtime-v2.js.map",
+          "sha": "2b7713b848df4bb9a8b63eb80612e5f58497fc66",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/team/tmux-session.d.ts.map",
+          "sha": "1ba0784e35041cae067d907094c5e07fe6404b15",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/team/tmux-session.js",
+          "sha": "79222913a9a1ed3cdee316be354023aec916a10a",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/team/tmux-session.js.map",
+          "sha": "4fc439c4a65dbe1a082bc45bc04eb679403b07c2",
+          "previousFilename": null
+        }
+      ]
     }
   ]
 }

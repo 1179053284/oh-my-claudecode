@@ -54,6 +54,7 @@
     "./skills/research/",
     "./skills/review/",
     "./skills/self-improve/",
+    "./skills/session-flow/",
     "./skills/skill/",
     "./skills/skillify/",
     "./skills/tdd/",
