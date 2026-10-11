@@ -454,8 +454,14 @@ describe('Builtin Skills', () => {
       expect(raw).toContain('`node "%USERPROFILE%\\.claude\\hooks\\keyword-detector.mjs"`');
       expect(raw).toContain('`%CLAUDE_CONFIG_DIR%\\hooks\\<filename>`');
       expect(raw).toContain('with backslash separators as the same active config directory');
-      expect(raw).toContain('Before diagnosing a standalone registration as a duplicate, confirm the OMC plugin is enabled for this context');
-      expect(raw).toContain('the resolved active plugin root has `hooks/hooks.json` declaring a hook for the same event');
+      expect(raw).toContain('Before diagnosing a standalone registration as a duplicate, resolve plugin enablement with the runtime\'s precedence');
+      expect(raw).toContain('resolve plugin enablement with the runtime\'s precedence: `./.claude/settings.local.json` first, then `./.claude/settings.json`, then `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json`');
+      expect(raw).toContain('Within each scope, `enabledPlugins` is canonical, and legacy `plugins` is consulted only if `enabledPlugins` does not mention that plugin');
+      expect(raw).toContain('a canonical `false` overrides a stale legacy `true`, and a higher-precedence `false` overrides any lower-precedence `true`');
+      expect(raw).toContain('If a relevant file is unreadable or malformed, or no effective enabled result can be established, treat plugin activity as inconclusive and do not auto-remove');
+      expect(raw).toContain('An active `CLAUDE_PLUGIN_ROOT` can locate the plugin root but does not override a false or inconclusive settings result');
+      expect(raw).toContain('| Legacy Hooks (settings.json) | OK/WARN/CRITICAL | ... |');
+      expect(raw).toContain('The resolved active plugin root must have `hooks/hooks.json` declaring a hook for the same event');
       expect(raw).toContain('A cached plugin version is insufficient');
       expect(raw).toContain('compare its bytes or SHA-256 with the shipped OMC payload for that exact filename');
       expect(raw).toContain('A matching name or path alone does not prove ownership');
