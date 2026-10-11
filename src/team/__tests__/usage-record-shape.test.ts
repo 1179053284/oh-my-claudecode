@@ -105,6 +105,22 @@ describe('usage JSONL record recovery', () => {
     expect(report.workers[0].totalPromptChars).toBe(11);
     expect(report.workers[0].totalResponseChars).toBe(20);
   });
+  it('retains fractional increments after a rounded subtotal', () => {
+    recordTaskUsage(root, 'fractional-after-rounding', { ...valid, wallClockMs: 300000.01 });
+    recordTaskUsage(root, 'fractional-after-rounding', {
+      ...valid, taskId: 'task-2', wallClockMs: 200000.00000000003,
+    });
+    recordTaskUsage(root, 'fractional-after-rounding', {
+      ...valid, taskId: 'task-3', wallClockMs: 11.240611, promptChars: 5, responseChars: 6,
+    });
+
+    const report = generateUsageReport(root, 'fractional-after-rounding');
+    expect(report.taskCount).toBe(3);
+    expect(report.totalWallClockMs).toBe(500011.25061100005);
+    expect(report.workers[0].totalWallClockMs).toBe(500011.25061100005);
+    expect(report.workers[0].totalPromptChars).toBe(11);
+    expect(report.workers[0].totalResponseChars).toBe(20);
+  });
   it('skips finite but unsafe counters and overflow-prone durations without poisoning valid siblings', () => {
     recordTaskUsage(root, 'large', valid);
     const log = join(getOmcRoot(root), 'logs', 'team-usage-large.jsonl');

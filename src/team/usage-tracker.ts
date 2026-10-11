@@ -114,8 +114,8 @@ interface ExactDecimal {
 
 const ZERO_DURATION: ExactDecimal = { coefficient: 0n, scale: 0 };
 const MAX_SAFE_DURATION: ExactDecimal = { coefficient: BigInt(Number.MAX_SAFE_INTEGER), scale: 0 };
-// Public report fields are Numbers; reject projections that distort either addend by more than 1e-12.
-const DURATION_RELATIVE_TOLERANCE: ExactDecimal = { coefficient: 1n, scale: 12 };
+// Public report fields are Numbers; reject projections that distort either addend by more than 1e-9.
+const DURATION_RELATIVE_TOLERANCE: ExactDecimal = { coefficient: 1n, scale: 9 };
 
 function exactDecimalFromNumber(value: number): ExactDecimal {
   const [mantissa, exponentText] = value.toString().toLowerCase().split('e');
