@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { mkdtempSync, mkdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, parse } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { renderCwd } from '../../hud/elements/cwd.js';
 
 function linkTarget(rendered: string): string {
@@ -14,7 +14,17 @@ function linkTarget(rendered: string): string {
 describe('cwd hyperlink path boundary', () => {
   it('preserves the native filesystem root URL', () => {
     const root = parse(tmpdir()).root;
-    expect(fileURLToPath(linkTarget(renderCwd(root, 'absolute', true)!))).toBe(root);
+    const target = linkTarget(renderCwd(root, 'absolute', true)!);
+    expect(target).toBe(pathToFileURL(root).href);
+    expect(fileURLToPath(target)).toBe(root);
+  });
+
+  it('preserves the canonical URL for a Windows UNC share root', () => {
+    if (process.platform !== 'win32') return;
+    const root = '\\\\server\\share\\';
+    const target = linkTarget(renderCwd(root, 'absolute', true)!);
+    expect(target).toBe(pathToFileURL(root).href);
+    expect(fileURLToPath(target)).toBe(root);
   });
 
   it('round trips an actual directory containing URL delimiters and literal percent signs', () => {

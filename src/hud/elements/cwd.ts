@@ -30,11 +30,15 @@ function pathToFileUrl(absPath: string): string {
     const segments = absPath.replace(/\\/g, '/').split('/');
     return `file:///${segments.map((segment, index) => index === 0 ? segment : encodeURIComponent(segment)).join('/')}`;
   }
+  // Do not add a sentinel to filesystem roots: UNC roots preserve repeated
+  // separators when pathToFileURL converts them.
+  const normalized = resolve(absPath);
+  if (normalized.endsWith(sep)) return pathToFileURL(normalized).href;
+
   // A trailing directory separator keeps WHATWG URL trimming from dropping
   // valid trailing control bytes in POSIX names; remove only the added slash.
-  const normalized = resolve(absPath);
   const url = pathToFileURL(`${normalized}${sep}`).href;
-  return normalized.endsWith(sep) ? url : url.slice(0, -1);
+  return url.slice(0, -1);
 }
 
 /**
