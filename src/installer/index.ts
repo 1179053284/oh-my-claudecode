@@ -16,11 +16,11 @@ import { homedir } from 'os';
 import { execSync } from 'child_process';
 import {
   isWindows,
-  MIN_NODE_VERSION,
   getHooksSettingsConfig,
 } from './hooks.js';
 import { getRuntimePackageVersion } from '../lib/version.js';
 import { getClaudeConfigDir } from '../utils/config-dir.js';
+import { MIN_NODE_VERSION } from '../utils/node-version.js';
 import { resolveNodeBinary } from '../utils/resolve-node.js';
 import { parseFrontmatter } from '../utils/frontmatter.js';
 import { isSkininthegamebrosUser } from '../utils/skininthegamebros-user.js';
@@ -945,9 +945,12 @@ export const isStateFileLockingSupported = canonical.isStateFileLockingSupported
 export const isExclusiveStateLockingAvailable = canonical.isExclusiveStateLockingAvailable;
 export const getStateFileLockDiagnostic = canonical.getStateFileLockDiagnostic;
 export const getStateFileLockFailureMessage = canonical.getStateFileLockFailureMessage;
+export const getStateFileLockFailureKind = canonical.getStateFileLockFailureKind;
 export const acquireStateFileLockSync = canonical.acquireStateFileLockSync;
+export const acquireStateFileLockAtPathSync = canonical.acquireStateFileLockAtPathSync;
 export const releaseStateFileLockSync = canonical.releaseStateFileLockSync;
 export const withStateFileLockSync = canonical.withStateFileLockSync;
+export const withStateFileLockAtPathSync = canonical.withStateFileLockAtPathSync;
 export const acquireRecoveryClaim = canonical.acquireRecoveryClaim;
 export const readRecoveryClaim = canonical.readRecoveryClaim;
 export const releaseRecoveryClaim = canonical.releaseRecoveryClaim;

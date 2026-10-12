@@ -248,8 +248,8 @@ function sanitizeForKeywordDetection(text) {
   return stripPastedCommandPayloads(text)
     // 0. Strip HTML/markdown comments before tag stripping
     .replace(/<!--[\s\S]*?-->/g, '')
-    // 1. Strip XML-style tag blocks: <tag-name ...>...</tag-name> (multi-line, greedy on tag name)
-    .replace(/<(\w[\w-]*)[\s>][\s\S]*?<\/\1>/g, '')
+    // 1. Strip XML-style tag blocks; closing-tag attributes stay on one line and stop at adjacent tags.
+    .replace(/<(\w[\w-]*)[\s>][\s\S]*?<\/\1(?:[ \t][^<>\r\n]*)?>/g, '')
     // 2. Strip self-closing XML tags: <tag-name />, <tag-name attr="val" />
     .replace(/<\w[\w-]*(?:\s[^>]*)?\s*\/>/g, '')
     // 3. Strip URLs: http://... or https://... up to whitespace
@@ -478,6 +478,9 @@ const SYSTEM_ECHO_SIGNATURES = [
 ];
 
 const MAX_STATE_PROMPT_LEN = 500;
+// Must match PASTED_ECHO_PROMPT_SENTINEL in persistent-mode.mjs/.cjs and
+// src/hooks/autopilot/enforcement.ts, which treat it as an orphan marker.
+const PASTED_ECHO_PROMPT_SENTINEL = '(prompt omitted: pasted system echo)';
 
 function stripSystemEchoes(text) {
   if (typeof text !== 'string' || text.length === 0) return '';
@@ -528,7 +531,7 @@ function sanitizePromptForState(prompt) {
   }
 
   if (looksLikeSystemEcho(trimmed)) {
-    return '(prompt omitted: pasted system echo)';
+    return PASTED_ECHO_PROMPT_SENTINEL;
   }
 
   // Fallback (stripping left nothing but original isn't recognizably an echo)
@@ -1464,7 +1467,9 @@ function stripComments(content) {
     if (content[i] === '/' && content[i + 1] === '*') {
       i += 2;
       while (i < content.length && !(content[i] === '*' && content[i + 1] === '/')) i++;
+      if (i >= content.length) throw new SyntaxError('Unterminated JSONC block comment');
       i += 2;
+      result += ' ';
       continue;
     }
     if (content[i] === '"') {
@@ -2061,7 +2066,13 @@ async function main() {
     }
 
     // Activate states for modes that need them (team removed — explicit-only via /team skill)
-    const stateModes = resolved.filter(m => ['ralph', 'ultragoal', 'autopilot', 'ralplan'].includes(m.name));
+    // A prompt that sanitizes to the pasted-echo sentinel has no recoverable
+    // user request, so a state armed from it can never be attributed or
+    // confirmed and would block every Stop after the confirmation TTL (#4250).
+    const isPastedEchoPrompt = sanitizePromptForState(prompt) === PASTED_ECHO_PROMPT_SENTINEL;
+    const stateModes = isPastedEchoPrompt
+      ? []
+      : resolved.filter(m => ['ralph', 'ultragoal', 'autopilot', 'ralplan'].includes(m.name));
     for (const mode of stateModes) {
       const activationError = await activateState(directory, prompt, mode.name, sessionId);
       if (activationError === 'workflow_descriptor_integrity_failed') {

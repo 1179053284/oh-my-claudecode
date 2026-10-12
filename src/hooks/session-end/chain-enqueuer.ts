@@ -27,6 +27,8 @@ export interface ChainLedger {
   gateFacts?: GateFacts;
   /** Per-stage link counts carried forward; guards against route-table self-loops. */
   visits?: Record<string, number>;
+  /** User setting-source choice captured by the originating factory link. */
+  includeUserSettings?: boolean;
   /** Cap on visits to any one stage before the chain halts. Default 2. */
   maxStageVisits?: number;
 }
@@ -198,7 +200,7 @@ export function planChainEnqueue(directory: string, sessionId: string, reason: s
       return null;
     }
     try {
-      const chain: SpawnNextChain = { outcome, reason, routeTable, sessionId, intentId, tracker: ledger.tracker, visits };
+      const chain: SpawnNextChain = { outcome, reason, routeTable, sessionId, intentId, tracker: ledger.tracker, visits, includeUserSettings: ledger.includeUserSettings === true };
       validateChainFields(chain);
       // ponytail: the serial window closes here, before the worker actually
       // spawns the next link; v1 accepts the small race, same as the listener.

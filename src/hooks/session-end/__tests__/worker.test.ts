@@ -44,7 +44,7 @@ vi.mock('../spawn-next.js', async (importOriginal) => {
 
 import { isManifestTerminal, mutateSessionEndJob, prepareCoreManifest, readSessionEndJob, sealCoreManifest, sealWikiManifest, takeSessionEndDiscoveryPage } from '../cleanup-manifest.js';
 import { processSessionEndWorker, reconcileSessionEndJobs, workerEnvironment } from '../worker.js';
-import { executeSpawnNext } from '../spawn-next.js';
+import { AFK_INCLUDE_USER_SETTINGS_ENV, executeSpawnNext } from '../spawn-next.js';
 
 const directories: string[] = [];
 let previousHome: string | undefined;
@@ -226,6 +226,7 @@ describe('SessionEnd durable worker', () => {
 
   it('producer-absent self-heal: enqueued chain advances via executeSpawnNext after grace', async () => {
     vi.useFakeTimers();
+    vi.stubEnv(AFK_INCLUDE_USER_SETTINGS_ENV, '0');
     // mockResolvedValue in earlier tests replaces the executing hoisted mock;
     // restore the behavior that runs executeSessionEndAction's callback.
     actionRunner.runSessionEndAction.mockImplementation(async (_context: unknown, execute: () => Promise<void>) => {
@@ -234,7 +235,7 @@ describe('SessionEnd durable worker', () => {
     });
     const directory = project();
     const sessionId = 'selfheal-chain-advance';
-    const chain = { outcome: 'success', reason: 'prompt_input_exit', routeTable: { 'success:*': { stage: 'launch', skill: 'launch' } }, sessionId, intentId: 'i-selfheal' };
+    const chain = { outcome: 'success', reason: 'prompt_input_exit', routeTable: { 'success:*': { stage: 'launch', skill: 'launch' } }, sessionId, intentId: 'i-selfheal', includeUserSettings: true };
     expect(prepareCoreManifest(directory, sessionId, { chain })).not.toBeNull();
     const initial = readSessionEndJob(directory, sessionId)!;
     // Simulate the standalone hook flow: core sealed by foreground, foreground
@@ -341,8 +342,10 @@ describe('SessionEnd durable worker', () => {
     // Model provider auth must reach worker-spawned sessions, or they exit "Not logged in"
     vi.stubEnv('ANTHROPIC_AUTH_TOKEN', 'test-token');
     vi.stubEnv('ANTHROPIC_BASE_URL', 'https://example.invalid');
+    vi.stubEnv(AFK_INCLUDE_USER_SETTINGS_ENV, '1');
     expect(workerEnvironment()).toHaveProperty('ANTHROPIC_AUTH_TOKEN', 'test-token');
     expect(workerEnvironment()).toHaveProperty('ANTHROPIC_BASE_URL', 'https://example.invalid');
+    expect(workerEnvironment()).not.toHaveProperty(AFK_INCLUDE_USER_SETTINGS_ENV);
     
     // On POSIX, APPDATA/LOCALAPPDATA should not be forwarded
     if (process.platform !== 'win32') {

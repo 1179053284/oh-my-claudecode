@@ -5,43 +5,43 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "e03a816425db86b583e60336f610d163ec3452cb",
-    "sourceSha256": "0cc28aced124981680c795d10ef4dc0538ac6084a141d0648364a86c950e7348",
+    "head": "c67ecf94d50a80d578f11b23a3e212c456359639",
+    "sourceSha256": "8fd0c7a92f8012fe854a7de72da5a1a7ac5b091b837d72c1a0f0bcffe99d73fa",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "e03a816425db86b583e60336f610d163ec3452cb",
-  "sourceSha256": "0cc28aced124981680c795d10ef4dc0538ac6084a141d0648364a86c950e7348",
+  "head": "c67ecf94d50a80d578f11b23a3e212c456359639",
+  "sourceSha256": "8fd0c7a92f8012fe854a7de72da5a1a7ac5b091b837d72c1a0f0bcffe99d73fa",
   "counts": {
     "public": {
-      "skills": 47,
+      "skills": 48,
       "commands": 21,
       "workflows": 8,
       "agents": 20,
-      "total": 96
+      "total": 97
     },
     "internal": {
-      "hookFiles": 336,
-      "featureFiles": 84,
-      "toolFiles": 61,
-      "libFiles": 47,
+      "hookFiles": 339,
+      "featureFiles": 85,
+      "toolFiles": 63,
+      "libFiles": 48,
       "templateHooks": 23,
-      "srcFiles": 1438,
-      "total": 1461
+      "srcFiles": 1465,
+      "total": 1488
     },
     "generated": {
-      "distFiles": 5611,
+      "distFiles": 5621,
       "bridgeFiles": 9,
-      "total": 5620
+      "total": 5630
     },
     "prompt": {
       "promptLikeFiles": 61
     },
-    "skills": 47,
+    "skills": 48,
     "commands": 21,
-    "hookFiles": 336,
+    "hookFiles": 339,
     "workflows": 8,
     "agentDefinitions": 18,
     "promptLikeFiles": 61
@@ -86,6 +86,7 @@
       "research",
       "review",
       "self-improve",
+      "session-flow",
       "skill",
       "skillify",
       "tdd",
@@ -311,6 +312,7 @@
       "src/hooks/persistent-mode/__tests__/jev-loop-continuation-shadow.test.ts",
       "src/hooks/persistent-mode/__tests__/oversize-tool-result-redirect.test.ts",
       "src/hooks/persistent-mode/__tests__/prompt-truncation.test.ts",
+      "src/hooks/persistent-mode/__tests__/ralph-hard-max-script.test.ts",
       "src/hooks/persistent-mode/__tests__/ralph-hard-max.test.ts",
       "src/hooks/persistent-mode/__tests__/ralph-max-iteration.test.ts",
       "src/hooks/persistent-mode/__tests__/ralph-session-mismatch.test.ts",
@@ -415,6 +417,7 @@
       "src/hooks/session-end/__tests__/spawn-next.test.ts",
       "src/hooks/session-end/__tests__/subdirectory-cwd.test.ts",
       "src/hooks/session-end/__tests__/team-cleanup.test.ts",
+      "src/hooks/session-end/__tests__/wiki-foreground-bootstrap.test.ts",
       "src/hooks/session-end/__tests__/worker.test.ts",
       "src/hooks/session-end/action-runner.ts",
       "src/hooks/session-end/action-watchdog.ts",
@@ -427,6 +430,7 @@
       "src/hooks/session-end/index.ts",
       "src/hooks/session-end/routing.ts",
       "src/hooks/session-end/spawn-next.ts",
+      "src/hooks/session-end/wiki-foreground-bootstrap.ts",
       "src/hooks/session-end/worker.ts",
       "src/hooks/setup/README.md",
       "src/hooks/setup/__tests__/prune.test.ts",
@@ -558,6 +562,7 @@
       "src/features/notepad-wisdom/extractor.ts",
       "src/features/notepad-wisdom/index.ts",
       "src/features/notepad-wisdom/types.ts",
+      "src/features/rate-limit-wait/daemon-state.ts",
       "src/features/rate-limit-wait/daemon.ts",
       "src/features/rate-limit-wait/index.ts",
       "src/features/rate-limit-wait/pane-fresh-capture.ts",
@@ -593,6 +598,7 @@
       "src/tools/deepinit-manifest.ts",
       "src/tools/diagnostics/AGENTS.md",
       "src/tools/diagnostics/__tests__/lsp-aggregator.test.ts",
+      "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
       "src/tools/diagnostics/index.ts",
       "src/tools/diagnostics/lsp-aggregator.ts",
       "src/tools/diagnostics/tsc-runner.ts",
@@ -609,6 +615,7 @@
       "src/tools/lsp/__tests__/client-timeout-env.test.ts",
       "src/tools/lsp/__tests__/client-win32-spawn.test.ts",
       "src/tools/lsp/__tests__/devcontainer.test.ts",
+      "src/tools/lsp/__tests__/utils-file-uri.test.ts",
       "src/tools/lsp/client.ts",
       "src/tools/lsp/devcontainer.ts",
       "src/tools/lsp/index.ts",
@@ -659,6 +666,7 @@
       "src/lib/__tests__/worktree-paths-git-probe-failclosed.test.ts",
       "src/lib/__tests__/worktree-paths-git-probe-locale.test.ts",
       "src/lib/__tests__/worktree-paths-git-timeout.test.ts",
+      "src/lib/__tests__/worktree-paths-issue-4254-win32.test.ts",
       "src/lib/__tests__/worktree-paths-nongit-anchor.test.ts",
       "src/lib/__tests__/worktree-paths-split-warning.test.ts",
       "src/lib/__tests__/worktree-paths-superproject-cache.test.ts",
@@ -2828,6 +2836,8 @@
       "dist/features/notepad-wisdom/types.d.ts.map",
       "dist/features/notepad-wisdom/types.js",
       "dist/features/notepad-wisdom/types.js.map",
+      "dist/features/rate-limit-wait/daemon-state.d.ts",
+      "dist/features/rate-limit-wait/daemon-state.js",
       "dist/features/rate-limit-wait/daemon.d.ts",
       "dist/features/rate-limit-wait/daemon.d.ts.map",
       "dist/features/rate-limit-wait/daemon.js",
@@ -4148,6 +4158,8 @@
       "dist/hooks/session-end/spawn-next.d.ts.map",
       "dist/hooks/session-end/spawn-next.js",
       "dist/hooks/session-end/spawn-next.js.map",
+      "dist/hooks/session-end/wiki-foreground-bootstrap.d.ts",
+      "dist/hooks/session-end/wiki-foreground-bootstrap.js",
       "dist/hooks/session-end/worker.d.ts",
       "dist/hooks/session-end/worker.d.ts.map",
       "dist/hooks/session-end/worker.js",
@@ -4473,6 +4485,8 @@
       "dist/hud/elements/cwd.d.ts.map",
       "dist/hud/elements/cwd.js",
       "dist/hud/elements/cwd.js.map",
+      "dist/hud/elements/effort.d.ts",
+      "dist/hud/elements/effort.js",
       "dist/hud/elements/enterprise-cost.d.ts",
       "dist/hud/elements/enterprise-cost.d.ts.map",
       "dist/hud/elements/enterprise-cost.js",
@@ -6442,6 +6456,8 @@
       "dist/utils/jsonc.d.ts.map",
       "dist/utils/jsonc.js",
       "dist/utils/jsonc.js.map",
+      "dist/utils/node-version.d.ts",
+      "dist/utils/node-version.js",
       "dist/utils/omc-cli-rendering.d.ts",
       "dist/utils/omc-cli-rendering.d.ts.map",
       "dist/utils/omc-cli-rendering.js",
@@ -6450,6 +6466,8 @@
       "dist/utils/paths.d.ts.map",
       "dist/utils/paths.js",
       "dist/utils/paths.js.map",
+      "dist/utils/plugin-cache-validation.d.ts",
+      "dist/utils/plugin-cache-validation.js",
       "dist/utils/resolve-node.d.ts",
       "dist/utils/resolve-node.d.ts.map",
       "dist/utils/resolve-node.js",
@@ -6686,6 +6704,7 @@
       "src/hooks/persistent-mode/__tests__/jev-loop-continuation-shadow.test.ts",
       "src/hooks/persistent-mode/__tests__/oversize-tool-result-redirect.test.ts",
       "src/hooks/persistent-mode/__tests__/prompt-truncation.test.ts",
+      "src/hooks/persistent-mode/__tests__/ralph-hard-max-script.test.ts",
       "src/hooks/persistent-mode/__tests__/ralph-hard-max.test.ts",
       "src/hooks/persistent-mode/__tests__/ralph-max-iteration.test.ts",
       "src/hooks/persistent-mode/__tests__/ralph-session-mismatch.test.ts",
@@ -6790,6 +6809,7 @@
       "src/hooks/session-end/__tests__/spawn-next.test.ts",
       "src/hooks/session-end/__tests__/subdirectory-cwd.test.ts",
       "src/hooks/session-end/__tests__/team-cleanup.test.ts",
+      "src/hooks/session-end/__tests__/wiki-foreground-bootstrap.test.ts",
       "src/hooks/session-end/__tests__/worker.test.ts",
       "src/hooks/session-end/action-runner.ts",
       "src/hooks/session-end/action-watchdog.ts",
@@ -6802,6 +6822,7 @@
       "src/hooks/session-end/index.ts",
       "src/hooks/session-end/routing.ts",
       "src/hooks/session-end/spawn-next.ts",
+      "src/hooks/session-end/wiki-foreground-bootstrap.ts",
       "src/hooks/session-end/worker.ts",
       "src/hooks/setup/README.md",
       "src/hooks/setup/__tests__/prune.test.ts",
@@ -7006,6 +7027,7 @@
       "src/features/notepad-wisdom/extractor.ts",
       "src/features/notepad-wisdom/index.ts",
       "src/features/notepad-wisdom/types.ts",
+      "src/features/rate-limit-wait/daemon-state.ts",
       "src/features/rate-limit-wait/daemon.ts",
       "src/features/rate-limit-wait/index.ts",
       "src/features/rate-limit-wait/pane-fresh-capture.ts",
@@ -7041,6 +7063,7 @@
       "src/tools/deepinit-manifest.ts",
       "src/tools/diagnostics/AGENTS.md",
       "src/tools/diagnostics/__tests__/lsp-aggregator.test.ts",
+      "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
       "src/tools/diagnostics/index.ts",
       "src/tools/diagnostics/lsp-aggregator.ts",
       "src/tools/diagnostics/tsc-runner.ts",
@@ -7057,6 +7080,7 @@
       "src/tools/lsp/__tests__/client-timeout-env.test.ts",
       "src/tools/lsp/__tests__/client-win32-spawn.test.ts",
       "src/tools/lsp/__tests__/devcontainer.test.ts",
+      "src/tools/lsp/__tests__/utils-file-uri.test.ts",
       "src/tools/lsp/client.ts",
       "src/tools/lsp/devcontainer.ts",
       "src/tools/lsp/index.ts",
@@ -7880,6 +7904,11 @@
         "id": "bridge/team.js",
         "kind": "generated-bridge",
         "path": "bridge/team.js"
+      },
+      {
+        "id": "bun.lock",
+        "kind": "other",
+        "path": "bun.lock"
       },
       {
         "id": "commands/ask.md",
@@ -17622,6 +17651,16 @@
         "path": "dist/features/notepad-wisdom/types.js.map"
       },
       {
+        "id": "dist/features/rate-limit-wait/daemon-state.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/features/rate-limit-wait/daemon-state.d.ts"
+      },
+      {
+        "id": "dist/features/rate-limit-wait/daemon-state.js",
+        "kind": "generated-dist",
+        "path": "dist/features/rate-limit-wait/daemon-state.js"
+      },
+      {
         "id": "dist/features/rate-limit-wait/daemon.d.ts",
         "kind": "generated-dist",
         "path": "dist/features/rate-limit-wait/daemon.d.ts"
@@ -24222,6 +24261,16 @@
         "path": "dist/hooks/session-end/spawn-next.js.map"
       },
       {
+        "id": "dist/hooks/session-end/wiki-foreground-bootstrap.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/hooks/session-end/wiki-foreground-bootstrap.d.ts"
+      },
+      {
+        "id": "dist/hooks/session-end/wiki-foreground-bootstrap.js",
+        "kind": "generated-dist",
+        "path": "dist/hooks/session-end/wiki-foreground-bootstrap.js"
+      },
+      {
         "id": "dist/hooks/session-end/worker.d.ts",
         "kind": "generated-dist",
         "path": "dist/hooks/session-end/worker.d.ts"
@@ -25845,6 +25894,16 @@
         "id": "dist/hud/elements/cwd.js.map",
         "kind": "generated-dist",
         "path": "dist/hud/elements/cwd.js.map"
+      },
+      {
+        "id": "dist/hud/elements/effort.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/hud/elements/effort.d.ts"
+      },
+      {
+        "id": "dist/hud/elements/effort.js",
+        "kind": "generated-dist",
+        "path": "dist/hud/elements/effort.js"
       },
       {
         "id": "dist/hud/elements/enterprise-cost.d.ts",
@@ -35692,6 +35751,16 @@
         "path": "dist/utils/jsonc.js.map"
       },
       {
+        "id": "dist/utils/node-version.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/utils/node-version.d.ts"
+      },
+      {
+        "id": "dist/utils/node-version.js",
+        "kind": "generated-dist",
+        "path": "dist/utils/node-version.js"
+      },
+      {
         "id": "dist/utils/omc-cli-rendering.d.ts",
         "kind": "generated-dist",
         "path": "dist/utils/omc-cli-rendering.d.ts"
@@ -35730,6 +35799,16 @@
         "id": "dist/utils/paths.js.map",
         "kind": "generated-dist",
         "path": "dist/utils/paths.js.map"
+      },
+      {
+        "id": "dist/utils/plugin-cache-validation.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/utils/plugin-cache-validation.d.ts"
+      },
+      {
+        "id": "dist/utils/plugin-cache-validation.js",
+        "kind": "generated-dist",
+        "path": "dist/utils/plugin-cache-validation.js"
       },
       {
         "id": "dist/utils/resolve-node.d.ts",
@@ -36582,6 +36661,11 @@
         "path": "node:stream"
       },
       {
+        "id": "external:node:string_decoder",
+        "kind": "external",
+        "path": "node:string_decoder"
+      },
+      {
         "id": "external:node:url",
         "kind": "external",
         "path": "node:url"
@@ -36590,6 +36674,11 @@
         "id": "external:node:util",
         "kind": "external",
         "path": "node:util"
+      },
+      {
+        "id": "external:node:vm",
+        "kind": "external",
+        "path": "node:vm"
       },
       {
         "id": "external:node:worker_threads",
@@ -37692,6 +37781,11 @@
         "path": "skills/omc-doctor/SKILL.md"
       },
       {
+        "id": "skills/omc-doctor/node-hook-fingerprints.json",
+        "kind": "other",
+        "path": "skills/omc-doctor/node-hook-fingerprints.json"
+      },
+      {
         "id": "skills/omc-setup/SKILL.md",
         "kind": "skill",
         "path": "skills/omc-setup/SKILL.md"
@@ -37925,6 +38019,11 @@
         "id": "skills/self-improve/templates/settings.json",
         "kind": "other",
         "path": "skills/self-improve/templates/settings.json"
+      },
+      {
+        "id": "skills/session-flow/SKILL.md",
+        "kind": "skill",
+        "path": "skills/session-flow/SKILL.md"
       },
       {
         "id": "skills/skill/SKILL.md",
@@ -38352,6 +38451,11 @@
         "path": "src/__tests__/hud/background-cleanup.test.ts"
       },
       {
+        "id": "src/__tests__/hud/background-history-cap.test.ts",
+        "kind": "src",
+        "path": "src/__tests__/hud/background-history-cap.test.ts"
+      },
+      {
         "id": "src/__tests__/hud/background-tasks.test.ts",
         "kind": "src",
         "path": "src/__tests__/hud/background-tasks.test.ts"
@@ -38382,6 +38486,11 @@
         "path": "src/__tests__/hud/custom-rate-provider.test.ts"
       },
       {
+        "id": "src/__tests__/hud/cwd-hyperlink-boundary.test.ts",
+        "kind": "src",
+        "path": "src/__tests__/hud/cwd-hyperlink-boundary.test.ts"
+      },
+      {
         "id": "src/__tests__/hud/cwd.test.ts",
         "kind": "src",
         "path": "src/__tests__/hud/cwd.test.ts"
@@ -38390,6 +38499,11 @@
         "id": "src/__tests__/hud/defaults.test.ts",
         "kind": "src",
         "path": "src/__tests__/hud/defaults.test.ts"
+      },
+      {
+        "id": "src/__tests__/hud/effort.test.ts",
+        "kind": "src",
+        "path": "src/__tests__/hud/effort.test.ts"
       },
       {
         "id": "src/__tests__/hud/extra-usage.test.ts",
@@ -38520,6 +38634,11 @@
         "id": "src/__tests__/hud/transcript-agent-lifecycle.test.ts",
         "kind": "src",
         "path": "src/__tests__/hud/transcript-agent-lifecycle.test.ts"
+      },
+      {
+        "id": "src/__tests__/hud/transcript-task-tools.test.ts",
+        "kind": "src",
+        "path": "src/__tests__/hud/transcript-task-tools.test.ts"
       },
       {
         "id": "src/__tests__/hud/update-hint.test.ts",
@@ -38977,6 +39096,21 @@
         "path": "src/__tests__/psm-tmux-naming.test.ts"
       },
       {
+        "id": "src/__tests__/purge-stale-cache-relink.test.ts",
+        "kind": "src",
+        "path": "src/__tests__/purge-stale-cache-relink.test.ts"
+      },
+      {
+        "id": "src/__tests__/purge-stale-cache-symlink.integration.test.ts",
+        "kind": "src",
+        "path": "src/__tests__/purge-stale-cache-symlink.integration.test.ts"
+      },
+      {
+        "id": "src/__tests__/purge-stale-cache-validation.test.ts",
+        "kind": "src",
+        "path": "src/__tests__/purge-stale-cache-validation.test.ts"
+      },
+      {
         "id": "src/__tests__/purge-stale-cache.integration.test.ts",
         "kind": "src",
         "path": "src/__tests__/purge-stale-cache.integration.test.ts"
@@ -39035,6 +39169,11 @@
         "id": "src/__tests__/rate-limit-wait/pane-fresh-capture.test.ts",
         "kind": "src",
         "path": "src/__tests__/rate-limit-wait/pane-fresh-capture.test.ts"
+      },
+      {
+        "id": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
+        "kind": "src",
+        "path": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts"
       },
       {
         "id": "src/__tests__/rate-limit-wait/rate-limit-monitor.test.ts",
@@ -39757,6 +39896,11 @@
         "path": "src/cli/__tests__/session-search-help.test.ts"
       },
       {
+        "id": "src/cli/__tests__/session-search-terminal.test.ts",
+        "kind": "src",
+        "path": "src/cli/__tests__/session-search-terminal.test.ts"
+      },
+      {
         "id": "src/cli/__tests__/session-search.test.ts",
         "kind": "src",
         "path": "src/cli/__tests__/session-search.test.ts"
@@ -39895,6 +40039,11 @@
         "id": "src/cli/commands/__tests__/ultragoal.test.ts",
         "kind": "src",
         "path": "src/cli/commands/__tests__/ultragoal.test.ts"
+      },
+      {
+        "id": "src/cli/commands/__tests__/wait.test.ts",
+        "kind": "src",
+        "path": "src/cli/commands/__tests__/wait.test.ts"
       },
       {
         "id": "src/cli/commands/alias-retirement.ts",
@@ -40475,6 +40624,11 @@
         "id": "src/features/notepad-wisdom/types.ts",
         "kind": "feature",
         "path": "src/features/notepad-wisdom/types.ts"
+      },
+      {
+        "id": "src/features/rate-limit-wait/daemon-state.ts",
+        "kind": "feature",
+        "path": "src/features/rate-limit-wait/daemon-state.ts"
       },
       {
         "id": "src/features/rate-limit-wait/daemon.ts",
@@ -41572,6 +41726,11 @@
         "path": "src/hooks/persistent-mode/__tests__/prompt-truncation.test.ts"
       },
       {
+        "id": "src/hooks/persistent-mode/__tests__/ralph-hard-max-script.test.ts",
+        "kind": "hook",
+        "path": "src/hooks/persistent-mode/__tests__/ralph-hard-max-script.test.ts"
+      },
+      {
         "id": "src/hooks/persistent-mode/__tests__/ralph-hard-max.test.ts",
         "kind": "hook",
         "path": "src/hooks/persistent-mode/__tests__/ralph-hard-max.test.ts"
@@ -42092,6 +42251,11 @@
         "path": "src/hooks/session-end/__tests__/team-cleanup.test.ts"
       },
       {
+        "id": "src/hooks/session-end/__tests__/wiki-foreground-bootstrap.test.ts",
+        "kind": "hook",
+        "path": "src/hooks/session-end/__tests__/wiki-foreground-bootstrap.test.ts"
+      },
+      {
         "id": "src/hooks/session-end/__tests__/worker.test.ts",
         "kind": "hook",
         "path": "src/hooks/session-end/__tests__/worker.test.ts"
@@ -42150,6 +42314,11 @@
         "id": "src/hooks/session-end/spawn-next.ts",
         "kind": "hook",
         "path": "src/hooks/session-end/spawn-next.ts"
+      },
+      {
+        "id": "src/hooks/session-end/wiki-foreground-bootstrap.ts",
+        "kind": "hook",
+        "path": "src/hooks/session-end/wiki-foreground-bootstrap.ts"
       },
       {
         "id": "src/hooks/session-end/worker.ts",
@@ -42472,6 +42641,11 @@
         "path": "src/hud/__tests__/autopilot-profile.test.ts"
       },
       {
+        "id": "src/hud/__tests__/custom-provider-cache-identity.test.ts",
+        "kind": "src",
+        "path": "src/hud/__tests__/custom-provider-cache-identity.test.ts"
+      },
+      {
         "id": "src/hud/__tests__/custom-rate-provider.test.ts",
         "kind": "src",
         "path": "src/hud/__tests__/custom-rate-provider.test.ts"
@@ -42560,6 +42734,11 @@
         "id": "src/hud/elements/cwd.ts",
         "kind": "src",
         "path": "src/hud/elements/cwd.ts"
+      },
+      {
+        "id": "src/hud/elements/effort.ts",
+        "kind": "src",
+        "path": "src/hud/elements/effort.ts"
       },
       {
         "id": "src/hud/elements/enterprise-cost.ts",
@@ -43022,6 +43201,11 @@
         "path": "src/lib/__tests__/worktree-paths-git-timeout.test.ts"
       },
       {
+        "id": "src/lib/__tests__/worktree-paths-issue-4254-win32.test.ts",
+        "kind": "lib",
+        "path": "src/lib/__tests__/worktree-paths-issue-4254-win32.test.ts"
+      },
+      {
         "id": "src/lib/__tests__/worktree-paths-nongit-anchor.test.ts",
         "kind": "lib",
         "path": "src/lib/__tests__/worktree-paths-nongit-anchor.test.ts"
@@ -43277,9 +43461,19 @@
         "path": "src/notifications/__tests__/config.test.ts"
       },
       {
+        "id": "src/notifications/__tests__/custom-config-shapes.test.ts",
+        "kind": "src",
+        "path": "src/notifications/__tests__/custom-config-shapes.test.ts"
+      },
+      {
         "id": "src/notifications/__tests__/custom-integration.test.ts",
         "kind": "src",
         "path": "src/notifications/__tests__/custom-integration.test.ts"
+      },
+      {
+        "id": "src/notifications/__tests__/custom-webhook-body.test.ts",
+        "kind": "src",
+        "path": "src/notifications/__tests__/custom-webhook-body.test.ts"
       },
       {
         "id": "src/notifications/__tests__/dispatcher.test.ts",
@@ -43330,6 +43524,11 @@
         "id": "src/notifications/__tests__/reply-listener.test.ts",
         "kind": "src",
         "path": "src/notifications/__tests__/reply-listener.test.ts"
+      },
+      {
+        "id": "src/notifications/__tests__/session-registry-durability.test.ts",
+        "kind": "src",
+        "path": "src/notifications/__tests__/session-registry-durability.test.ts"
       },
       {
         "id": "src/notifications/__tests__/session-registry.test.ts",
@@ -43837,6 +44036,11 @@
         "path": "src/team/__tests__/index.compat-exports.test.ts"
       },
       {
+        "id": "src/team/__tests__/issue-4261-cmux-team-failures.test.ts",
+        "kind": "src",
+        "path": "src/team/__tests__/issue-4261-cmux-team-failures.test.ts"
+      },
+      {
         "id": "src/team/__tests__/leader-inbox.test.ts",
         "kind": "src",
         "path": "src/team/__tests__/leader-inbox.test.ts"
@@ -44247,9 +44451,19 @@
         "path": "src/team/__tests__/unified-team.test.ts"
       },
       {
+        "id": "src/team/__tests__/usage-record-shape.test.ts",
+        "kind": "src",
+        "path": "src/team/__tests__/usage-record-shape.test.ts"
+      },
+      {
         "id": "src/team/__tests__/usage-tracker.test.ts",
         "kind": "src",
         "path": "src/team/__tests__/usage-tracker.test.ts"
+      },
+      {
+        "id": "src/team/__tests__/usage-unicode-counts.test.ts",
+        "kind": "src",
+        "path": "src/team/__tests__/usage-unicode-counts.test.ts"
       },
       {
         "id": "src/team/__tests__/worker-activation-gate.test.ts",
@@ -44762,6 +44976,11 @@
         "path": "src/tools/diagnostics/__tests__/lsp-aggregator.test.ts"
       },
       {
+        "id": "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
+        "kind": "tool",
+        "path": "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts"
+      },
+      {
         "id": "src/tools/diagnostics/index.ts",
         "kind": "tool",
         "path": "src/tools/diagnostics/index.ts"
@@ -44840,6 +45059,11 @@
         "id": "src/tools/lsp/__tests__/devcontainer.test.ts",
         "kind": "tool",
         "path": "src/tools/lsp/__tests__/devcontainer.test.ts"
+      },
+      {
+        "id": "src/tools/lsp/__tests__/utils-file-uri.test.ts",
+        "kind": "tool",
+        "path": "src/tools/lsp/__tests__/utils-file-uri.test.ts"
       },
       {
         "id": "src/tools/lsp/client.ts",
@@ -45072,6 +45296,11 @@
         "path": "src/utils/jsonc.ts"
       },
       {
+        "id": "src/utils/node-version.ts",
+        "kind": "src",
+        "path": "src/utils/node-version.ts"
+      },
+      {
         "id": "src/utils/omc-cli-rendering.ts",
         "kind": "src",
         "path": "src/utils/omc-cli-rendering.ts"
@@ -45080,6 +45309,11 @@
         "id": "src/utils/paths.ts",
         "kind": "src",
         "path": "src/utils/paths.ts"
+      },
+      {
+        "id": "src/utils/plugin-cache-validation.ts",
+        "kind": "src",
+        "path": "src/utils/plugin-cache-validation.ts"
       },
       {
         "id": "src/utils/resolve-node.ts",
@@ -45402,6 +45636,11 @@
         "path": "tests/integration/git-guardrails-hook.test.ts"
       },
       {
+        "id": "tests/integration/issue-4266-jev-temp-cleanup.test.ts",
+        "kind": "other",
+        "path": "tests/integration/issue-4266-jev-temp-cleanup.test.ts"
+      },
+      {
         "id": "tests/integration/jev-active-mode-repro.test.ts",
         "kind": "other",
         "path": "tests/integration/jev-active-mode-repro.test.ts"
@@ -45415,6 +45654,11 @@
         "id": "tests/integration/runs-reconciler.test.ts",
         "kind": "other",
         "path": "tests/integration/runs-reconciler.test.ts"
+      },
+      {
+        "id": "tests/integration/session-flow-skill.test.ts",
+        "kind": "other",
+        "path": "tests/integration/session-flow-skill.test.ts"
       },
       {
         "id": "tests/integration/skill-map-references.test.ts",
@@ -45510,6 +45754,11 @@
         "id": "tests/lint/issue-4156-windows-dev-zero.test.ts",
         "kind": "other",
         "path": "tests/lint/issue-4156-windows-dev-zero.test.ts"
+      },
+      {
+        "id": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts",
+        "kind": "other",
+        "path": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts"
       },
       {
         "id": "tests/lint/session-end-forwarder-no-op.test.ts",
@@ -46601,6 +46850,11 @@
       {
         "from": "scripts/jev-resolve.mjs",
         "to": "external:node:fs/promises",
+        "kind": "imports"
+      },
+      {
+        "from": "scripts/jev-resolve.mjs",
+        "to": "external:node:os",
         "kind": "imports"
       },
       {
@@ -48155,7 +48409,22 @@
       },
       {
         "from": "scripts/wiki-session-end.mjs",
-        "to": "dist/hooks/session-end/index.js",
+        "to": "dist/hooks/session-end/cleanup-manifest.js",
+        "kind": "imports"
+      },
+      {
+        "from": "scripts/wiki-session-end.mjs",
+        "to": "dist/hooks/session-end/worker.js",
+        "kind": "imports"
+      },
+      {
+        "from": "scripts/wiki-session-end.mjs",
+        "to": "dist/hooks/wiki/session-hooks.js",
+        "kind": "imports"
+      },
+      {
+        "from": "scripts/wiki-session-end.mjs",
+        "to": "dist/lib/worktree-paths.js",
         "kind": "imports"
       },
       {
@@ -48412,6 +48681,11 @@
         "from": "skills/self-improve/scripts/resolve-paths.mjs",
         "to": "scripts/lib/state-root.mjs",
         "kind": "imports"
+      },
+      {
+        "from": "skills/session-flow/SKILL.md",
+        "to": "src/features/builtin-skills/skills.ts",
+        "kind": "registers"
       },
       {
         "from": "skills/skill/SKILL.md",
@@ -50109,6 +50383,31 @@
         "kind": "imports"
       },
       {
+        "from": "src/__tests__/hud/background-history-cap.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/background-history-cap.test.ts",
+        "to": "src/hud/background-cleanup.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/background-history-cap.test.ts",
+        "to": "src/hud/background-tasks.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/background-history-cap.test.ts",
+        "to": "src/hud/state.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/background-history-cap.test.ts",
+        "to": "src/hud/types.ts",
+        "kind": "type-imports"
+      },
+      {
         "from": "src/__tests__/hud/background-tasks.test.ts",
         "to": "external:vitest",
         "kind": "imports"
@@ -50210,6 +50509,11 @@
       },
       {
         "from": "src/__tests__/hud/custom-rate-provider.test.ts",
+        "to": "external:node:crypto",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/custom-rate-provider.test.ts",
         "to": "external:vitest",
         "kind": "imports"
       },
@@ -50222,6 +50526,36 @@
         "from": "src/__tests__/hud/custom-rate-provider.test.ts",
         "to": "src/hud/types.ts",
         "kind": "type-imports"
+      },
+      {
+        "from": "src/__tests__/hud/cwd-hyperlink-boundary.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/cwd-hyperlink-boundary.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/cwd-hyperlink-boundary.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/cwd-hyperlink-boundary.test.ts",
+        "to": "external:node:url",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/cwd-hyperlink-boundary.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/cwd-hyperlink-boundary.test.ts",
+        "to": "src/hud/elements/cwd.ts",
+        "kind": "imports"
       },
       {
         "from": "src/__tests__/hud/cwd.test.ts",
@@ -50246,6 +50580,26 @@
       {
         "from": "src/__tests__/hud/defaults.test.ts",
         "to": "src/hud/types.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/effort.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/effort.test.ts",
+        "to": "src/hud/colors.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/effort.test.ts",
+        "to": "src/hud/elements/effort.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/effort.test.ts",
+        "to": "src/hud/stdin.ts",
         "kind": "imports"
       },
       {
@@ -50820,6 +51174,36 @@
       },
       {
         "from": "src/__tests__/hud/transcript-agent-lifecycle.test.ts",
+        "to": "src/hud/transcript.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/transcript-task-tools.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/transcript-task-tools.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/transcript-task-tools.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/transcript-task-tools.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/transcript-task-tools.test.ts",
+        "to": "src/hud/elements/todos.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/hud/transcript-task-tools.test.ts",
         "to": "src/hud/transcript.ts",
         "kind": "imports"
       },
@@ -51486,6 +51870,11 @@
       {
         "from": "src/__tests__/keyword-detector-echo-guard.test.ts",
         "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/keyword-detector-echo-guard.test.ts",
+        "to": "src/hooks/autopilot/enforcement.ts",
         "kind": "imports"
       },
       {
@@ -52455,12 +52844,22 @@
       },
       {
         "from": "src/__tests__/post-tool-use-failure.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/post-tool-use-failure.test.ts",
         "to": "external:node:path",
         "kind": "imports"
       },
       {
         "from": "src/__tests__/post-tool-use-failure.test.ts",
         "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/post-tool-use-failure.test.ts",
+        "to": "src/installer/index.ts",
         "kind": "imports"
       },
       {
@@ -52785,6 +53184,26 @@
       },
       {
         "from": "src/__tests__/providers/detection.test.ts",
+        "to": "external:node:child_process",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/providers/detection.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/providers/detection.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/providers/detection.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/providers/detection.test.ts",
         "to": "external:vitest",
         "kind": "imports"
       },
@@ -52876,6 +53295,81 @@
       {
         "from": "src/__tests__/psm-tmux-naming.test.ts",
         "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-relink.test.ts",
+        "to": "external:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-relink.test.ts",
+        "to": "external:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-relink.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-relink.test.ts",
+        "to": "src/utils/paths.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-symlink.integration.test.ts",
+        "to": "external:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-symlink.integration.test.ts",
+        "to": "external:net",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-symlink.integration.test.ts",
+        "to": "external:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-symlink.integration.test.ts",
+        "to": "external:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-symlink.integration.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-symlink.integration.test.ts",
+        "to": "src/utils/paths.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-validation.test.ts",
+        "to": "external:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-validation.test.ts",
+        "to": "external:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-validation.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-validation.test.ts",
+        "to": "src/utils/paths.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/purge-stale-cache-validation.test.ts",
+        "to": "src/utils/plugin-cache-validation.ts",
         "kind": "imports"
       },
       {
@@ -53120,6 +53614,11 @@
       },
       {
         "from": "src/__tests__/rate-limit-wait/daemon-bootstrap.test.ts",
+        "to": "src/features/rate-limit-wait/daemon-state.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/daemon-bootstrap.test.ts",
         "to": "src/features/rate-limit-wait/daemon.ts",
         "kind": "imports"
       },
@@ -53195,6 +53694,11 @@
       },
       {
         "from": "src/__tests__/rate-limit-wait/daemon.test.ts",
+        "to": "src/features/rate-limit-wait/daemon-state.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/daemon.test.ts",
         "to": "src/features/rate-limit-wait/daemon.ts",
         "kind": "imports"
       },
@@ -53262,6 +53766,41 @@
         "from": "src/__tests__/rate-limit-wait/pane-fresh-capture.test.ts",
         "to": "src/features/rate-limit-wait/pane-fresh-capture.ts",
         "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
+        "to": "src/features/rate-limit-wait/daemon-state.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
+        "to": "src/features/rate-limit-wait/daemon.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/rate-limit-wait/quota-confirmation.test.ts",
+        "to": "src/features/rate-limit-wait/types.ts",
+        "kind": "type-imports"
       },
       {
         "from": "src/__tests__/rate-limit-wait/rate-limit-monitor.test.ts",
@@ -53526,6 +54065,11 @@
       {
         "from": "src/__tests__/resolve-transcript-path.test.ts",
         "to": "src/utils/encode-project-path.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/resolve-transcript-path.test.ts",
+        "to": "src/utils/plugin-cache-validation.ts",
         "kind": "imports"
       },
       {
@@ -53996,6 +54540,11 @@
       {
         "from": "src/__tests__/session-start-script-context.test.ts",
         "to": "external:node:child_process",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/session-start-script-context.test.ts",
+        "to": "external:node:crypto",
         "kind": "imports"
       },
       {
@@ -56674,6 +57223,41 @@
         "kind": "imports"
       },
       {
+        "from": "src/cli/__tests__/session-search-terminal.test.ts",
+        "to": "external:chalk",
+        "kind": "imports"
+      },
+      {
+        "from": "src/cli/__tests__/session-search-terminal.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/cli/__tests__/session-search-terminal.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/cli/__tests__/session-search-terminal.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/cli/__tests__/session-search-terminal.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/cli/__tests__/session-search-terminal.test.ts",
+        "to": "src/cli/commands/session-search.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/cli/__tests__/session-search-terminal.test.ts",
+        "to": "src/utils/encode-project-path.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/cli/__tests__/session-search.test.ts",
         "to": "external:fs",
         "kind": "imports"
@@ -57381,6 +57965,16 @@
       {
         "from": "src/cli/commands/__tests__/ultragoal.test.ts",
         "to": "src/cli/commands/ultragoal.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/cli/commands/__tests__/wait.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/cli/commands/__tests__/wait.test.ts",
+        "to": "src/cli/commands/wait.ts",
         "kind": "imports"
       },
       {
@@ -58647,6 +59241,11 @@
         "from": "src/factory/__tests__/listener.test.ts",
         "to": "src/factory/listener.ts",
         "kind": "type-imports"
+      },
+      {
+        "from": "src/factory/__tests__/listener.test.ts",
+        "to": "src/hooks/session-end/spawn-next.ts",
+        "kind": "imports"
       },
       {
         "from": "src/factory/__tests__/listener.test.ts",
@@ -60119,6 +60718,36 @@
         "kind": "type-imports"
       },
       {
+        "from": "src/features/rate-limit-wait/daemon-state.ts",
+        "to": "external:node:crypto",
+        "kind": "imports"
+      },
+      {
+        "from": "src/features/rate-limit-wait/daemon-state.ts",
+        "to": "src/features/rate-limit-wait/pane-fresh-capture.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/features/rate-limit-wait/daemon-state.ts",
+        "to": "src/features/rate-limit-wait/rate-limit-monitor.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/features/rate-limit-wait/daemon-state.ts",
+        "to": "src/features/rate-limit-wait/types.ts",
+        "kind": "type-imports"
+      },
+      {
+        "from": "src/features/rate-limit-wait/daemon-state.ts",
+        "to": "src/hud/usage-api.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/features/rate-limit-wait/daemon-state.ts",
+        "to": "src/utils/config-dir.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/features/rate-limit-wait/daemon.ts",
         "to": "external:child_process",
         "kind": "imports"
@@ -60140,6 +60769,11 @@
       },
       {
         "from": "src/features/rate-limit-wait/daemon.ts",
+        "to": "src/features/rate-limit-wait/daemon-state.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/features/rate-limit-wait/daemon.ts",
         "to": "src/features/rate-limit-wait/rate-limit-monitor.ts",
         "kind": "imports"
       },
@@ -60151,7 +60785,7 @@
       {
         "from": "src/features/rate-limit-wait/daemon.ts",
         "to": "src/features/rate-limit-wait/types.ts",
-        "kind": "type-imports"
+        "kind": "imports"
       },
       {
         "from": "src/features/rate-limit-wait/daemon.ts",
@@ -65754,6 +66388,31 @@
         "kind": "imports"
       },
       {
+        "from": "src/hooks/persistent-mode/__tests__/ralph-hard-max-script.test.ts",
+        "to": "external:child_process",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hooks/persistent-mode/__tests__/ralph-hard-max-script.test.ts",
+        "to": "external:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hooks/persistent-mode/__tests__/ralph-hard-max-script.test.ts",
+        "to": "external:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hooks/persistent-mode/__tests__/ralph-hard-max-script.test.ts",
+        "to": "external:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hooks/persistent-mode/__tests__/ralph-hard-max-script.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
         "from": "src/hooks/persistent-mode/__tests__/ralph-hard-max.test.ts",
         "to": "external:child_process",
         "kind": "imports"
@@ -66356,6 +67015,11 @@
       {
         "from": "src/hooks/persistent-mode/stop-hook-blocking.test.ts",
         "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hooks/persistent-mode/stop-hook-blocking.test.ts",
+        "to": "src/hooks/autopilot/enforcement.ts",
         "kind": "imports"
       },
       {
@@ -68089,6 +68753,11 @@
         "kind": "type-imports"
       },
       {
+        "from": "src/hooks/session-end/__tests__/chain-enqueuer.test.ts",
+        "to": "src/hooks/session-end/spawn-next.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/hooks/session-end/__tests__/check-evidence.test.ts",
         "to": "external:child_process",
         "kind": "imports"
@@ -68609,6 +69278,46 @@
         "kind": "imports"
       },
       {
+        "from": "src/hooks/session-end/__tests__/wiki-foreground-bootstrap.test.ts",
+        "to": "external:child_process",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hooks/session-end/__tests__/wiki-foreground-bootstrap.test.ts",
+        "to": "external:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hooks/session-end/__tests__/wiki-foreground-bootstrap.test.ts",
+        "to": "external:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hooks/session-end/__tests__/wiki-foreground-bootstrap.test.ts",
+        "to": "external:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hooks/session-end/__tests__/wiki-foreground-bootstrap.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hooks/session-end/__tests__/wiki-foreground-bootstrap.test.ts",
+        "to": "src/hooks/session-end/cleanup-manifest.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hooks/session-end/__tests__/wiki-foreground-bootstrap.test.ts",
+        "to": "src/hooks/session-end/wiki-foreground-bootstrap.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hooks/session-end/__tests__/wiki-foreground-bootstrap.test.ts",
+        "to": "src/hooks/session-end/worker.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/hooks/session-end/__tests__/worker.test.ts",
         "to": "external:node:fs",
         "kind": "imports"
@@ -68925,12 +69634,12 @@
       },
       {
         "from": "src/hooks/session-end/index.ts",
-        "to": "src/hooks/session-end/worker.ts",
-        "kind": "imports"
+        "to": "src/hooks/session-end/wiki-foreground-bootstrap.ts",
+        "kind": "exports"
       },
       {
         "from": "src/hooks/session-end/index.ts",
-        "to": "src/hooks/wiki/session-hooks.ts",
+        "to": "src/hooks/session-end/worker.ts",
         "kind": "imports"
       },
       {
@@ -69030,6 +69739,26 @@
       },
       {
         "from": "src/hooks/session-end/spawn-next.ts",
+        "to": "src/lib/worktree-paths.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hooks/session-end/wiki-foreground-bootstrap.ts",
+        "to": "src/hooks/session-end/cleanup-manifest.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hooks/session-end/wiki-foreground-bootstrap.ts",
+        "to": "src/hooks/session-end/worker.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hooks/session-end/wiki-foreground-bootstrap.ts",
+        "to": "src/hooks/wiki/session-hooks.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hooks/session-end/wiki-foreground-bootstrap.ts",
         "to": "src/lib/worktree-paths.ts",
         "kind": "imports"
       },
@@ -70494,6 +71223,31 @@
         "kind": "imports"
       },
       {
+        "from": "src/hud/__tests__/custom-provider-cache-identity.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hud/__tests__/custom-provider-cache-identity.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hud/__tests__/custom-provider-cache-identity.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hud/__tests__/custom-provider-cache-identity.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hud/__tests__/custom-provider-cache-identity.test.ts",
+        "to": "src/hud/custom-rate-provider.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/hud/__tests__/custom-rate-provider.test.ts",
         "to": "external:node:fs",
         "kind": "imports"
@@ -70596,6 +71350,11 @@
       {
         "from": "src/hud/custom-rate-provider.ts",
         "to": "external:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hud/custom-rate-provider.ts",
+        "to": "external:node:crypto",
         "kind": "imports"
       },
       {
@@ -70735,6 +71494,11 @@
       },
       {
         "from": "src/hud/elements/cwd.ts",
+        "to": "external:node:url",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hud/elements/cwd.ts",
         "to": "src/hud/colors.ts",
         "kind": "imports"
       },
@@ -70742,6 +71506,11 @@
         "from": "src/hud/elements/cwd.ts",
         "to": "src/hud/types.ts",
         "kind": "type-imports"
+      },
+      {
+        "from": "src/hud/elements/effort.ts",
+        "to": "src/hud/colors.ts",
+        "kind": "imports"
       },
       {
         "from": "src/hud/elements/enterprise-cost.ts",
@@ -70831,6 +71600,11 @@
       {
         "from": "src/hud/elements/index.ts",
         "to": "src/hud/elements/cwd.ts",
+        "kind": "exports"
+      },
+      {
+        "from": "src/hud/elements/index.ts",
+        "to": "src/hud/elements/effort.ts",
         "kind": "exports"
       },
       {
@@ -71326,6 +72100,11 @@
       {
         "from": "src/hud/render.ts",
         "to": "src/hud/elements/cwd.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hud/render.ts",
+        "to": "src/hud/elements/effort.ts",
         "kind": "imports"
       },
       {
@@ -72220,6 +72999,11 @@
       },
       {
         "from": "src/installer/__tests__/session-start-template.test.ts",
+        "to": "external:node:crypto",
+        "kind": "imports"
+      },
+      {
+        "from": "src/installer/__tests__/session-start-template.test.ts",
         "to": "external:node:fs",
         "kind": "imports"
       },
@@ -72236,6 +73020,16 @@
       {
         "from": "src/installer/__tests__/session-start-template.test.ts",
         "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/installer/__tests__/session-start-template.test.ts",
+        "to": "scripts/lib/cache-occupancy.mjs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/installer/__tests__/session-start-template.test.ts",
+        "to": "src/installer/index.ts",
         "kind": "imports"
       },
       {
@@ -72545,6 +73339,11 @@
       },
       {
         "from": "src/installer/index.ts",
+        "to": "src/utils/node-version.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/installer/index.ts",
         "to": "src/utils/resolve-node.ts",
         "kind": "imports"
       },
@@ -72571,6 +73370,11 @@
       {
         "from": "src/installer/mcp-registry.ts",
         "to": "external:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/installer/mcp-registry.ts",
+        "to": "external:util",
         "kind": "imports"
       },
       {
@@ -72787,6 +73591,16 @@
         "from": "src/lib/__tests__/atomic-write.test.ts",
         "to": "external:fs/promises",
         "kind": "type-imports"
+      },
+      {
+        "from": "src/lib/__tests__/atomic-write.test.ts",
+        "to": "external:node:child_process",
+        "kind": "imports"
+      },
+      {
+        "from": "src/lib/__tests__/atomic-write.test.ts",
+        "to": "external:node:url",
+        "kind": "imports"
       },
       {
         "from": "src/lib/__tests__/atomic-write.test.ts",
@@ -73240,6 +74054,36 @@
       },
       {
         "from": "src/lib/__tests__/worktree-paths-git-timeout.test.ts",
+        "to": "src/lib/worktree-paths.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/lib/__tests__/worktree-paths-issue-4254-win32.test.ts",
+        "to": "external:child_process",
+        "kind": "imports"
+      },
+      {
+        "from": "src/lib/__tests__/worktree-paths-issue-4254-win32.test.ts",
+        "to": "external:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/lib/__tests__/worktree-paths-issue-4254-win32.test.ts",
+        "to": "external:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/lib/__tests__/worktree-paths-issue-4254-win32.test.ts",
+        "to": "external:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/lib/__tests__/worktree-paths-issue-4254-win32.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/lib/__tests__/worktree-paths-issue-4254-win32.test.ts",
         "to": "src/lib/worktree-paths.ts",
         "kind": "imports"
       },
@@ -74409,6 +75253,46 @@
         "kind": "imports"
       },
       {
+        "from": "src/notifications/__tests__/custom-config-shapes.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/custom-config-shapes.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/custom-config-shapes.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/custom-config-shapes.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/custom-config-shapes.test.ts",
+        "to": "src/notifications/config.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/custom-config-shapes.test.ts",
+        "to": "src/notifications/dispatcher.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/custom-config-shapes.test.ts",
+        "to": "src/notifications/types.ts",
+        "kind": "type-imports"
+      },
+      {
+        "from": "src/notifications/__tests__/custom-config-shapes.test.ts",
+        "to": "src/notifications/validation.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/notifications/__tests__/custom-integration.test.ts",
         "to": "external:vitest",
         "kind": "imports"
@@ -74437,6 +75321,21 @@
         "from": "src/notifications/__tests__/custom-integration.test.ts",
         "to": "src/notifications/validation.ts",
         "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/custom-webhook-body.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/custom-webhook-body.test.ts",
+        "to": "src/notifications/dispatcher.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/custom-webhook-body.test.ts",
+        "to": "src/notifications/types.ts",
+        "kind": "type-imports"
       },
       {
         "from": "src/notifications/__tests__/dispatcher.test.ts",
@@ -74646,6 +75545,31 @@
       {
         "from": "src/notifications/__tests__/reply-listener.test.ts",
         "to": "src/notifications/reply-listener.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/session-registry-durability.test.ts",
+        "to": "external:node:child_process",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/session-registry-durability.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/session-registry-durability.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/session-registry-durability.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/__tests__/session-registry-durability.test.ts",
+        "to": "external:vitest",
         "kind": "imports"
       },
       {
@@ -75136,6 +76060,11 @@
       {
         "from": "src/notifications/session-registry.ts",
         "to": "external:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/notifications/session-registry.ts",
+        "to": "src/lib/atomic-write.ts",
         "kind": "imports"
       },
       {
@@ -75725,6 +76654,11 @@
       },
       {
         "from": "src/providers/index.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/providers/index.ts",
         "to": "src/providers/azure-devops.ts",
         "kind": "imports"
       },
@@ -76166,6 +77100,11 @@
       {
         "from": "src/team/__tests__/api-interop.cwd-resolution.test.ts",
         "to": "src/team/recovery-request-store.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/api-interop.cwd-resolution.test.ts",
+        "to": "src/team/state-paths.ts",
         "kind": "imports"
       },
       {
@@ -77017,6 +77956,26 @@
         "from": "src/team/__tests__/index.compat-exports.test.ts",
         "to": "src/team/index.ts",
         "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/issue-4261-cmux-team-failures.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/issue-4261-cmux-team-failures.test.ts",
+        "to": "src/team/mailbox-notification-guard.ts",
+        "kind": "type-imports"
+      },
+      {
+        "from": "src/team/__tests__/issue-4261-cmux-team-failures.test.ts",
+        "to": "src/team/tmux-session.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/issue-4261-cmux-team-failures.test.ts",
+        "to": "src/team/tmux-session.ts",
+        "kind": "type-imports"
       },
       {
         "from": "src/team/__tests__/leader-inbox.test.ts",
@@ -79574,6 +80533,16 @@
         "kind": "imports"
       },
       {
+        "from": "src/team/__tests__/tmux-session-liveness.test.ts",
+        "to": "src/team/tmux-session.ts",
+        "kind": "type-imports"
+      },
+      {
+        "from": "src/team/__tests__/tmux-session-liveness.test.ts",
+        "to": "src/team/types.ts",
+        "kind": "type-imports"
+      },
+      {
         "from": "src/team/__tests__/tmux-session-prereqs.test.ts",
         "to": "external:child_process",
         "kind": "imports"
@@ -79834,6 +80803,41 @@
         "kind": "imports"
       },
       {
+        "from": "src/team/__tests__/usage-record-shape.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-record-shape.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-record-shape.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-record-shape.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-record-shape.test.ts",
+        "to": "src/lib/worktree-paths.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-record-shape.test.ts",
+        "to": "src/team/usage-tracker.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-record-shape.test.ts",
+        "to": "src/team/usage-tracker.ts",
+        "kind": "type-imports"
+      },
+      {
         "from": "src/team/__tests__/usage-tracker.test.ts",
         "to": "external:fs",
         "kind": "imports"
@@ -79862,6 +80866,31 @@
         "from": "src/team/__tests__/usage-tracker.test.ts",
         "to": "src/team/usage-tracker.ts",
         "kind": "type-imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-unicode-counts.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-unicode-counts.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-unicode-counts.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-unicode-counts.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/usage-unicode-counts.test.ts",
+        "to": "src/team/usage-tracker.ts",
+        "kind": "imports"
       },
       {
         "from": "src/team/__tests__/worker-activation-gate.test.ts",
@@ -83115,6 +84144,16 @@
       },
       {
         "from": "src/team/usage-tracker.ts",
+        "to": "external:node:string_decoder",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/usage-tracker.ts",
+        "to": "external:zod",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/usage-tracker.ts",
         "to": "src/lib/worktree-paths.ts",
         "kind": "imports"
       },
@@ -83784,6 +84823,31 @@
         "kind": "type-imports"
       },
       {
+        "from": "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
+        "to": "src/tools/diagnostics/index.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/tools/diagnostics/index.ts",
         "to": "external:fs",
         "kind": "imports"
@@ -84119,6 +85183,36 @@
         "kind": "imports"
       },
       {
+        "from": "src/tools/lsp/__tests__/utils-file-uri.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/lsp/__tests__/utils-file-uri.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/lsp/__tests__/utils-file-uri.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/lsp/__tests__/utils-file-uri.test.ts",
+        "to": "external:node:url",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/lsp/__tests__/utils-file-uri.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/lsp/__tests__/utils-file-uri.test.ts",
+        "to": "src/tools/lsp/utils.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/tools/lsp/client.ts",
         "to": "external:child_process",
         "kind": "imports"
@@ -84231,6 +85325,11 @@
       {
         "from": "src/tools/lsp/servers.ts",
         "to": "external:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/lsp/utils.ts",
+        "to": "external:node:url",
         "kind": "imports"
       },
       {
@@ -85085,6 +86184,16 @@
       },
       {
         "from": "src/utils/__tests__/cache-occupancy.test.ts",
+        "to": "external:node:child_process",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/__tests__/cache-occupancy.test.ts",
+        "to": "external:node:url",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/__tests__/cache-occupancy.test.ts",
         "to": "external:os",
         "kind": "imports"
       },
@@ -85101,6 +86210,11 @@
       {
         "from": "src/utils/__tests__/cache-occupancy.test.ts",
         "to": "src/utils/cache-occupancy.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/__tests__/cache-occupancy.test.ts",
+        "to": "src/utils/paths.ts",
         "kind": "imports"
       },
       {
@@ -85121,6 +86235,16 @@
       {
         "from": "src/utils/__tests__/frontmatter.test.ts",
         "to": "src/utils/frontmatter.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/__tests__/jsonc.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/__tests__/jsonc.test.ts",
+        "to": "external:node:vm",
         "kind": "imports"
       },
       {
@@ -85146,6 +86270,11 @@
       {
         "from": "src/utils/__tests__/string-width.test.ts",
         "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/__tests__/string-width.test.ts",
+        "to": "src/hud/elements/background.ts",
         "kind": "imports"
       },
       {
@@ -85229,6 +86358,26 @@
         "kind": "imports"
       },
       {
+        "from": "src/utils/paths.ts",
+        "to": "src/utils/plugin-cache-validation.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/plugin-cache-validation.ts",
+        "to": "external:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/plugin-cache-validation.ts",
+        "to": "external:fs",
+        "kind": "type-imports"
+      },
+      {
+        "from": "src/utils/plugin-cache-validation.ts",
+        "to": "external:path",
+        "kind": "imports"
+      },
+      {
         "from": "src/utils/resolve-node.ts",
         "to": "external:child_process",
         "kind": "imports"
@@ -85246,6 +86395,11 @@
       {
         "from": "src/utils/resolve-node.ts",
         "to": "external:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/resolve-node.ts",
+        "to": "src/utils/node-version.ts",
         "kind": "imports"
       },
       {
@@ -86259,6 +87413,36 @@
         "kind": "imports"
       },
       {
+        "from": "tests/integration/issue-4266-jev-temp-cleanup.test.ts",
+        "to": "external:node:child_process",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/issue-4266-jev-temp-cleanup.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/issue-4266-jev-temp-cleanup.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/issue-4266-jev-temp-cleanup.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/issue-4266-jev-temp-cleanup.test.ts",
+        "to": "external:node:url",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/issue-4266-jev-temp-cleanup.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
         "from": "tests/integration/jev-active-mode-repro.test.ts",
         "to": "external:node:child_process",
         "kind": "imports"
@@ -86346,6 +87530,31 @@
       {
         "from": "tests/integration/runs-reconciler.test.ts",
         "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/session-flow-skill.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/session-flow-skill.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/session-flow-skill.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/session-flow-skill.test.ts",
+        "to": "src/features/builtin-skills/skills.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/session-flow-skill.test.ts",
+        "to": "src/workflow/registry.ts",
         "kind": "imports"
       },
       {
@@ -86809,6 +88018,46 @@
         "kind": "imports"
       },
       {
+        "from": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts",
+        "to": "external:node:child_process",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts",
+        "to": "external:node:url",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts",
+        "to": "src/team/team-owner-epoch.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/lint/issue-4267-tmux-guard-shell-syntax.test.ts",
+        "to": "src/team/tmux-session.ts",
+        "kind": "imports"
+      },
+      {
         "from": "tests/lint/session-end-forwarder-no-op.test.ts",
         "to": "external:fs",
         "kind": "imports"
@@ -87000,12 +88249,12 @@
       }
     ],
     "stats": {
-      "nodeCount": 7698,
-      "edgeCount": 8283,
-      "importEdgeCount": 6850,
-      "registerEdgeCount": 68
+      "nodeCount": 7743,
+      "edgeCount": 8483,
+      "importEdgeCount": 7037,
+      "registerEdgeCount": 69
     }
   },
-  "inventorySha256": "33245f2e20a9dbc1e3f29a29fc19a2016dfe27264596258378cad8099b053e31",
-  "manifestSha256": "7ef1a76b3ff7de6d81709b6b59a99629afe5a7428e1161c464ddeceb5b0d74e6"
+  "inventorySha256": "ce806a74606e197fdfb181aa2d6018b865debd3b90a7c8270cc9603719a9a9e8",
+  "manifestSha256": "9924ae06c77024a827cc63959269773d44307c225c1a6d831f46ba006ed46257"
 }

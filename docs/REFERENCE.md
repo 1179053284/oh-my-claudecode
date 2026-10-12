@@ -16,7 +16,7 @@ For v5.3.0, the plugin ships 19 agents, 40 skills, 21 command files, and one con
 - [Legacy MCP Team Runtime Tools (Deprecated)](#legacy-mcp-team-runtime-tools-deprecated-opt-in-only)
 - [Agents (19 Total)](#agents-19-total)
 - [Goal Workflow UX: `/goal`, Ralph, Team, Ultragoal](#goal-workflow-ux-goal-ralph-team-ultragoal)
-- [Skills (47 Total)](#skills-47-total)
+- [Skills (48 Total)](#skills-48-total)
 - [Slash Commands](#slash-commands)
 - [Shipyard Methodology](./shipyard.md) — governed delivery & shared harness map
 - [Claude Code `/goal` Adapter Design](#claude-code-goal-adapter-design)
@@ -114,6 +114,7 @@ If both configurations exist, **project-scoped takes precedence** over global:
 | Variable                   | Default              | Description                                                                                                                                                                                                                                                                 |
 | -------------------------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `OMC_STATE_DIR`            | _(unset)_            | Centralized state directory. When set, OMC stores state at `$OMC_STATE_DIR/{project-id}/` instead of `{worktree}/.omc/`. This preserves state across worktree deletions. The project identifier is derived from the git remote URL (or worktree path for local-only repos). |
+| `OMC_AFK_INCLUDE_USER_SETTINGS` | `0` | Set to `1` to load user-level settings and hooks in factory chain links and `omc ralph afk`; see the AFK settings note below. |
 | `OMC_BRIDGE_SCRIPT`        | _(auto-detected)_    | Path to the Python bridge script                                                                                                                                                                                                                                            |
 | `OMC_PARALLEL_EXECUTION`   | `true`               | Enable/disable parallel agent execution                                                                                                                                                                                                                                     |
 | `OMC_CODEX_DEFAULT_MODEL`  | _(provider default)_ | Default model for Codex CLI workers                                                                                                                                                                                                                                         |
@@ -132,6 +133,10 @@ If both configurations exist, **project-scoped takes precedence** over global:
 | `OMC_FREE_MEMORY_THRESHOLD` | `256` | Free memory threshold in MB. Gate blocks operations when free memory falls below this. Set to negative value to disable. |
 | `OMC_MAX_SIBLING_SESSIONS` | `8` | Maximum concurrent OMC sessions before gating expensive operations. Set to negative value to disable. |
 | `OMC_HOST_LOAD_GATE_DISABLED` | _(unset)_ | Set to any value to disable the host load gate entirely. |
+
+#### Headless factory and AFK settings
+
+Factory chain links and `omc ralph afk` use Claude Code's `project,local` setting sources by default, so user-level settings and hooks do not run in these unattended sessions. Set `OMC_AFK_INCLUDE_USER_SETTINGS=1` in the environment that launches OMC to include the `user` source (`user,project,local`). Factory chains capture this choice in the initial link ledger and carry it through later links and recovery, so a recovering process's environment cannot change the chain's setting sources. This is opt-in because user-level settings may run arbitrary hooks in unattended sessions; enable it only when those hooks are trusted.
 
 #### Host Load Gate
 
@@ -938,7 +943,7 @@ Autopilot continues to own cancel, resume, cleanup, state inspection, HUD, and S
 
 V1 deliberately defers `stageModels` and all model/provider/role routing, inline/no-spawn execution, dynamic commands/modes/state files, arbitrary stages/prompts/plugins and control-flow extensions, and the separate custom-skill inline-array frontmatter parser mismatch. See [ADR 03487](./adr/03487-named-autopilot-stage-profiles.md) for the decision record.
 
-## Skills (47 Total)
+## Skills (48 Total)
 
 Includes bundled workflow, utility, domain, and compatibility skills. Runtime truth comes from the builtin skill loader scanning `skills/*/SKILL.md` and expanding aliases declared in frontmatter.
 
@@ -987,6 +992,7 @@ Marketplace/plugin installs compact the native plugin `skills/*/SKILL.md` files 
 | `remember`                | Save and retrieve durable session memory                                        | `/oh-my-claudecode:remember`                |
 | `research`                | Investigate an open question and return grounded findings                       | `/oh-my-claudecode:research`               |
 | `self-improve`            | Autonomous evolutionary code improvement engine                                | `/oh-my-claudecode:self-improve`           |
+| `session-flow`            | Reorient in the current session with an evidence-backed map of its flow        | `/oh-my-claudecode:session-flow`           |
 | `skill`                   | Manage local skills (list/add/remove/search/edit)                              | `/oh-my-claudecode:skill`                   |
 | `skillify`                | Extract a reusable skill from the current session                              | `/oh-my-claudecode:skillify`                |
 | `team`                    | Coordinated multi-agent workflow                                               | `/oh-my-claudecode:team`                    |
@@ -1025,7 +1031,7 @@ Most installed skills are exposed as `/oh-my-claudecode:<registered-name>`. The 
 | `/oh-my-claudecode:external-context <topic>`             | Run parallel document-specialist research                                                     |
 | `/oh-my-claudecode:harbor [sweep\|look at #N\|what's ready?]` | Sweep external issues and PRs, verify claims, hand a signature docket                    |
 | `/oh-my-claudecode:hud [setup\|minimal\|focused\|full\|status]` | Configure HUD/statusline                                                               |
-| `/oh-my-claudecode:drydock [--check]`                   | Lay the shipyard harness keel in a repo (5 surfaces); --check audits drift                     |
+| `/oh-my-claudecode:drydock [--check]`                   | Lay the shipyard harness keel in a repo (two faces seeded day one; every other surface appears on first use); --check audits drift |
 | `/oh-my-claudecode:launch <brief\|spec-path> [--serial]` | Run the shipyard governed delivery pipeline (spec -> tickets -> frontier)                      |
 | `/oh-my-claudecode:loft <design-question>`               | Loft the shape before cutting steel: a throwaway artifact answers a design question prose cannot settle |
 | `/oh-my-claudecode:minimal-code-discipline`              | Apply the YAGNI-ladder writing-time discipline while implementing                              |
