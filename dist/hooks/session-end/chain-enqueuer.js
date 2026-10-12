@@ -168,7 +168,7 @@ export function planChainEnqueue(directory, sessionId, reason) {
             return null;
         }
         try {
-            const chain = { outcome, reason, routeTable, sessionId, intentId, tracker: ledger.tracker, visits };
+            const chain = { outcome, reason, routeTable, sessionId, intentId, tracker: ledger.tracker, visits, includeUserSettings: ledger.includeUserSettings === true };
             validateChainFields(chain);
             // ponytail: the serial window closes here, before the worker actually
             // spawns the next link; v1 accepts the small race, same as the listener.
