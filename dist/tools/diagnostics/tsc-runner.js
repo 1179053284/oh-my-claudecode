@@ -36,7 +36,13 @@ export function runTscDiagnostics(directory) {
     }
     catch (error) {
         const output = error.stdout || error.stderr || '';
-        return parseTscOutput(output);
+        const result = parseTscOutput(output);
+        return {
+            ...result,
+            success: false,
+            errorCount: Math.max(1, result.errorCount),
+            ...(result.diagnostics.length === 0 ? { error: output.trim() || error.message } : {}),
+        };
     }
 }
 /**

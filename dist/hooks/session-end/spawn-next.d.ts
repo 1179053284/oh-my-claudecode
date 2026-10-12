@@ -17,6 +17,8 @@ export interface SpawnNextChain {
     tracker?: SpawnNextTracker;
     /** Per-stage link counts carried forward so the enqueuer can cap route loops. */
     visits?: Record<string, number>;
+    /** User setting-source opt-in captured at the first link and carried by its ledger. */
+    includeUserSettings?: boolean;
 }
 export interface SpawnNextPlan {
     directive: {
@@ -42,6 +44,7 @@ export interface SpawnContext {
  * fall back to HITL (the session's issue-comment contract), never silent failure.
  */
 export declare const AFK_ALLOWED_TOOLS: string;
+export declare const AFK_INCLUDE_USER_SETTINGS_ENV = "OMC_AFK_INCLUDE_USER_SETTINGS";
 export declare const AFK_SPAWN_FLAGS: string[];
 /**
  * Args (command excluded) for one factory chain link: intent prompt + AFK
@@ -50,7 +53,7 @@ export declare const AFK_SPAWN_FLAGS: string[];
  * they are re-checked against the routing pattern here rather than trusted from
  * whatever route table produced the directive.
  */
-export declare function factoryLinkArgv(prompt: string, sessionId: string, verifyCommands?: readonly string[], fixedBashCommands?: readonly string[]): string[];
+export declare function factoryLinkArgv(prompt: string, sessionId: string, verifyCommands?: readonly string[], fixedBashCommands?: readonly string[], includeUserSettings?: boolean): string[];
 /** Shared label charset (stage/skill/labels): safe for paths and argv. */
 export declare const LABEL_PATTERN: RegExp;
 /**
