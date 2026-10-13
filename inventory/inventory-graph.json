@@ -5,15 +5,15 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "191e4a703b72613315785c0efe014365fa0ff298",
-    "sourceSha256": "2cf1ce15ff6984908fc54d7434bd0cfaac952ba879e78222116801f60dc79f0a",
+    "head": "2f4ce000cbf9539a4223c6c29ae370a8de21e307",
+    "sourceSha256": "0bc85a6eb398e084339216934ec8d59a871b3cb2764cd7afe1628e7efb5e22a1",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "191e4a703b72613315785c0efe014365fa0ff298",
-  "sourceSha256": "2cf1ce15ff6984908fc54d7434bd0cfaac952ba879e78222116801f60dc79f0a",
+  "head": "2f4ce000cbf9539a4223c6c29ae370a8de21e307",
+  "sourceSha256": "0bc85a6eb398e084339216934ec8d59a871b3cb2764cd7afe1628e7efb5e22a1",
   "counts": {
     "public": {
       "skills": 48,
@@ -25,11 +25,11 @@
     "internal": {
       "hookFiles": 339,
       "featureFiles": 85,
-      "toolFiles": 64,
+      "toolFiles": 65,
       "libFiles": 48,
       "templateHooks": 23,
-      "srcFiles": 1466,
-      "total": 1489
+      "srcFiles": 1467,
+      "total": 1490
     },
     "generated": {
       "distFiles": 5621,
@@ -599,6 +599,7 @@
       "src/tools/diagnostics/AGENTS.md",
       "src/tools/diagnostics/__tests__/lsp-aggregator.test.ts",
       "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
+      "src/tools/diagnostics/__tests__/tsc-runner-resolution.test.ts",
       "src/tools/diagnostics/__tests__/tsc-runner.test.ts",
       "src/tools/diagnostics/index.ts",
       "src/tools/diagnostics/lsp-aggregator.ts",
@@ -7065,6 +7066,7 @@
       "src/tools/diagnostics/AGENTS.md",
       "src/tools/diagnostics/__tests__/lsp-aggregator.test.ts",
       "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
+      "src/tools/diagnostics/__tests__/tsc-runner-resolution.test.ts",
       "src/tools/diagnostics/__tests__/tsc-runner.test.ts",
       "src/tools/diagnostics/index.ts",
       "src/tools/diagnostics/lsp-aggregator.ts",
@@ -44981,6 +44983,11 @@
         "id": "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts",
         "kind": "tool",
         "path": "src/tools/diagnostics/__tests__/tsc-project-failures.test.ts"
+      },
+      {
+        "id": "src/tools/diagnostics/__tests__/tsc-runner-resolution.test.ts",
+        "kind": "tool",
+        "path": "src/tools/diagnostics/__tests__/tsc-runner-resolution.test.ts"
       },
       {
         "id": "src/tools/diagnostics/__tests__/tsc-runner.test.ts",
@@ -84870,6 +84877,36 @@
         "kind": "imports"
       },
       {
+        "from": "src/tools/diagnostics/__tests__/tsc-runner-resolution.test.ts",
+        "to": "external:child_process",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/diagnostics/__tests__/tsc-runner-resolution.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/diagnostics/__tests__/tsc-runner-resolution.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/diagnostics/__tests__/tsc-runner-resolution.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/diagnostics/__tests__/tsc-runner-resolution.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/tools/diagnostics/__tests__/tsc-runner-resolution.test.ts",
+        "to": "src/tools/diagnostics/tsc-runner.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/tools/diagnostics/__tests__/tsc-runner.test.ts",
         "to": "external:fs",
         "kind": "imports"
@@ -84976,12 +85013,12 @@
       },
       {
         "from": "src/tools/diagnostics/tsc-runner.ts",
-        "to": "external:os",
+        "to": "external:path",
         "kind": "imports"
       },
       {
         "from": "src/tools/diagnostics/tsc-runner.ts",
-        "to": "external:path",
+        "to": "src/tools/lsp/servers.ts",
         "kind": "imports"
       },
       {
@@ -88301,12 +88338,12 @@
       }
     ],
     "stats": {
-      "nodeCount": 7744,
-      "edgeCount": 8492,
-      "importEdgeCount": 7046,
+      "nodeCount": 7745,
+      "edgeCount": 8498,
+      "importEdgeCount": 7052,
       "registerEdgeCount": 69
     }
   },
-  "inventorySha256": "3d658ba5b322a4e6495263f24fa10ff2a6a88b0746782cd9b28c28e8f825872a",
-  "manifestSha256": "4f15f030d7f55b259a4e17474512548da4cb0e588085e475eca2bb272dbb18ac"
+  "inventorySha256": "2e0837e4a7a104cba3ba61d448dc8b8ef63af9803dcd0b248318b5f584060d25",
+  "manifestSha256": "df9207df733822caada3342177a534928e3594a921ad03c47ea32edab3ac7ac2"
 }
