@@ -118883,7 +118883,7 @@ function getPromptText(input) {
   return "";
 }
 function isExplicitAskSlashInvocation(promptText) {
-  return /^\s*\/(?:oh-my-claudecode:)?ask\s+(?:claude|codex|gemini|antigravity|agy|grok|cursor)\b/i.test(promptText);
+  return /^\s*\/(?:oh-my-claudecode:)?ask\s+(?:claude|codex|gemini|antigravity|agy|grok|cursor|muse)\b/i.test(promptText);
 }
 function activateRalplanStartupState(directory, sessionId) {
   const now = (/* @__PURE__ */ new Date()).toISOString();
@@ -130655,14 +130655,14 @@ var import_path161 = require("path");
 var import_url20 = require("url");
 init_security_config();
 var ASK_USAGE = [
-  "Usage: omc ask <claude|codex|gemini|antigravity|grok|cursor> <question or task>",
-  '   or: omc ask <claude|codex|gemini|antigravity|grok|cursor> -p "<prompt>"',
-  '   or: omc ask <claude|codex|gemini|antigravity|grok|cursor> --print "<prompt>"',
-  '   or: omc ask <claude|codex|gemini|antigravity|grok|cursor> --prompt "<prompt>"',
-  '   or: omc ask <claude|codex|gemini|antigravity|grok|cursor> --agent-prompt <role> "<prompt>"',
-  '   or: omc ask <claude|codex|gemini|antigravity|grok|cursor> --agent-prompt=<role> --prompt "<prompt>"'
+  "Usage: omc ask <claude|codex|gemini|antigravity|grok|cursor|muse> <question or task>",
+  '   or: omc ask <claude|codex|gemini|antigravity|grok|cursor|muse> -p "<prompt>"',
+  '   or: omc ask <claude|codex|gemini|antigravity|grok|cursor|muse> --print "<prompt>"',
+  '   or: omc ask <claude|codex|gemini|antigravity|grok|cursor|muse> --prompt "<prompt>"',
+  '   or: omc ask <claude|codex|gemini|antigravity|grok|cursor|muse> --agent-prompt <role> "<prompt>"',
+  '   or: omc ask <claude|codex|gemini|antigravity|grok|cursor|muse> --agent-prompt=<role> --prompt "<prompt>"'
 ].join("\n");
-var ASK_PROVIDERS = ["claude", "codex", "gemini", "antigravity", "grok", "cursor"];
+var ASK_PROVIDERS = ["claude", "codex", "gemini", "antigravity", "grok", "cursor", "muse"];
 var ASK_PROVIDER_SET = new Set(ASK_PROVIDERS);
 var ASK_AGENT_PROMPT_FLAG = "--agent-prompt";
 var SAFE_ROLE_PATTERN = /^[a-z][a-z0-9-]*$/;
