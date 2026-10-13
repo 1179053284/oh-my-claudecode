@@ -1703,7 +1703,7 @@ export async function splitTeamWorkerPaneWithEvidence(splitTarget, direction, cw
             '-c', cwd,
             ...splitPaneShell.args,
         ];
-        const splitResult = await runGuardedNativeTmuxCreationCommand(identity, tmuxCommandString(splitArgs, ['#{pane_id}\t#{socket_path}\t#{pid}']), 3);
+        const splitResult = await runPaneCreationCommand(identity, tmuxCommandString(splitArgs, ['#{pane_id}\t#{socket_path}\t#{pid}']), splitPaneShell, 3);
         const parsed = splitResult.outcome === 'executed'
             ? parseTmuxCreationRecord(splitResult.stdout, 3, serverIdentityDependencies?.processIdentity ?? currentStrictProcessStartIdentity, identity)
             : null;

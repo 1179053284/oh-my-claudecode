@@ -72117,9 +72117,10 @@ async function splitTeamWorkerPaneWithEvidence(splitTarget, direction, cwd2, pro
       cwd2,
       ...splitPaneShell.args
     ];
-    const splitResult = await runGuardedNativeTmuxCreationCommand(
+    const splitResult = await runPaneCreationCommand(
       identity,
       tmuxCommandString(splitArgs, ["#{pane_id}	#{socket_path}	#{pid}"]),
+      splitPaneShell,
       3
     );
     const parsed = splitResult.outcome === "executed" ? parseTmuxCreationRecord(
@@ -104246,6 +104247,7 @@ var import_path18 = require("path");
 var import_child_process5 = require("child_process");
 var import_fs11 = require("fs");
 var import_path16 = require("path");
+var TSC_ARGS = ["--noEmit", "--pretty", "false"];
 function runTscDiagnostics(directory) {
   const tsconfigPath = (0, import_path16.join)(directory, "tsconfig.json");
   if (!(0, import_fs11.existsSync)(tsconfigPath)) {
@@ -104256,11 +104258,20 @@ function runTscDiagnostics(directory) {
       warningCount: 0
     };
   }
+  const typescriptRoot = findTypeScriptPackageRoot(directory);
+  const localTscPath = typescriptRoot ? (0, import_path16.join)(typescriptRoot, "bin", "tsc") : null;
+  const localTsc = localTscPath && (0, import_fs11.existsSync)(localTscPath) ? localTscPath : null;
+  const viaCmd = !localTsc && process.platform === "win32";
+  if (viaCmd && !isOnWindowsPath("tsc")) {
+    return tscNotFound(directory, "where.exe found no 'tsc'");
+  }
+  const [file, args] = localTsc ? [process.execPath, [localTsc, ...TSC_ARGS]] : viaCmd ? [process.env.COMSPEC || "cmd.exe", ["/d", "/s", "/c", ["tsc", ...TSC_ARGS].join(" ")]] : ["tsc", TSC_ARGS];
   try {
-    (0, import_child_process5.execFileSync)("tsc", ["--noEmit", "--pretty", "false"], {
+    (0, import_child_process5.execFileSync)(file, args, {
       cwd: directory,
       encoding: "utf-8",
-      stdio: "pipe"
+      stdio: "pipe",
+      ...viaCmd ? { windowsVerbatimArguments: true } : {}
     });
     return {
       success: true,
@@ -104269,6 +104280,9 @@ function runTscDiagnostics(directory) {
       warningCount: 0
     };
   } catch (error2) {
+    if (error2.code === "ENOENT") {
+      return tscNotFound(directory, error2.message);
+    }
     const output = error2.stdout || error2.stderr || "";
     const result = parseTscOutput(output);
     return {
@@ -104278,6 +104292,23 @@ function runTscDiagnostics(directory) {
       ...result.diagnostics.length === 0 ? { error: output.trim() || error2.message } : {}
     };
   }
+}
+function isOnWindowsPath(command) {
+  try {
+    (0, import_child_process5.execFileSync)("where.exe", [command], { stdio: "ignore", windowsHide: true });
+    return true;
+  } catch {
+    return false;
+  }
+}
+function tscNotFound(directory, detail) {
+  return {
+    success: false,
+    diagnostics: [],
+    errorCount: 1,
+    warningCount: 0,
+    error: `tsc not found: no typescript package in ${directory} or its parent directories and no tsc on PATH (${detail}). Install typescript in the project to enable TypeScript directory diagnostics.`
+  };
 }
 function parseTscOutput(output) {
   const diagnostics = [];
