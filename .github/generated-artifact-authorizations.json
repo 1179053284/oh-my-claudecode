@@ -28070,6 +28070,104 @@
           "previousFilename": null
         }
       ]
+    },
+    {
+      "pullNumber": 4354,
+      "targetRef": "main",
+      "mergeBaseSha": "c48bdfb0665ea85d2c21056e0a5d0b28e000aecc",
+      "headSha": "adfa4197d0250dc5559cdd7fb2ae152c97a5f9c6",
+      "owner": "Yeachan-Heo",
+      "expiresAt": "2026-10-15T00:00:00Z",
+      "generatedDelta": {
+        "count": 14,
+        "sha256": "33cf384fe67c4c13d5593420a8b55bb70a5a460357f2f08fbb36e78ca399a780"
+      },
+      "generatedFiles": [
+        {
+          "status": "modified",
+          "filename": "bridge/claude-md-coordinator.cjs",
+          "sha": "314f564e24582c408638acdccbc38c6b3a6c6e4b",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "bridge/cli.cjs",
+          "sha": "38fdc3d6379b3846321de69b71d2ac3efcb3f294",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/__tests__/keyword-detector-script.test.js",
+          "sha": "e898661df971060ae7aa6cb2783317ca7dc9145e",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/__tests__/keyword-detector-script.test.js.map",
+          "sha": "c3a99e5c83e8873a783654a00500d594fb85f971",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/cli/__tests__/ask.test.js",
+          "sha": "ea375cd36a6ab241f1f0ae1bc5149e9be7666c11",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/cli/__tests__/ask.test.js.map",
+          "sha": "2592805ee8d0d77dcfe3403255a95a83bdca5723",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/cli/ask.d.ts",
+          "sha": "73d95166e6874f25ce82d27ae81a537cd474dfb0",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/cli/ask.d.ts.map",
+          "sha": "174527f39c2e0ba69387e8c6f772d6b57d76b371",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/cli/ask.js",
+          "sha": "658a3ed3de1986fdac7799bbbcb1faa3e2428e67",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/cli/ask.js.map",
+          "sha": "9c5cc0c155b1def001fb1dafcbdfc9ed3e9f1c00",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hooks/__tests__/bridge-routing.test.js",
+          "sha": "bafbd45c9d524ab68691727ccfbc26e6947bc888",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hooks/__tests__/bridge-routing.test.js.map",
+          "sha": "3565201ff5826f75b1e546c4cfa43e758321b818",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hooks/bridge.js",
+          "sha": "f11a9aeec9ad01d9cdf6548bb6c7d44e1542fdb7",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hooks/bridge.js.map",
+          "sha": "88544df87f42596f763bb8d3da910de55c344122",
+          "previousFilename": null
+        }
+      ]
     }
   ]
 }
