@@ -688,17 +688,25 @@ describe('run-provider-advisor script contract', () => {
     try {
       const capturePath = join(wd, 'spawn-sync-calls.json');
       const preludePath = writeSpawnSyncCapturePrelude(wd);
+      const envOverrides: Record<string, string> = {
+        SPAWN_CAPTURE_PATH: capturePath,
+        CLAUDECODE: '1',
+        CLAUDE_SESSION_ID: 'session-123',
+        CLAUDECODE_SESSION_ID: 'session-legacy',
+        CLAUDE_CODE_ENTRYPOINT: 'plugin',
+      };
+      // grok and muse use prompt files and need tmpdir when process.platform = 'win32'
+      if (provider === 'grok' || provider === 'muse') {
+        envOverrides.TMPDIR = wd;
+        envOverrides.TEMP = wd;
+        envOverrides.TMP = wd;
+        envOverrides.OMC_STATE_DIR = join(wd, 'state');
+      }
       const result = runAdvisorScriptWithPrelude(
         preludePath,
         args,
         wd,
-        {
-          SPAWN_CAPTURE_PATH: capturePath,
-          CLAUDECODE: '1',
-          CLAUDE_SESSION_ID: 'session-123',
-          CLAUDECODE_SESSION_ID: 'session-legacy',
-          CLAUDE_CODE_ENTRYPOINT: 'plugin',
-        },
+        envOverrides,
         { preserveClaudeSessionEnv: true },
       );
 
