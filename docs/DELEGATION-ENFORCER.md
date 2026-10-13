@@ -95,8 +95,8 @@ Get the default model for an agent type.
 import { getModelForAgent } from 'oh-my-claudecode';
 
 getModelForAgent('executor'); // 'sonnet'
-getModelForAgent('executor-low'); // 'haiku'
-getModelForAgent('executor-high'); // 'opus'
+getModelForAgent('architect'); // 'opus'
+getModelForAgent('designer'); // 'sonnet'
 ```
 
 #### `isAgentCall(toolName: string, toolInput: unknown): boolean`
@@ -134,16 +134,13 @@ console.log(result.modifiedInput.model); // 'sonnet'
 
 | Agent Type | Default Model | Use Case |
 |------------|---------------|----------|
-| `architect` | opus | Complex analysis, debugging |
-| `architect-medium` | sonnet | Standard analysis |
-| `architect-low` | haiku | Quick questions |
-| `executor` | sonnet | Standard implementation |
-| `executor-high` | opus | Complex refactoring |
-| `executor-low` | haiku | Simple changes |
+| `architect` | opus | Complex analysis, debugging (use --model haiku for simple) |
+| `executor` | sonnet | Standard implementation (use --model haiku for simple, opus for complex) |
 | `explore` | haiku | Fast code search |
-| `designer` | sonnet | UI implementation |
-| `designer-high` | opus | Complex UI architecture |
-| `designer-low` | haiku | Simple styling |
+| `designer` | sonnet | UI implementation (use --model haiku for simple, opus for complex) |
+| `planner` | opus | Strategic planning |
+| `critic` | opus | Plan/design review |
+| `analyst` | opus | Requirements analysis |
 | `document-specialist` | sonnet | Documentation lookup |
 | `writer` | haiku | Documentation writing |
 | `vision` | sonnet | Image analysis |
@@ -183,7 +180,7 @@ Task(
 )
 
 Task(
-  subagent_type="oh-my-claudecode:executor-low",
+  subagent_type="oh-my-claudecode:executor",
   model="haiku",
   prompt="Quick lookup"
 )
@@ -199,7 +196,8 @@ Task(
 )
 
 Task(
-  subagent_type="oh-my-claudecode:executor-low",
+  subagent_type="oh-my-claudecode:executor",
+  model="haiku",  // Use haiku for quick tasks
   prompt="Quick lookup"
 )
 ```

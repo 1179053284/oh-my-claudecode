@@ -836,7 +836,7 @@ Chain agents with data passing between stages:
 - `implement` - planner → executor → tdd-guide
 - `debug` - explore → architect → debugger
 - `research` - parallel(document-specialist, explore) → architect → writer
-- `refactor` - explore → architect-medium → executor-high → qa-tester
+- `refactor` - explore → architect → executor (with --model opus) → qa-tester
 - `security` - explore → security-reviewer → executor → security-reviewer-low
 
 #### 4. Unified Cancel Command
