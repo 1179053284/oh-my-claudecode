@@ -27976,15 +27976,21 @@
     {
       "pullNumber": 4345,
       "targetRef": "dev",
-      "mergeBaseSha": "8dd05447c89c726f1f8542fbd7d1dc162a366f15",
+      "mergeBaseSha": "5a394754ee32fc0e0509997d7426c95788e488d9",
       "headSha": "494758c78ef52c805000ae2c9c99ba389326f4ca",
       "owner": "Yeachan-Heo",
       "expiresAt": "2026-10-20T00:00:00.000Z",
       "generatedDelta": {
-        "count": 8,
-        "sha256": "9ee973f34d6e0543d8fabe1a7e55a7cac07b96d3f45b3106035b597b70638830"
+        "count": 9,
+        "sha256": "c3f58e068759ed9c7fa141f301e3c0c497ed3cc6e992ab7cc10b355593582343"
       },
       "generatedFiles": [
+        {
+          "status": "modified",
+          "filename": "bridge/cli.cjs",
+          "sha": "f539d92aefe60972e9696a09b35059efc552d601",
+          "previousFilename": null
+        },
         {
           "status": "removed",
           "filename": "dist/verification/tier-selector.d.ts",
