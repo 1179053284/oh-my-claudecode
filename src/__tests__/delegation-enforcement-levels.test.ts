@@ -114,11 +114,11 @@ describe('delegation-enforcement-levels', () => {
     }
 
     const extensionToAgent: [string, string][] = [
-      ['file.ts', 'executor (use --model haiku for simple changes)'],
-      ['file.tsx', 'designer (use --model haiku for simple changes)'],
+      ['file.ts', 'executor (use model="haiku" for simple changes)'],
+      ['file.tsx', 'designer (use model="haiku" for simple changes)'],
       ['file.js', 'executor'],
       ['file.jsx', 'designer'],
-      ['file.py', 'executor (use --model haiku for simple changes)'],
+      ['file.py', 'executor (use model="haiku" for simple changes)'],
       ['file.vue', 'designer'],
       ['file.svelte', 'designer'],
       ['file.css', 'designer'],
@@ -374,7 +374,7 @@ describe('delegation-enforcement-levels', () => {
         toolInput: { filePath: 'src/component.tsx' },
         directory: '/tmp/test-project',
       });
-      expect(result.message).toContain('Suggested agent: designer (use --model haiku for simple changes)');
+      expect(result.message).toContain('Suggested agent: designer (use model="haiku" for simple changes)');
     });
 
     it('handles filePath in different input keys', () => {

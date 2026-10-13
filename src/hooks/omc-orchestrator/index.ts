@@ -440,11 +440,11 @@ function suggestAgentForFile(filePath: string): string {
   const ext = path.extname(filePath).toLowerCase();
 
   const suggestions: Record<string, string> = {
-    '.ts': 'executor (use --model haiku for simple changes)',
-    '.tsx': 'designer (use --model haiku for simple changes)',
+    '.ts': 'executor (use model="haiku" for simple changes)',
+    '.tsx': 'designer (use model="haiku" for simple changes)',
     '.js': 'executor',
     '.jsx': 'designer',
-    '.py': 'executor (use --model haiku for simple changes)',
+    '.py': 'executor (use model="haiku" for simple changes)',
     '.vue': 'designer',
     '.svelte': 'designer',
     '.css': 'designer',

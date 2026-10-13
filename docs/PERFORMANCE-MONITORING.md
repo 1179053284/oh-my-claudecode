@@ -423,7 +423,7 @@ cleanupReplayFiles(process.cwd()); // Keeps last 10 sessions
 1. Check Observatory for bottleneck indicators
 2. Review tool_usage for slow operations
 3. Consider splitting large tasks into smaller agents
-4. Use `architect --model haiku` instead of `architect --model opus` for simple verifications
+4. Use `architect` with model="haiku" instead of model="opus" for simple verifications
 
 ### File Conflicts
 

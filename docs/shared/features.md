@@ -77,8 +77,8 @@ Sequential agent chaining with data passing between stages.
 | `implement` | planner -> executor -> test-engineer |
 | `debug` | explore -> architect -> debugger |
 | `research` | parallel(document-specialist, explore) -> architect -> writer |
-| `refactor` | explore -> architect -> executor (with --model opus) -> qa-tester |
-| `security` | explore -> security-reviewer -> executor -> security-reviewer-low |
+| `refactor` | explore -> architect -> executor (with model="opus") -> qa-tester |
+| `security` | explore -> security-reviewer -> executor |
 
 **Custom pipelines:** `/pipeline explore:haiku -> architect:opus -> executor:sonnet`
 

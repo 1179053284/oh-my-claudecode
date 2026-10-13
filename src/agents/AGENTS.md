@@ -11,7 +11,7 @@ This directory defines all 18 agents available in oh-my-claudecode:
 
 - Prompts loaded dynamically from `/agents/*.md` files
 - Tools assigned based on agent specialization
-- Model selection via explicit `--model` flag or routing logic
+- Model selection via explicit model parameter or routing logic
 
 ## Key Files
 
@@ -58,7 +58,7 @@ const agents = getAgentDefinitions();
 #### Agent Selection Guide
 
 | Task Type | Best Agent | Default Model | Alternate Models |
-|-----------|------------|-------|-------|
+|-----------|------------|----------------|------------------|
 | Quick lookups | `architect` | sonnet | haiku for very simple |
 | Complex debugging | `architect` | opus | - |
 | Feature implementation | `executor` | sonnet | haiku for trivial changes |
@@ -77,10 +77,10 @@ const agents = getAgentDefinitions();
 | Data analysis | `scientist` | sonnet | opus for complex analysis |
 | Security audit | `security-reviewer` | sonnet | opus for complex review |
 | Test-driven development | `test-engineer` | sonnet | - |
-| Build errors | `debugger` | sonnet | Read, Grep, Glob, Edit, Write, Bash |
-| TDD workflow | `test-engineer` | sonnet | Read, Grep, Glob, Edit, Write, Bash |
-| Test suggestions | `test-engineer` (model=haiku) | haiku | Read, Grep, Glob, Bash |
-| Code review | `code-reviewer` | opus | Read, Grep, Glob, Bash |
+| Build errors | `debugger` | sonnet | - |
+| TDD workflow | `test-engineer` | sonnet | - |
+| Test suggestions | `test-engineer` | haiku | - |
+| Code review | `code-reviewer` | opus | - |
 
 #### Creating a New Agent
 
@@ -222,7 +222,7 @@ None - pure TypeScript definitions.
 ## Agent Categories
 
 | Category | Agents | Purpose |
-|----------|--------|---------|  
+|----------|--------|---------|
 | Analysis | architect | Debugging, architecture |
 | Execution | executor | Code implementation |
 | Search | explore | Codebase exploration |
@@ -232,10 +232,10 @@ None - pure TypeScript definitions.
 | Visual | vision | Image/screenshot analysis |
 | Planning | planner, analyst, critic | Strategic planning |
 | Testing | qa-tester | Interactive testing |
-| Security | security-reviewer, security-reviewer-low | Security audits |
+| Security | security-reviewer | Security audits |
 | TDD | test-engineer | Test-driven development |
 | Review | code-reviewer | Code quality + style + performance |
-| Data | scientist, scientist-high | Data analysis |
+| Data | scientist | Data analysis |
 
 <!-- MANUAL:
 - Legacy alias wording was removed from active prompts to keep agent naming consistent with current conventions.

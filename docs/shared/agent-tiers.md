@@ -1,6 +1,6 @@
 # Agent Selection Guide
 
-This is the single source of truth for agent selection. Use base agent names with explicit `--model` flag for model selection.
+This is the single source of truth for agent selection. Use base agent names with explicit model parameter for model selection.
 
 ## Agent by Domain
 
@@ -26,7 +26,7 @@ This is the single source of truth for agent selection. Use base agent names wit
 
 ## Model Selection
 
-Use the `--model` flag to override an agent's default model:
+Use the `model` parameter to override an agent's default model:
 
 | Model | When to Use | Example Tasks |
 |-------|---|---|
@@ -36,9 +36,9 @@ Use the `--model` flag to override an agent's default model:
 
 Examples:
 ```
-executor --model haiku              # Simple change with cheap model
-architect --model opus              # Complex debugging with powerful model
-designer --model sonnet             # Standard UI component work
+executor (model="haiku")              # Simple change with cheap model
+architect (model="opus")              # Complex debugging with powerful model
+designer (model="sonnet")             # Standard UI component work
 ```
 
 ## Agent Selection by Task

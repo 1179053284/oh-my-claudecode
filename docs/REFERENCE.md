@@ -820,13 +820,13 @@ Always use `oh-my-claudecode:` prefix when calling via Task tool.
 | Quick code lookup              | `explore`                                                              | haiku  |
 | Find files/patterns            | `explore`                                                              | haiku  |
 | Complex architectural search   | `architect`                                                            | opus   |
-| Simple code change             | `executor` + `--model haiku`                                           | haiku  |
+| Simple code change             | `executor` (model="haiku")                                             | haiku  |
 | Feature implementation         | `executor`                                                             | sonnet |
-| Complex refactoring            | `executor` + `--model opus`                                            | opus   |
-| Debug simple issue             | `architect` + `--model haiku`                                          | haiku  |
+| Complex refactoring            | `executor` (model="opus")                                              | opus   |
+| Debug simple issue             | `architect` (model="haiku")                                            | haiku  |
 | Debug complex issue            | `architect`                                                            | opus   |
 | UI component                   | `designer`                                                             | sonnet |
-| Complex UI system              | `designer` + `--model opus`                                            | opus   |
+| Complex UI system              | `designer` (model="opus")                                              | opus   |
 | Write docs/comments            | `writer`                                                               | haiku  |
 | Research docs/APIs             | `document-specialist` (repo docs first; optional Context Hub / `chub`) | sonnet |
 | Analyze images/diagrams        | `vision`                                                               | sonnet |
@@ -836,7 +836,7 @@ Always use `oh-my-claudecode:` prefix when calling via Task tool.
 | Test CLI interactively         | `qa-tester`                                                            | sonnet |
 | Evidence-driven causal tracing | `tracer`                                                               | sonnet |
 | Security review                | `security-reviewer`                                                    | sonnet |
-| Quick security scan            | `security-reviewer-low`                                                | haiku  |
+| Quick security scan            | `security-reviewer` (model="haiku")                                     | haiku  |
 | Fix build errors               | `debugger`                                                             | sonnet |
 | Simple build fix               | `debugger` (model=haiku)                                               | haiku  |
 | TDD workflow                   | `test-engineer`                                                        | sonnet |
@@ -845,7 +845,7 @@ Always use `oh-my-claudecode:` prefix when calling via Task tool.
 | Quick code check               | `code-reviewer` (model=haiku)                                          | haiku  |
 | Data analysis/stats            | `scientist`                                                            | sonnet |
 | Quick data inspection          | `scientist` (model=haiku)                                              | haiku  |
-| Deep data analysis            | `scientist-high`                                                       | opus   |
+| Deep data analysis            | `scientist` (model="opus")                                             | opus   |
 | Git operations                 | `git-master`                                                           | sonnet |
 | Code simplification            | `code-simplifier`                                                      | opus   |
 

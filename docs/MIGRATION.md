@@ -836,8 +836,8 @@ Chain agents with data passing between stages:
 - `implement` - planner → executor → tdd-guide
 - `debug` - explore → architect → debugger
 - `research` - parallel(document-specialist, explore) → architect → writer
-- `refactor` - explore → architect → executor (with --model opus) → qa-tester
-- `security` - explore → security-reviewer → executor → security-reviewer-low
+- `refactor` - explore → architect → executor (with model="opus") → qa-tester
+- `security` - explore → security-reviewer → executor
 
 #### 4. Unified Cancel Command
 
@@ -866,7 +866,7 @@ Opus-powered architectural search for complex codebase exploration:
 
 ```typescript
 Task(
-  (subagent_type = "oh-my-claudecode:explore-high"),
+  (subagent_type = "oh-my-claudecode:explore"),
   (model = "opus"),
   (prompt = "Find all authentication-related code patterns..."),
 );

@@ -2,7 +2,7 @@
 
 ## Historical Context
 
-Earlier versions of oh-my-claudecode used tiered agent variants (executor-low, executor-medium, executor-high) to provide cost-optimized agent selection. These have been retired in favor of a simpler approach: base agents with explicit model selection via `--model` flag.
+Earlier versions of oh-my-claudecode used tiered agent variants (executor-low, executor-medium, executor-high) to provide cost-optimized agent selection. These have been retired in favor of a simpler approach: base agents with explicit model selection via model parameter.
 
 ## Current Architecture (v5+)
 
@@ -31,16 +31,16 @@ We maintain 18 base agents, each with a default model assignment:
 
 ### Model Selection Strategy
 
-For any agent, use the `--model` flag to override the default:
+For any agent, use the model parameter to override the default:
 
 ```
-executor --model haiku              # Cheap, fast simple changes
-executor --model sonnet             # Balanced, standard features
-executor --model opus               # Powerful, complex refactoring
+executor (model="haiku")              # Cheap, fast simple changes
+executor (model="sonnet")             # Balanced, standard features
+executor (model="opus")               # Powerful, complex refactoring
 
-architect --model haiku             # Quick questions, basic lookup
-architect --model sonnet            # Standard debugging
-architect --model opus              # Deep architectural analysis
+architect (model="haiku")             # Quick questions, basic lookup
+architect (model="sonnet")            # Standard debugging
+architect (model="opus")              # Deep architectural analysis
 ```
 
 ### Cost Optimization
@@ -64,7 +64,7 @@ Previous approach had downsides:
 
 New approach is simpler:
 - Clear agent semantics - each agent has one role
-- Explicit model selection via `--model` flag
+- Explicit model selection via model parameter
 - Predictable naming and discovery
 - Easier to document and teach
 - Scales better as model options change
@@ -74,17 +74,17 @@ New approach is simpler:
 If you were using tiered variants:
 
 ```
-OLD: executor-low              NEW: executor --model haiku
-OLD: executor                  NEW: executor --model sonnet
-OLD: executor-high             NEW: executor --model opus
+OLD: executor-low              NEW: executor (model="haiku")
+OLD: executor                  NEW: executor (model="sonnet")
+OLD: executor-high             NEW: executor (model="opus")
 
-OLD: architect-low             NEW: architect --model haiku
-OLD: architect-medium          NEW: architect --model sonnet
-OLD: architect                 NEW: architect --model opus
+OLD: architect-low             NEW: architect (model="haiku")
+OLD: architect-medium          NEW: architect (model="sonnet")
+OLD: architect                 NEW: architect (model="opus")
 
-OLD: designer-low              NEW: designer --model haiku
-OLD: designer                  NEW: designer --model sonnet
-OLD: designer-high             NEW: designer --model opus
+OLD: designer-low              NEW: designer (model="haiku")
+OLD: designer                  NEW: designer (model="sonnet")
+OLD: designer-high             NEW: designer (model="opus")
 ```
 
 ### Verification Tier Selection
@@ -126,7 +126,7 @@ See `src/agents/definitions.ts#toolsByAgent` for complete tool assignments.
 ### Model Routing
 
 When an agent is invoked:
-1. Check for explicit `--model` flag
+1. Check for explicit model parameter
 2. Fall back to agent's defaultModel
 3. Never use tiered variant names
 

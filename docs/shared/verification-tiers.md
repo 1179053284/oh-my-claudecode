@@ -88,11 +88,11 @@ When reviewing changes, use this pattern:
 
 ```bash
 # Simple change (< 5 files, < 100 lines, full tests)
-architect --model haiku "Verify these 2-line test fixes"
+architect (model="haiku") "Verify these 2-line test fixes"
 
 # Standard work (multi-file feature)
-architect --model sonnet "Verify this feature implementation"
+architect (model="sonnet") "Verify this feature implementation"
 
 # Complex work (refactoring or security)
-architect --model opus "Thoroughly review this security-critical refactoring"
+architect (model="opus") "Thoroughly review this security-critical refactoring"
 ```

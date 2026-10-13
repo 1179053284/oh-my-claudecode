@@ -134,10 +134,10 @@ console.log(result.modifiedInput.model); // 'sonnet'
 
 | Agent Type | Default Model | Use Case |
 |------------|---------------|----------|
-| `architect` | opus | Complex analysis, debugging (use --model haiku for simple) |
-| `executor` | sonnet | Standard implementation (use --model haiku for simple, opus for complex) |
+| `architect` | opus | Complex analysis, debugging (use model="haiku" for simple) |
+| `executor` | sonnet | Standard implementation (use model="haiku" for simple, model="opus" for complex) |
 | `explore` | haiku | Fast code search |
-| `designer` | sonnet | UI implementation (use --model haiku for simple, opus for complex) |
+| `designer` | sonnet | UI implementation (use model="haiku" for simple, model="opus" for complex) |
 | `planner` | opus | Strategic planning |
 | `critic` | opus | Plan/design review |
 | `analyst` | opus | Requirements analysis |
@@ -149,7 +149,6 @@ console.log(result.modifiedInput.model); // 'sonnet'
 | `analyst` | opus | Pre-planning analysis |
 | `qa-tester` | sonnet | CLI testing |
 | `scientist` | sonnet | Data analysis |
-| `scientist-high` | opus | Complex research |
 
 ## Debug Mode
 
