@@ -7,16 +7,11 @@ This document defines the relationships between execution modes and provides gui
 ```
 autopilot (autonomous end-to-end)
 ├── includes: ralph (persistence)
-│   └── includes: ultrawork (parallelism)
 └── includes: plan (strategic thinking)
 
 ralph (persistence wrapper)
-└── includes: ultrawork (parallelism engine)
+└── delegates to executor agents directly (in parallel where possible)
     (adds: loop until done + architect verification)
-
-ultrawork (parallelism engine)
-└── COMPONENT only - parallel agent spawning
-    (no persistence, no verification loop)
 ```
 
 ## Mode Relationships
@@ -24,8 +19,7 @@ ultrawork (parallelism engine)
 | Mode | Type | Includes | Mutually Exclusive With |
 |------|------|----------|------------------------|
 | autopilot | Standalone | ralph, plan | - |
-| ralph | Wrapper | ultrawork | - |
-| ultrawork | Component | - | - |
+| ralph | Wrapper | - | - |
 
 ## Decision Tree
 
@@ -34,13 +28,9 @@ Want autonomous execution?
 ├── YES: Is task parallelizable into 3+ independent components?
 │   ├── YES: team N:executor (parallel autonomous with file ownership)
 │   └── NO: autopilot (sequential with ralph phases)
-└── NO: Want parallel execution with manual oversight?
-    ├── YES: ultrawork (manual parallel execution)
-    │   (cost optimization: use OMC_RUN_BUDGET_TOKENS to limit spend)
-    └── NO: ultrawork
-    └── NO: Want persistence until verified done?
-        ├── YES: ralph (persistence + ultrawork + verification)
-        └── NO: Standard orchestration (delegate to agents directly)
+└── NO: Want persistence until verified done?
+    ├── YES: ralph (persistence + verification)
+    └── NO: Standard orchestration (delegate to agents directly)
 
 Have many similar independent tasks (e.g., "fix 47 errors")?
 └── YES: team N:executor (N agents claiming from task pool)
@@ -52,22 +42,19 @@ Have many similar independent tasks (e.g., "fix 47 errors")?
 |------|----------|-------------|-------------|--------------|----------------|
 | autopilot | "Build me X" | Via ralph | Yes | Yes | N/A |
 | team | Multi-component/homogeneous | N workers | Per-task | Per-task | Per-task |
-| ralph | "Don't stop" | Via ultrawork | Yes | Mandatory | N/A |
-| ultrawork | Parallel only | Yes | No | No | N/A |
+| ralph | "Don't stop" | Direct agent delegation | Yes | Mandatory | N/A |
 
 ## Quick Reference
 
 **Just want to build something?** → `autopilot`
 **Building multi-component system?** → `team N:executor`
 **Fixing many similar issues?** → `team N:executor`
-**Want control over execution?** → `ultrawork`
 **Need verified completion?** → `ralph`
 **Want to limit token spend?** → Set `OMC_RUN_BUDGET_TOKENS` environment variable
 
 ## Combining Modes
 
 Valid combinations:
-- `ralph ultrawork` = Ralph persistence loop with parallel execution
 - `team N:executor` = Coordinated parallel execution
 
 Invalid combinations:
@@ -86,7 +73,6 @@ All mode state files use standardized locations:
 |------|------------|
 | ralph | `ralph-state.json` |
 | autopilot | `autopilot-state.json` |
-| ultrawork | `ultrawork-state.json` |
 | pipeline | `pipeline-state.json` |
 
 **Important:** Never store OMC state in `~/.claude/` - that directory is reserved for Claude Code itself.

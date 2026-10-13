@@ -8,7 +8,6 @@
 | Full autonomous build from idea                                       | `autopilot`                    | "autopilot", "build me", "I want a"            |
 | Parallel autonomous (3-5x faster)                                     | `team` (replaces `ultrapilot`) | `/team N:executor "task"`                      |
 | Persistence until verified done                                       | `ralph`                        | "ralph", "don't stop"                         |
-| Parallel execution, manual oversight                                  | `ultrawork`                    | "ulw", "ultrawork"                            |
 | Many similar independent tasks                                        | `team` (replaces `swarm`)      | `/team N:executor "task"`                      |
 | Native Claude Code cross-turn loop with a single completion condition | Claude Code `/goal`            | `/goal "condition with proof"`                 |
 | Durable goal ledger without starting another loop                     | artifact-only Ultragoal        | Write goal artifacts/checkpoints/evidence only |
@@ -32,11 +31,9 @@ Want autonomous execution?
 ├── YES: Is task parallelizable into 3+ independent components?
 │   ├── YES: team N:executor (parallel autonomous with file ownership)
 │   └── NO: autopilot (sequential with ralph phases)
-└── NO: Want parallel execution with manual oversight?
-    ├── YES: ultrawork (with OMC_RUN_BUDGET_TOKENS for cost control)
-    └── NO: Want persistence until verified done?
-        ├── YES: ralph (persistence + ultrawork + verification)
-        └── NO: Standard orchestration (delegate to agents directly)
+└── NO: Want persistence until verified done?
+    ├── YES: ralph (persistence + verification)
+    └── NO: Standard orchestration (delegate to agents directly)
 
 Have many similar independent tasks (e.g., "fix 47 errors")?
 └── YES: team N:executor (N agents claiming from task pool)
@@ -84,7 +81,6 @@ When a goal-like request enters an OMC session:
 | "Build frontend, backend, and database" | team 3:executor | Clear component boundaries      |
 | "Fix all 47 TypeScript errors"          | team 5:executor | Many independent similar tasks  |
 | "Refactor auth module thoroughly"       | ralph           | Need persistence + verification |
-| "Quick parallel execution"              | ultrawork       | Manual oversight preferred      |
 | "Don't stop until done"                 | ralph           | Persistence keyword detected    |
 
 ## Mode Types
@@ -102,13 +98,7 @@ These run independently:
 
 These wrap other modes:
 
-- **ralph**: Adds persistence + verification around ultrawork
-
-### Component Modes
-
-These are used by other modes:
-
-- **ultrawork**: Parallel execution engine (used by ralph, autopilot)
+- **ralph**: Adds persistence + verification around direct executor delegation
 
 ## Cost Control
 
