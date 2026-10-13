@@ -25723,12 +25723,12 @@
       "pullNumber": 4337,
       "targetRef": "main",
       "mergeBaseSha": "8262f9f790eed35e6cbd66572b36c2acba18f679",
-      "headSha": "662e7bdd9af8ec56a4f2ec111b501038c2d617ea",
+      "headSha": "a1cc2560a4d37ee60327d8e394b978f8d8eb8b39",
       "owner": "Yeachan-Heo",
-      "expiresAt": "2026-11-12T00:00:00.000Z",
+      "expiresAt": "2026-10-20T00:00:00Z",
       "generatedDelta": {
-        "count": 264,
-        "sha256": "f17a1d4f8f61b55b65b5c5568298133b35193557d83980a0b7792b7de544afc5"
+        "count": 268,
+        "sha256": "e8b5f5fc84a736c8c419ddd65d7b54836773d905e341c0b917e44108d987f975"
       },
       "generatedFiles": [
         {
@@ -25740,13 +25740,13 @@
         {
           "status": "modified",
           "filename": "bridge/cli.cjs",
-          "sha": "de0f13fb75e7dcddae0b13068787b6583f72dbbd",
+          "sha": "bedf8f760cd7c6d85d514ec82acd8c7828609f2c",
           "previousFilename": null
         },
         {
           "status": "modified",
           "filename": "bridge/mcp-server.cjs",
-          "sha": "bb568804deec555ab8fb27bf16c50a7a87032e3c",
+          "sha": "24a63ec3b89b4a31d539fae923af0b22c7ea025c",
           "previousFilename": null
         },
         {
@@ -27162,19 +27162,43 @@
         {
           "status": "modified",
           "filename": "dist/tools/diagnostics/tsc-runner.d.ts.map",
-          "sha": "c3247162dec25ffc584072c39da73df2142a2226",
+          "sha": "da14d9f42e8cc99043bbc4e33762892eb0dc94ec",
           "previousFilename": null
         },
         {
           "status": "modified",
           "filename": "dist/tools/diagnostics/tsc-runner.js",
-          "sha": "e062e2046132d4712125eaf5d7e44d0f34bae8a7",
+          "sha": "821df479a0ceea5fcc0846653e0dc8c0a76c45ff",
           "previousFilename": null
         },
         {
           "status": "modified",
           "filename": "dist/tools/diagnostics/tsc-runner.js.map",
-          "sha": "9c9aaf4639beb22209f9985c128bc50a111e1a83",
+          "sha": "07515f61804eb4d65cb0616817978138c7bd1ea9",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/tools/lsp/servers.d.ts",
+          "sha": "801ec342dcd067491b35f95192d4a26cd357c3c6",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/tools/lsp/servers.d.ts.map",
+          "sha": "a7f9074a5499311d04e1e1034da74ec630225eb4",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/tools/lsp/servers.js",
+          "sha": "15cd509f52658b46828e580b3801e141bcfd46f5",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/tools/lsp/servers.js.map",
+          "sha": "0ff379d1cce2313332065d5971c11a581aa5aa17",
           "previousFilename": null
         },
         {
