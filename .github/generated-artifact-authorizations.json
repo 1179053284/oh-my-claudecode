@@ -27976,15 +27976,189 @@
     {
       "pullNumber": 4345,
       "targetRef": "dev",
-      "mergeBaseSha": "8dd05447c89c726f1f8542fbd7d1dc162a366f15",
-      "headSha": "da12ee6ba25e6452c590e6bdc20e0bd1bc7c6fe6",
+      "mergeBaseSha": "04b235b0e5eaea2d70aa3cafc2d95065bb02e3d9",
+      "headSha": "6d1e331acff221c992e8e793912ab2c57cba1abc",
       "owner": "Yeachan-Heo",
       "expiresAt": "2026-10-20T00:00:00.000Z",
       "generatedDelta": {
-        "count": 8,
-        "sha256": "9ee973f34d6e0543d8fabe1a7e55a7cac07b96d3f45b3106035b597b70638830"
+        "count": 37,
+        "sha256": "a69c4d7be4fcec57189abbfb6cb18f6aa8dcb11d491be1c93cbbfc17098d9bcd"
       },
       "generatedFiles": [
+        {
+          "status": "modified",
+          "filename": "bridge/cli.cjs",
+          "sha": "f539d92aefe60972e9696a09b35059efc552d601",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/__tests__/delegation-enforcement-levels.test.js",
+          "sha": "e3fecb40b7db4fa63c74c69424e5d37e44fa59f2",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/__tests__/delegation-enforcement-levels.test.js.map",
+          "sha": "1b632a579f2d4517ca90f0c32af376471ac74725",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/__tests__/delegation-enforcer-integration.test.js",
+          "sha": "6364344e32e893b20cf003d5eeace9c62c0bb940",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/__tests__/delegation-enforcer-integration.test.js.map",
+          "sha": "d670d88ecc9d32ae85f1cc4cedb6843704b91d3c",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/__tests__/keyword-detector-script.test.js",
+          "sha": "e898661df971060ae7aa6cb2783317ca7dc9145e",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/__tests__/keyword-detector-script.test.js.map",
+          "sha": "c3a99e5c83e8873a783654a00500d594fb85f971",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/__tests__/load-agent-prompt.test.js",
+          "sha": "f3906dc1dad1a83b84ee1e3267e683adcb0efca2",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/__tests__/load-agent-prompt.test.js.map",
+          "sha": "312033f570f656be0fbb4dd20c4e8e0a83a526b6",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/__tests__/prompt-injection.test.js",
+          "sha": "137165fec8a731ffae070fe606ad35b7436c2f53",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/__tests__/prompt-injection.test.js.map",
+          "sha": "28cc0fe7b959d1037859b1e6209949b2925d683b",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/cli/__tests__/ask.test.js",
+          "sha": "ea375cd36a6ab241f1f0ae1bc5149e9be7666c11",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/cli/__tests__/ask.test.js.map",
+          "sha": "2592805ee8d0d77dcfe3403255a95a83bdca5723",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/cli/ask.d.ts",
+          "sha": "73d95166e6874f25ce82d27ae81a537cd474dfb0",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/cli/ask.d.ts.map",
+          "sha": "174527f39c2e0ba69387e8c6f772d6b57d76b371",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/cli/ask.js",
+          "sha": "658a3ed3de1986fdac7799bbbcb1faa3e2428e67",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/cli/ask.js.map",
+          "sha": "9c5cc0c155b1def001fb1dafcbdfc9ed3e9f1c00",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/cli/index.d.ts.map",
+          "sha": "af251804ba00ca70617e2e7c0bd0657a705cbcf1",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/cli/index.js",
+          "sha": "9478ac3d1c2222612ec71a0bb803ead28844d82b",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/cli/index.js.map",
+          "sha": "e3ff97219e67b01fe35e72fbb878e5914cec6cf9",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hooks/__tests__/bridge-routing.test.js",
+          "sha": "bafbd45c9d524ab68691727ccfbc26e6947bc888",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hooks/__tests__/bridge-routing.test.js.map",
+          "sha": "3565201ff5826f75b1e546c4cfa43e758321b818",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hooks/autopilot/prompts.js",
+          "sha": "560292b8b22b94d635a3d6194661a8ec367e673d",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hooks/bridge.js",
+          "sha": "f11a9aeec9ad01d9cdf6548bb6c7d44e1542fdb7",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hooks/bridge.js.map",
+          "sha": "88544df87f42596f763bb8d3da910de55c344122",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hooks/omc-orchestrator/index.js",
+          "sha": "d8374c57b4806a5373a4d1948947c045c86bd5b7",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hooks/omc-orchestrator/index.js.map",
+          "sha": "b0cdd4c1a738533c49be1971a17e34b57b90bdee",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/tools/python-repl/__tests__/sandbox-guidance-parity.test.js",
+          "sha": "25a7777f090d230e77307dcfb8b43fc5c25199e7",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/tools/python-repl/__tests__/sandbox-guidance-parity.test.js.map",
+          "sha": "0a4736ae626d5c45b5aff3c71ddcece337f1692f",
+          "previousFilename": null
+        },
         {
           "status": "removed",
           "filename": "dist/verification/tier-selector.d.ts",
