@@ -58,7 +58,7 @@ describe('loadAgentPrompt', () => {
             // These should not throw
             expect(() => loadAgentPrompt('architect')).not.toThrow();
             expect(() => loadAgentPrompt('qa-tester')).not.toThrow();
-            expect(() => loadAgentPrompt('explore-high')).not.toThrow();
+            expect(() => loadAgentPrompt('explore')).not.toThrow();
         });
     });
     describe('error handling', () => {
