@@ -9,7 +9,7 @@
       "mergeBaseSha": "8262f9f790eed35e6cbd66572b36c2acba18f679",
       "headSha": "662e7bdd9af8ec56a4f2ec111b501038c2d617ea",
       "owner": "Yeachan-Heo",
-      "expiresAt": "2026-11-12T00:00:00Z",
+      "expiresAt": "2026-11-12T00:00:00.000Z",
       "generatedDelta": {
         "count": 264,
         "sha256": "f17a1d4f8f61b55b65b5c5568298133b35193557d83980a0b7792b7de544afc5"
