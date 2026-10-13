@@ -27972,6 +27972,68 @@
           "previousFilename": null
         }
       ]
+    },
+    {
+      "pullNumber": 4345,
+      "targetRef": "dev",
+      "mergeBaseSha": "8dd05447c89c726f1f8542fbd7d1dc162a366f15",
+      "headSha": "8ceb5feefd2b9102961a76820f4dff33c2c1c692",
+      "owner": "Yeachan-Heo",
+      "expiresAt": "2026-10-20T00:00:00.000Z",
+      "generatedDelta": {
+        "count": 8,
+        "sha256": "9ee973f34d6e0543d8fabe1a7e55a7cac07b96d3f45b3106035b597b70638830"
+      },
+      "generatedFiles": [
+        {
+          "status": "removed",
+          "filename": "dist/verification/tier-selector.d.ts",
+          "sha": "2b03a7f9ccda8a91e4aeacad8ad0e76a682dfe64",
+          "previousFilename": null
+        },
+        {
+          "status": "removed",
+          "filename": "dist/verification/tier-selector.d.ts.map",
+          "sha": "8079293310fdf94f972c9bb3b2567f82b670e726",
+          "previousFilename": null
+        },
+        {
+          "status": "removed",
+          "filename": "dist/verification/tier-selector.js",
+          "sha": "7e9e0627d060238fd05acc9ba12bc1fb526d318b",
+          "previousFilename": null
+        },
+        {
+          "status": "removed",
+          "filename": "dist/verification/tier-selector.js.map",
+          "sha": "ccd41c009cd6407665eda9775431e7a1bce7db60",
+          "previousFilename": null
+        },
+        {
+          "status": "removed",
+          "filename": "dist/verification/tier-selector.test.d.ts",
+          "sha": "e33379e1f5a1b29c8bd26c03ed5b05c2f4317ba5",
+          "previousFilename": null
+        },
+        {
+          "status": "removed",
+          "filename": "dist/verification/tier-selector.test.d.ts.map",
+          "sha": "3dcc137533c972b83ad58ef4b34b250594cdafa3",
+          "previousFilename": null
+        },
+        {
+          "status": "removed",
+          "filename": "dist/verification/tier-selector.test.js",
+          "sha": "5c48cec0c3c17a56043b96a8f743082347a36d0f",
+          "previousFilename": null
+        },
+        {
+          "status": "removed",
+          "filename": "dist/verification/tier-selector.test.js.map",
+          "sha": "04f22f9ef046ee8fb1b81bde9a32e044b383a1f2",
+          "previousFilename": null
+        }
+      ]
     }
   ]
 }
