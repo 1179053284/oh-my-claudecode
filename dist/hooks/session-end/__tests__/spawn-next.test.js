@@ -1,14 +1,16 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { execFileSync } from 'child_process';
-import { AFK_ALLOWED_TOOLS, AFK_SPAWN_FLAGS, defaultSpawnFn, executeSpawnNext, factoryLinkArgv, planSpawnNext, spawnNextAlertComment } from '../spawn-next.js';
+import { AFK_ALLOWED_TOOLS, AFK_INCLUDE_USER_SETTINGS_ENV, AFK_SPAWN_FLAGS, defaultSpawnFn, executeSpawnNext, factoryLinkArgv, planSpawnNext, spawnNextAlertComment } from '../spawn-next.js';
 vi.mock('child_process', async (importOriginal) => {
     const actual = await importOriginal();
     return { ...actual, spawn: vi.fn(() => ({ unref() { }, stdin: null })) };
 });
 import * as childProcess from 'child_process';
+beforeEach(() => vi.stubEnv(AFK_INCLUDE_USER_SETTINGS_ENV, '0'));
+afterEach(() => vi.unstubAllEnvs());
 const chain = {
     outcome: 'success',
     reason: 'clear',
@@ -64,7 +66,7 @@ describe('planSpawnNext', () => {
         const tools = withVerify.spawnArgv[withVerify.spawnArgv.indexOf('--allowedTools') + 1];
         expect(tools).toBe(`${AFK_ALLOWED_TOOLS},Bash(npm test)`);
     });
-    it('isolates AFK links from user-level settings via --setting-sources', () => {
+    it('keeps user-level settings disabled by default', () => {
         const plan = planSpawnNext(chain, '/omc-root');
         const sourcesIdx = plan?.spawnArgv.indexOf('--setting-sources');
         expect(sourcesIdx).toBeGreaterThan(-1);
@@ -72,6 +74,14 @@ describe('planSpawnNext', () => {
         const linkArgv = factoryLinkArgv('prompt', 'sess-9');
         expect(linkArgv).toContain('--setting-sources');
         expect(linkArgv[linkArgv.indexOf('--setting-sources') + 1]).toBe('project,local');
+    });
+    it('uses the saved setting choice for chain links, not the recovering process environment', () => {
+        vi.stubEnv(AFK_INCLUDE_USER_SETTINGS_ENV, '1');
+        const optedOut = planSpawnNext({ ...chain, includeUserSettings: false }, '/omc-root');
+        expect(optedOut?.spawnArgv[optedOut.spawnArgv.indexOf('--setting-sources') + 1]).toBe('project,local');
+        vi.stubEnv(AFK_INCLUDE_USER_SETTINGS_ENV, '0');
+        const optedIn = planSpawnNext({ ...chain, includeUserSettings: true }, '/omc-root');
+        expect(optedIn?.spawnArgv[optedIn.spawnArgv.indexOf('--setting-sources') + 1]).toBe('user,project,local');
     });
     it('rejects a chain with a path-traversal session id before planning', () => {
         const { spawnFn, calls } = spawnRecording();
@@ -92,6 +102,9 @@ describe('planSpawnNext', () => {
         expect(() => planSpawnNext({ ...chain, visits: { '../evil': 1 } }, '/omc-root')).toThrow(/invalid visits entry/);
         expect(() => planSpawnNext({ ...chain, visits: { launch: 1.5 } }, '/omc-root')).toThrow(/invalid visits entry/);
         expect(() => planSpawnNext({ ...chain, visits: { launch: 100 } }, '/omc-root')).toThrow(/invalid visits entry/);
+    });
+    it('rejects a malformed durable user-settings choice', () => {
+        expect(() => planSpawnNext({ ...chain, includeUserSettings: '1' }, '/omc-root')).toThrow(/invalid chain user settings option/);
     });
 });
 describe('spawnNextAlertComment', () => {
@@ -120,12 +133,28 @@ describe('executeSpawnNext', () => {
             expect(ledger.intentId).toBe('chain-sess-1');
             expect(ledger.stage).toBe('launch');
             expect(ledger.routeTable).toEqual(chain.routeTable);
+            expect(ledger.includeUserSettings).toBe(false);
             const claudeCall = calls.find(([command]) => command === 'claude');
             expect(claudeCall).toBeDefined();
             expect(claudeCall?.[1]).toContain('--session-id');
             const claudeIdx = calls.findIndex(([command]) => command === 'claude');
             expect(ctxs[claudeIdx]).toEqual({ cwd: directory });
             expect(calls.filter(([command]) => command === 'gh')).toHaveLength(2);
+        }
+        finally {
+            fs.rmSync(directory, { recursive: true, force: true });
+        }
+    });
+    it('carries an opted-in settings choice into the next link ledger', () => {
+        const { spawnFn } = spawnRecording();
+        const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'spawn-next-settings-'));
+        execFileSync('git', ['init', '--quiet'], { cwd: directory, stdio: 'ignore' });
+        try {
+            executeSpawnNext({ ...chain, includeUserSettings: true }, directory, spawnFn);
+            const factoryDir = path.join(directory, '.omc', 'state', 'factory');
+            const ledgerFile = fs.readdirSync(factoryDir).find((file) => file.startsWith('chain-') && file.endsWith('.json'));
+            expect(ledgerFile).toBeDefined();
+            expect(JSON.parse(fs.readFileSync(path.join(factoryDir, ledgerFile), 'utf8'))).toMatchObject({ includeUserSettings: true });
         }
         finally {
             fs.rmSync(directory, { recursive: true, force: true });
@@ -222,6 +251,20 @@ describe('factoryLinkArgv', () => {
     it('drops verify commands that fail the argv-boundary recheck, leaving the base profile', () => {
         const argv = factoryLinkArgv('/launch 继续 launch 环', 'sess-9', ['npm test && whoami', 'npm test,Write']);
         expect(argv.slice(4)).toEqual(AFK_SPAWN_FLAGS);
+    });
+    it('includes user-level settings only when explicitly opted in', () => {
+        const previous = process.env[AFK_INCLUDE_USER_SETTINGS_ENV];
+        process.env[AFK_INCLUDE_USER_SETTINGS_ENV] = '1';
+        try {
+            const argv = factoryLinkArgv('prompt', 'sess-9');
+            expect(argv[argv.indexOf('--setting-sources') + 1]).toBe('user,project,local');
+        }
+        finally {
+            if (previous === undefined)
+                delete process.env[AFK_INCLUDE_USER_SETTINGS_ENV];
+            else
+                process.env[AFK_INCLUDE_USER_SETTINGS_ENV] = previous;
+        }
     });
 });
 describe('AFK_ALLOWED_TOOLS security', () => {

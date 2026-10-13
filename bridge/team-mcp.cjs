@@ -14743,9 +14743,10 @@ async function splitTeamWorkerPaneWithEvidence(splitTarget, direction, cwd, prov
       cwd,
       ...splitPaneShell.args
     ];
-    const splitResult = await runGuardedNativeTmuxCreationCommand(
+    const splitResult = await runPaneCreationCommand(
       identity,
       tmuxCommandString(splitArgs, ["#{pane_id}	#{socket_path}	#{pid}"]),
+      splitPaneShell,
       3
     );
     const parsed = splitResult.outcome === "executed" ? parseTmuxCreationRecord(
