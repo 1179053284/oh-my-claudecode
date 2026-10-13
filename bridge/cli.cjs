@@ -36879,13 +36879,13 @@ Ralph persistence is active. Delegate independent tasks to executor agents or a 
 
 \`\`\`
 // For simple tasks (single file, straightforward logic)
-Task(subagent_type="oh-my-claudecode:executor-low", model="haiku", prompt="...")
+Task(subagent_type="oh-my-claudecode:executor", model="haiku", prompt="...")
 
 // For standard implementation (feature, multiple methods)
 Task(subagent_type="oh-my-claudecode:executor", model="sonnet", prompt="...")
 
 // For complex work (architecture, debugging, refactoring)
-Task(subagent_type="oh-my-claudecode:executor-high", model="opus", prompt="...")
+Task(subagent_type="oh-my-claudecode:executor", model="opus", prompt="...")
 \`\`\`
 
 ### Progress Tracking
@@ -36932,7 +36932,7 @@ For each failure:
 1. **Diagnose** - Understand the error
 \`\`\`
 Task(
-  subagent_type="oh-my-claudecode:architect-low",
+  subagent_type="oh-my-claudecode:architect",
   model="haiku",
   prompt="Diagnose this error and suggest fix: [ERROR]"
 )
@@ -116482,17 +116482,17 @@ function processRememberTags(output, directory) {
 function suggestAgentForFile(filePath) {
   const ext = path14.extname(filePath).toLowerCase();
   const suggestions = {
-    ".ts": "executor-low (simple) or executor (complex)",
-    ".tsx": "designer-low (simple) or designer (complex UI)",
-    ".js": "executor-low",
-    ".jsx": "designer-low",
-    ".py": "executor-low (simple) or executor (complex)",
+    ".ts": 'executor (use model="haiku" for simple changes)',
+    ".tsx": 'designer (use model="haiku" for simple changes)',
+    ".js": "executor",
+    ".jsx": "designer",
+    ".py": 'executor (use model="haiku" for simple changes)',
     ".vue": "designer",
     ".svelte": "designer",
-    ".css": "designer-low",
-    ".scss": "designer-low",
-    ".md": "writer (documentation)",
-    ".json": "executor-low"
+    ".css": "designer",
+    ".scss": "designer",
+    ".md": "writer",
+    ".json": "executor"
   };
   return suggestions[ext] || "executor";
 }
@@ -118883,7 +118883,7 @@ function getPromptText(input) {
   return "";
 }
 function isExplicitAskSlashInvocation(promptText) {
-  return /^\s*\/(?:oh-my-claudecode:)?ask\s+(?:claude|codex|gemini|antigravity|agy|grok|cursor)\b/i.test(promptText);
+  return /^\s*\/(?:oh-my-claudecode:)?ask\s+(?:claude|codex|gemini|antigravity|agy|grok|cursor|muse)\b/i.test(promptText);
 }
 function activateRalplanStartupState(directory, sessionId) {
   const now = (/* @__PURE__ */ new Date()).toISOString();
@@ -130655,14 +130655,14 @@ var import_path161 = require("path");
 var import_url20 = require("url");
 init_security_config();
 var ASK_USAGE = [
-  "Usage: omc ask <claude|codex|gemini|antigravity|grok|cursor> <question or task>",
-  '   or: omc ask <claude|codex|gemini|antigravity|grok|cursor> -p "<prompt>"',
-  '   or: omc ask <claude|codex|gemini|antigravity|grok|cursor> --print "<prompt>"',
-  '   or: omc ask <claude|codex|gemini|antigravity|grok|cursor> --prompt "<prompt>"',
-  '   or: omc ask <claude|codex|gemini|antigravity|grok|cursor> --agent-prompt <role> "<prompt>"',
-  '   or: omc ask <claude|codex|gemini|antigravity|grok|cursor> --agent-prompt=<role> --prompt "<prompt>"'
+  "Usage: omc ask <claude|codex|gemini|antigravity|grok|cursor|muse> <question or task>",
+  '   or: omc ask <claude|codex|gemini|antigravity|grok|cursor|muse> -p "<prompt>"',
+  '   or: omc ask <claude|codex|gemini|antigravity|grok|cursor|muse> --print "<prompt>"',
+  '   or: omc ask <claude|codex|gemini|antigravity|grok|cursor|muse> --prompt "<prompt>"',
+  '   or: omc ask <claude|codex|gemini|antigravity|grok|cursor|muse> --agent-prompt <role> "<prompt>"',
+  '   or: omc ask <claude|codex|gemini|antigravity|grok|cursor|muse> --agent-prompt=<role> --prompt "<prompt>"'
 ].join("\n");
-var ASK_PROVIDERS = ["claude", "codex", "gemini", "antigravity", "grok", "cursor"];
+var ASK_PROVIDERS = ["claude", "codex", "gemini", "antigravity", "grok", "cursor", "muse"];
 var ASK_PROVIDER_SET = new Set(ASK_PROVIDERS);
 var ASK_AGENT_PROMPT_FLAG = "--agent-prompt";
 var SAFE_ROLE_PATTERN = /^[a-z][a-z0-9-]*$/;
@@ -133329,13 +133329,6 @@ Examples:
       console.log("    executor            - Focused execution (Sonnet)");
       console.log("    planner          - Strategic planning (Opus)");
       console.log("    qa-tester           - Interactive CLI testing (Sonnet)");
-      console.log(source_default.gray("  Tiered Variants (for smart routing):"));
-      console.log("    architect-medium       - Simpler analysis (Sonnet)");
-      console.log("    architect-low          - Quick questions (Haiku)");
-      console.log("    executor-high       - Complex tasks (Opus)");
-      console.log("    executor-low        - Trivial tasks (Haiku)");
-      console.log("    designer-high       - Design systems (Opus)");
-      console.log("    designer-low        - Simple styling (Haiku)");
       console.log("");
       console.log(source_default.yellow("After Updates:"));
       console.log("  Run '/omc-default' (project) or '/omc-default-global' (global)");

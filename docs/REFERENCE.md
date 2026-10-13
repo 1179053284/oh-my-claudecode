@@ -792,29 +792,29 @@ Model-tier aliases are shown in the table below; the shipped agent catalog conta
 
 Always use `oh-my-claudecode:` prefix when calling via Task tool.
 
-### By Domain and Tier
+### By Domain
 
-| Domain             | LOW (Haiku)             | MEDIUM (Sonnet)       | HIGH (Opus)         |
-| ------------------ | ----------------------- | --------------------- | ------------------- |
-| **Analysis**       | `architect-low`         | `architect-medium`    | `architect`         |
-| **Execution**      | `executor-low`          | `executor`            | `executor-high`     |
-| **Search**         | `explore`               | -                     | `explore-high`      |
-| **Research**       | -                       | `document-specialist` | -                   |
-| **Frontend**       | `designer-low`          | `designer`            | `designer-high`     |
-| **Docs**           | `writer`                | -                     | -                   |
-| **Visual**         | -                       | `vision`              | -                   |
-| **Planning**       | -                       | -                     | `planner`           |
-| **Critique**       | -                       | -                     | `critic`            |
-| **Pre-Planning**   | -                       | -                     | `analyst`           |
-| **Testing**        | -                       | `qa-tester`           | -                   |
-| **Tracing**        | -                       | `tracer`              | -                   |
-| **Security**       | `security-reviewer-low` | -                     | `security-reviewer` |
-| **Build**          | -                       | `debugger`            | -                   |
-| **TDD**            | -                       | `test-engineer`       | -                   |
-| **Code Review**    | -                       | -                     | `code-reviewer`     |
-| **Data Analysis** | -                       | `scientist`           | `scientist-high`    |
-| **Git**            | -                       | `git-master`          | -                   |
-| **Simplification** | -                       | -                     | `code-simplifier`   |
+| Domain             | Agent                   | Default Model | Alternative Models      |
+| ------------------ | ----------------------- | ------------- | ----------------------- |
+| **Analysis**       | `architect`             | sonnet        | haiku (simple), opus (complex) |
+| **Execution**      | `executor`              | sonnet        | haiku (trivial), opus (complex) |
+| **Search**         | `explore`               | haiku         | -                       |
+| **Research**       | `document-specialist`   | sonnet        | -                       |
+| **Frontend**       | `designer`              | sonnet        | haiku (simple), opus (complex) |
+| **Docs**           | `writer`                | haiku         | -                       |
+| **Visual**         | `vision`                | sonnet        | -                       |
+| **Planning**       | `planner`               | opus          | -                       |
+| **Critique**       | `critic`                | opus          | -                       |
+| **Pre-Planning**   | `analyst`               | opus          | -                       |
+| **Testing**        | `qa-tester`             | sonnet        | -                       |
+| **Tracing**        | `tracer`                | sonnet        | -                       |
+| **Security**       | `security-reviewer`     | sonnet        | opus (complex audit)    |
+| **Build**          | `debugger`              | sonnet        | -                       |
+| **TDD**            | `test-engineer`         | sonnet        | -                       |
+| **Code Review**    | `code-reviewer`         | sonnet        | -                       |
+| **Data Analysis**  | `scientist`             | sonnet        | opus (complex analysis) |
+| **Git**            | `git-master`            | sonnet        | -                       |
+| **Simplification** | `code-simplifier`       | sonnet        | -                       |
 
 ### Agent Selection Guide
 
@@ -822,14 +822,14 @@ Always use `oh-my-claudecode:` prefix when calling via Task tool.
 | ------------------------------ | ---------------------------------------------------------------------- | ------ |
 | Quick code lookup              | `explore`                                                              | haiku  |
 | Find files/patterns            | `explore`                                                              | haiku  |
-| Complex architectural search   | `explore-high`                                                         | opus   |
-| Simple code change             | `executor-low`                                                         | haiku  |
+| Complex architectural search   | `architect`                                                            | opus   |
+| Simple code change             | `executor` (model="haiku")                                             | haiku  |
 | Feature implementation         | `executor`                                                             | sonnet |
-| Complex refactoring            | `executor-high`                                                        | opus   |
-| Debug simple issue             | `architect-low`                                                        | haiku  |
+| Complex refactoring            | `executor` (model="opus")                                              | opus   |
+| Debug simple issue             | `architect` (model="haiku")                                            | haiku  |
 | Debug complex issue            | `architect`                                                            | opus   |
 | UI component                   | `designer`                                                             | sonnet |
-| Complex UI system              | `designer-high`                                                        | opus   |
+| Complex UI system              | `designer` (model="opus")                                              | opus   |
 | Write docs/comments            | `writer`                                                               | haiku  |
 | Research docs/APIs             | `document-specialist` (repo docs first; optional Context Hub / `chub`) | sonnet |
 | Analyze images/diagrams        | `vision`                                                               | sonnet |
@@ -839,7 +839,7 @@ Always use `oh-my-claudecode:` prefix when calling via Task tool.
 | Test CLI interactively         | `qa-tester`                                                            | sonnet |
 | Evidence-driven causal tracing | `tracer`                                                               | sonnet |
 | Security review                | `security-reviewer`                                                    | sonnet |
-| Quick security scan            | `security-reviewer-low`                                                | haiku  |
+| Quick security scan            | `security-reviewer` (model="haiku")                                     | haiku  |
 | Fix build errors               | `debugger`                                                             | sonnet |
 | Simple build fix               | `debugger` (model=haiku)                                               | haiku  |
 | TDD workflow                   | `test-engineer`                                                        | sonnet |
@@ -848,7 +848,7 @@ Always use `oh-my-claudecode:` prefix when calling via Task tool.
 | Quick code check               | `code-reviewer` (model=haiku)                                          | haiku  |
 | Data analysis/stats            | `scientist`                                                            | sonnet |
 | Quick data inspection          | `scientist` (model=haiku)                                              | haiku  |
-| Deep data analysis            | `scientist-high`                                                       | opus   |
+| Deep data analysis            | `scientist` (model="opus")                                             | opus   |
 | Git operations                 | `git-master`                                                           | sonnet |
 | Code simplification            | `code-simplifier`                                                      | opus   |
 
