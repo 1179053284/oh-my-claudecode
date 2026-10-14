@@ -27974,45 +27974,27 @@
       ]
     },
     {
-      "pullNumber": 4345,
-      "targetRef": "dev",
-      "mergeBaseSha": "f3c05d8c5e2daf298143a89ac651eed4937c0fc1",
-      "headSha": "8d512c8ec8a623b2f0fea55be84848afa422b0c8",
+      "pullNumber": 4354,
+      "targetRef": "main",
+      "mergeBaseSha": "c48bdfb0665ea85d2c21056e0a5d0b28e000aecc",
+      "headSha": "0f069b2a997a7ee5876754f49ce4e05ccf184222",
       "owner": "Yeachan-Heo",
       "expiresAt": "2026-10-20T00:00:00.000Z",
       "generatedDelta": {
-        "count": 37,
-        "sha256": "a69c4d7be4fcec57189abbfb6cb18f6aa8dcb11d491be1c93cbbfc17098d9bcd"
+        "count": 14,
+        "sha256": "33cf384fe67c4c13d5593420a8b55bb70a5a460357f2f08fbb36e78ca399a780"
       },
       "generatedFiles": [
         {
           "status": "modified",
+          "filename": "bridge/claude-md-coordinator.cjs",
+          "sha": "314f564e24582c408638acdccbc38c6b3a6c6e4b",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
           "filename": "bridge/cli.cjs",
-          "sha": "f539d92aefe60972e9696a09b35059efc552d601",
-          "previousFilename": null
-        },
-        {
-          "status": "modified",
-          "filename": "dist/__tests__/delegation-enforcement-levels.test.js",
-          "sha": "e3fecb40b7db4fa63c74c69424e5d37e44fa59f2",
-          "previousFilename": null
-        },
-        {
-          "status": "modified",
-          "filename": "dist/__tests__/delegation-enforcement-levels.test.js.map",
-          "sha": "1b632a579f2d4517ca90f0c32af376471ac74725",
-          "previousFilename": null
-        },
-        {
-          "status": "modified",
-          "filename": "dist/__tests__/delegation-enforcer-integration.test.js",
-          "sha": "6364344e32e893b20cf003d5eeace9c62c0bb940",
-          "previousFilename": null
-        },
-        {
-          "status": "modified",
-          "filename": "dist/__tests__/delegation-enforcer-integration.test.js.map",
-          "sha": "d670d88ecc9d32ae85f1cc4cedb6843704b91d3c",
+          "sha": "38fdc3d6379b3846321de69b71d2ac3efcb3f294",
           "previousFilename": null
         },
         {
@@ -28025,30 +28007,6 @@
           "status": "modified",
           "filename": "dist/__tests__/keyword-detector-script.test.js.map",
           "sha": "c3a99e5c83e8873a783654a00500d594fb85f971",
-          "previousFilename": null
-        },
-        {
-          "status": "modified",
-          "filename": "dist/__tests__/load-agent-prompt.test.js",
-          "sha": "f3906dc1dad1a83b84ee1e3267e683adcb0efca2",
-          "previousFilename": null
-        },
-        {
-          "status": "modified",
-          "filename": "dist/__tests__/load-agent-prompt.test.js.map",
-          "sha": "312033f570f656be0fbb4dd20c4e8e0a83a526b6",
-          "previousFilename": null
-        },
-        {
-          "status": "modified",
-          "filename": "dist/__tests__/prompt-injection.test.js",
-          "sha": "137165fec8a731ffae070fe606ad35b7436c2f53",
-          "previousFilename": null
-        },
-        {
-          "status": "modified",
-          "filename": "dist/__tests__/prompt-injection.test.js.map",
-          "sha": "28cc0fe7b959d1037859b1e6209949b2925d683b",
           "previousFilename": null
         },
         {
@@ -28089,24 +28047,6 @@
         },
         {
           "status": "modified",
-          "filename": "dist/cli/index.d.ts.map",
-          "sha": "af251804ba00ca70617e2e7c0bd0657a705cbcf1",
-          "previousFilename": null
-        },
-        {
-          "status": "modified",
-          "filename": "dist/cli/index.js",
-          "sha": "9478ac3d1c2222612ec71a0bb803ead28844d82b",
-          "previousFilename": null
-        },
-        {
-          "status": "modified",
-          "filename": "dist/cli/index.js.map",
-          "sha": "e3ff97219e67b01fe35e72fbb878e5914cec6cf9",
-          "previousFilename": null
-        },
-        {
-          "status": "modified",
           "filename": "dist/hooks/__tests__/bridge-routing.test.js",
           "sha": "bafbd45c9d524ab68691727ccfbc26e6947bc888",
           "previousFilename": null
@@ -28119,12 +28059,6 @@
         },
         {
           "status": "modified",
-          "filename": "dist/hooks/autopilot/prompts.js",
-          "sha": "560292b8b22b94d635a3d6194661a8ec367e673d",
-          "previousFilename": null
-        },
-        {
-          "status": "modified",
           "filename": "dist/hooks/bridge.js",
           "sha": "f11a9aeec9ad01d9cdf6548bb6c7d44e1542fdb7",
           "previousFilename": null
@@ -28133,78 +28067,6 @@
           "status": "modified",
           "filename": "dist/hooks/bridge.js.map",
           "sha": "88544df87f42596f763bb8d3da910de55c344122",
-          "previousFilename": null
-        },
-        {
-          "status": "modified",
-          "filename": "dist/hooks/omc-orchestrator/index.js",
-          "sha": "d8374c57b4806a5373a4d1948947c045c86bd5b7",
-          "previousFilename": null
-        },
-        {
-          "status": "modified",
-          "filename": "dist/hooks/omc-orchestrator/index.js.map",
-          "sha": "b0cdd4c1a738533c49be1971a17e34b57b90bdee",
-          "previousFilename": null
-        },
-        {
-          "status": "modified",
-          "filename": "dist/tools/python-repl/__tests__/sandbox-guidance-parity.test.js",
-          "sha": "25a7777f090d230e77307dcfb8b43fc5c25199e7",
-          "previousFilename": null
-        },
-        {
-          "status": "modified",
-          "filename": "dist/tools/python-repl/__tests__/sandbox-guidance-parity.test.js.map",
-          "sha": "0a4736ae626d5c45b5aff3c71ddcece337f1692f",
-          "previousFilename": null
-        },
-        {
-          "status": "removed",
-          "filename": "dist/verification/tier-selector.d.ts",
-          "sha": "2b03a7f9ccda8a91e4aeacad8ad0e76a682dfe64",
-          "previousFilename": null
-        },
-        {
-          "status": "removed",
-          "filename": "dist/verification/tier-selector.d.ts.map",
-          "sha": "8079293310fdf94f972c9bb3b2567f82b670e726",
-          "previousFilename": null
-        },
-        {
-          "status": "removed",
-          "filename": "dist/verification/tier-selector.js",
-          "sha": "7e9e0627d060238fd05acc9ba12bc1fb526d318b",
-          "previousFilename": null
-        },
-        {
-          "status": "removed",
-          "filename": "dist/verification/tier-selector.js.map",
-          "sha": "ccd41c009cd6407665eda9775431e7a1bce7db60",
-          "previousFilename": null
-        },
-        {
-          "status": "removed",
-          "filename": "dist/verification/tier-selector.test.d.ts",
-          "sha": "e33379e1f5a1b29c8bd26c03ed5b05c2f4317ba5",
-          "previousFilename": null
-        },
-        {
-          "status": "removed",
-          "filename": "dist/verification/tier-selector.test.d.ts.map",
-          "sha": "3dcc137533c972b83ad58ef4b34b250594cdafa3",
-          "previousFilename": null
-        },
-        {
-          "status": "removed",
-          "filename": "dist/verification/tier-selector.test.js",
-          "sha": "5c48cec0c3c17a56043b96a8f743082347a36d0f",
-          "previousFilename": null
-        },
-        {
-          "status": "removed",
-          "filename": "dist/verification/tier-selector.test.js.map",
-          "sha": "04f22f9ef046ee8fb1b81bde9a32e044b383a1f2",
           "previousFilename": null
         }
       ]

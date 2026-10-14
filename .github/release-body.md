@@ -1,28 +1,41 @@
-# oh-my-claudecode v5.7.1: Bug Fixes
+# oh-my-claudecode v5.7.2: add Muse and
 
 ## Release Notes
 
-Release with **3 bug fixes**, **1 other change** across **4 merged PRs**.
+Release with **1 new feature**, **3 bug fixes**, **6 other changes** across **10 merged PRs**.
 
 ### Highlights
 
-- **fix(lsp_diagnostics_directory): resolve local tsc binary for Windows .cmd shim support** (#4332)
-- **fix(team): remove committed artifact and add env file cleanup test (#4330 follow-up)** (#4334)
-- **fix(team): clean up env file when guarded split execution fails (#4330)** (#4330)
+- **feat(ask): add Muse and fix Grok role prompt transport**
+
+### New Features
+
+- **feat(ask): add Muse and fix Grok role prompt transport**
 
 ### Bug Fixes
 
-- **fix(lsp_diagnostics_directory): resolve local tsc binary for Windows .cmd shim support** (#4332)
-- **fix(team): remove committed artifact and add env file cleanup test (#4330 follow-up)** (#4334)
-- **fix(team): clean up env file when guarded split execution fails (#4330)** (#4330)
+- **fix(inventory): regenerate inventory graph after #4348**
+- **fix(test): set TMPDIR for grok/muse env vars test with Windows platform**
+- **fix(ask): mirror Muse ask guard in standalone hook and document Muse in README**
+
+### Documentation
+
+- **docs: refresh inventory-graph baseline after features.md changes**
+- **docs: complete ultrawork removal from features.md**
+- **docs: remove retired ultrawork/web-clone references** (#4343)
 
 ### Other Changes
 
-- **ci: authorize generated artifacts for v5.7.0 back-merge (PR #4328)**
+- **chore: rebind PR #4345 authorization to head 6d1e331a**
+- **chore: update PR #4345 authorization with final rebuilt head 36b49bd13**
+- **ci: rebind PR #4345 authorization to head 494758c7 and merge base 5a394754**
+- **ci: rebind PR #4345 authorization for new head commit (r10)**
+- **ci: rebind PR #4345 authorization for new head commit**
+- **ci: authorize stale tier-selector dist removal for PR #4345**
 
 ### Stats
 
-- **4 PRs merged** | **0 new features** | **3 bug fixes** | **0 security/hardening improvements** | **1 other change**
+- **10 PRs merged** | **1 new feature** | **3 bug fixes** | **0 security/hardening improvements** | **6 other changes**
 
 ### Install / Update
 
@@ -31,7 +44,7 @@ The npm CLI and the Claude Code marketplace/plugin are separate install tracks, 
 **CLI / runtime:**
 
 ```bash
-npm install -g oh-my-claude-sisyphus@5.7.1
+npm install -g oh-my-claude-sisyphus@5.7.2
 ```
 
 **Claude Code plugin:**
@@ -40,4 +53,4 @@ npm install -g oh-my-claude-sisyphus@5.7.1
 /plugin marketplace update omc
 ```
 
-**Full Changelog**: https://github.com/Yeachan-Heo/oh-my-claudecode/compare/v5.7.0...v5.7.1
+**Full Changelog**: https://github.com/Yeachan-Heo/oh-my-claudecode/compare/v5.7.1...v5.7.2
