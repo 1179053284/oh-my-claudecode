@@ -1,3 +1,39 @@
+# oh-my-claudecode v5.7.3: Retire agent variant names, parallel consensus reviews
+
+## Release Notes
+
+Release with **2 improvements**, **1 bug fix**, **2 CI improvements** across **5 merged PRs**.
+
+### Highlights
+
+- **fix(#4343): Retire tiered agent variant names — use model parameter instead** (#4345)
+- **fix(#4355): Enable parallel Architect/Critic reviews when both are Claude agents** (#4358)
+- **fix(#4363): Ralph started through Skill tool now gets state with prd_mode and prd.json** (#4364)
+
+### Changes
+
+- **fix(#4343): Retire tiered agent variant names — use model parameter instead** (#4345)
+  - Replaces tier-based agent selection (fast/balanced/strong) with direct `--model` parameter
+  - Simplifies agent routing and removes tier-selector complexity
+
+- **fix(#4355): Enable parallel Architect/Critic reviews when both are Claude agents** (#4358)
+  - Allows concurrent Architect and Critic consensus reviews for improved workflow efficiency
+  - Coordination guarantees remain for non-Claude agent roles
+
+- **fix(#4363): Ralph started through Skill tool now gets state with prd_mode and prd.json** (#4364)
+  - Skill tool invocation of ralph now properly receives planning state artifacts
+  - Fixes missing PRD state when using the `skill` tool interface
+
+### CI Improvements
+
+- **fix(ci): restore inventory-graph drift baseline on dev** (#4360, #4365)
+
+### Stats
+
+- **5 PRs merged** | **0 new features** | **1 bug fix** | **2 improvements** | **2 CI improvements**
+
+---
+
 # oh-my-claudecode v5.7.2: add Muse and
 
 ## Release Notes

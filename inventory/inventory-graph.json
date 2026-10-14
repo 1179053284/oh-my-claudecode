@@ -5,15 +5,15 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "adfa4197d0250dc5559cdd7fb2ae152c97a5f9c6",
-    "sourceSha256": "88781cbf1441d2d72b50343b1f3a11f9c9b02e4ff85ebaab762efff60e506a02",
+    "head": "10155e97e1e7f4560e151da51f462b3e9304bf02",
+    "sourceSha256": "59c2aa8d62bc99dfed7dfcbe05550d5ca2787adb9411dff2d8f4e319b56723d8",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "adfa4197d0250dc5559cdd7fb2ae152c97a5f9c6",
-  "sourceSha256": "88781cbf1441d2d72b50343b1f3a11f9c9b02e4ff85ebaab762efff60e506a02",
+  "head": "10155e97e1e7f4560e151da51f462b3e9304bf02",
+  "sourceSha256": "59c2aa8d62bc99dfed7dfcbe05550d5ca2787adb9411dff2d8f4e319b56723d8",
   "counts": {
     "public": {
       "skills": 48,
@@ -28,13 +28,13 @@
       "toolFiles": 65,
       "libFiles": 48,
       "templateHooks": 23,
-      "srcFiles": 1467,
-      "total": 1490
+      "srcFiles": 1465,
+      "total": 1488
     },
     "generated": {
-      "distFiles": 5621,
+      "distFiles": 5613,
       "bridgeFiles": 9,
-      "total": 5630
+      "total": 5622
     },
     "prompt": {
       "promptLikeFiles": 61
@@ -845,6 +845,7 @@
       "scripts/lib/pre-tool-enforcer-preflight.mjs",
       "scripts/lib/precompact-publisher.mjs",
       "scripts/lib/precompact-restore.mjs",
+      "scripts/lib/ralph-startup.mjs",
       "scripts/lib/read-budget-preflight.mjs",
       "scripts/lib/run-reaper.mjs",
       "scripts/lib/skill-entitlements.mjs",
@@ -6498,14 +6499,6 @@
       "dist/utils/user-skill-compat.d.ts.map",
       "dist/utils/user-skill-compat.js",
       "dist/utils/user-skill-compat.js.map",
-      "dist/verification/tier-selector.d.ts",
-      "dist/verification/tier-selector.d.ts.map",
-      "dist/verification/tier-selector.js",
-      "dist/verification/tier-selector.js.map",
-      "dist/verification/tier-selector.test.d.ts",
-      "dist/verification/tier-selector.test.d.ts.map",
-      "dist/verification/tier-selector.test.js",
-      "dist/verification/tier-selector.test.js.map",
       "dist/workflow/__tests__/alias-resolver.test.d.ts",
       "dist/workflow/__tests__/alias-resolver.test.d.ts.map",
       "dist/workflow/__tests__/alias-resolver.test.js",
@@ -35955,46 +35948,6 @@
         "path": "dist/utils/user-skill-compat.js.map"
       },
       {
-        "id": "dist/verification/tier-selector.d.ts",
-        "kind": "generated-dist",
-        "path": "dist/verification/tier-selector.d.ts"
-      },
-      {
-        "id": "dist/verification/tier-selector.d.ts.map",
-        "kind": "generated-dist",
-        "path": "dist/verification/tier-selector.d.ts.map"
-      },
-      {
-        "id": "dist/verification/tier-selector.js",
-        "kind": "generated-dist",
-        "path": "dist/verification/tier-selector.js"
-      },
-      {
-        "id": "dist/verification/tier-selector.js.map",
-        "kind": "generated-dist",
-        "path": "dist/verification/tier-selector.js.map"
-      },
-      {
-        "id": "dist/verification/tier-selector.test.d.ts",
-        "kind": "generated-dist",
-        "path": "dist/verification/tier-selector.test.d.ts"
-      },
-      {
-        "id": "dist/verification/tier-selector.test.d.ts.map",
-        "kind": "generated-dist",
-        "path": "dist/verification/tier-selector.test.d.ts.map"
-      },
-      {
-        "id": "dist/verification/tier-selector.test.js",
-        "kind": "generated-dist",
-        "path": "dist/verification/tier-selector.test.js"
-      },
-      {
-        "id": "dist/verification/tier-selector.test.js.map",
-        "kind": "generated-dist",
-        "path": "dist/verification/tier-selector.test.js.map"
-      },
-      {
         "id": "dist/workflow/__tests__/alias-resolver.test.d.ts",
         "kind": "generated-dist",
         "path": "dist/workflow/__tests__/alias-resolver.test.d.ts"
@@ -37238,6 +37191,11 @@
         "id": "scripts/lib/precompact-restore.mjs",
         "kind": "script",
         "path": "scripts/lib/precompact-restore.mjs"
+      },
+      {
+        "id": "scripts/lib/ralph-startup.mjs",
+        "kind": "script",
+        "path": "scripts/lib/ralph-startup.mjs"
       },
       {
         "id": "scripts/lib/read-budget-preflight.mjs",
@@ -45365,16 +45323,6 @@
         "path": "src/utils/user-skill-compat.ts"
       },
       {
-        "id": "src/verification/tier-selector.test.ts",
-        "kind": "src",
-        "path": "src/verification/tier-selector.test.ts"
-      },
-      {
-        "id": "src/verification/tier-selector.ts",
-        "kind": "src",
-        "path": "src/verification/tier-selector.ts"
-      },
-      {
         "id": "src/workflow/__tests__/alias-resolver.test.ts",
         "kind": "src",
         "path": "src/workflow/__tests__/alias-resolver.test.ts"
@@ -45653,6 +45601,11 @@
         "id": "tests/integration/issue-4266-jev-temp-cleanup.test.ts",
         "kind": "other",
         "path": "tests/integration/issue-4266-jev-temp-cleanup.test.ts"
+      },
+      {
+        "id": "tests/integration/issue-4363-ralph-skill-start.test.ts",
+        "kind": "other",
+        "path": "tests/integration/issue-4363-ralph-skill-start.test.ts"
       },
       {
         "id": "tests/integration/jev-active-mode-repro.test.ts",
@@ -46943,6 +46896,11 @@
       },
       {
         "from": "scripts/keyword-detector.mjs",
+        "to": "scripts/lib/ralph-startup.mjs",
+        "kind": "imports"
+      },
+      {
+        "from": "scripts/keyword-detector.mjs",
         "to": "scripts/lib/state-root.mjs",
         "kind": "imports"
       },
@@ -47154,6 +47112,21 @@
       {
         "from": "scripts/lib/precompact-restore.mjs",
         "to": "external:url",
+        "kind": "imports"
+      },
+      {
+        "from": "scripts/lib/ralph-startup.mjs",
+        "to": "external:child_process",
+        "kind": "imports"
+      },
+      {
+        "from": "scripts/lib/ralph-startup.mjs",
+        "to": "external:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "scripts/lib/ralph-startup.mjs",
+        "to": "external:path",
         "kind": "imports"
       },
       {
@@ -47624,6 +47597,11 @@
       {
         "from": "scripts/post-tool-verifier.mjs",
         "to": "scripts/lib/jev-shadow.mjs",
+        "kind": "imports"
+      },
+      {
+        "from": "scripts/post-tool-verifier.mjs",
+        "to": "scripts/lib/ralph-startup.mjs",
         "kind": "imports"
       },
       {
@@ -86532,21 +86510,6 @@
         "kind": "imports"
       },
       {
-        "from": "src/verification/tier-selector.test.ts",
-        "to": "external:vitest",
-        "kind": "imports"
-      },
-      {
-        "from": "src/verification/tier-selector.test.ts",
-        "to": "src/verification/tier-selector.ts",
-        "kind": "imports"
-      },
-      {
-        "from": "src/verification/tier-selector.test.ts",
-        "to": "src/verification/tier-selector.ts",
-        "kind": "type-imports"
-      },
-      {
         "from": "src/workflow/__tests__/alias-resolver.test.ts",
         "to": "external:child_process",
         "kind": "imports"
@@ -87542,6 +87505,41 @@
         "kind": "imports"
       },
       {
+        "from": "tests/integration/issue-4363-ralph-skill-start.test.ts",
+        "to": "external:child_process",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/issue-4363-ralph-skill-start.test.ts",
+        "to": "external:node:crypto",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/issue-4363-ralph-skill-start.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/issue-4363-ralph-skill-start.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/issue-4363-ralph-skill-start.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/issue-4363-ralph-skill-start.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/issue-4363-ralph-skill-start.test.ts",
+        "to": "src/installer/index.ts",
+        "kind": "imports"
+      },
+      {
         "from": "tests/integration/jev-active-mode-repro.test.ts",
         "to": "external:node:child_process",
         "kind": "imports"
@@ -88348,12 +88346,12 @@
       }
     ],
     "stats": {
-      "nodeCount": 7745,
-      "edgeCount": 8500,
-      "importEdgeCount": 7054,
+      "nodeCount": 7737,
+      "edgeCount": 8509,
+      "importEdgeCount": 7064,
       "registerEdgeCount": 69
     }
   },
-  "inventorySha256": "2e0837e4a7a104cba3ba61d448dc8b8ef63af9803dcd0b248318b5f584060d25",
-  "manifestSha256": "103a8f372666f63a8b5ee37ba68d3976334c03e5641869ec8c6def2a55b03878"
+  "inventorySha256": "d11a3ba23d8ffd964115b1f162f7d2e98bcce5564b14699355479249007ebecd",
+  "manifestSha256": "db720a42fed5cb8b47912e74b732476946287edb43b282968a7c827b26b2df90"
 }
