@@ -164,5 +164,13 @@ describe('parseRuleFrontmatter trailing comments', () => {
   it('keeps # inside quotes and glued to non-space text', () => {
     expect(parse('globs: "docs/ #notes/**"').globs).toBe('docs/ #notes/**');
     expect(parse('globs: docs/#notes/**').globs).toBe('docs/#notes/**');
+    expect(parse('globs: docs/#notes/** # rule target').globs).toBe('docs/#notes/**');
+    expect(parse('globs: ["docs/ #notes/**", "src/**"] # both').globs).toEqual([
+      'docs/ #notes/**',
+      'src/**',
+    ]);
+    expect(parse('globs:\n  - "docs/ #notes/**" # docs').globs).toEqual([
+      'docs/ #notes/**',
+    ]);
   });
 });
