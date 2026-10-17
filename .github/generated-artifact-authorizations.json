@@ -28259,7 +28259,7 @@
       "mergeBaseSha": "d14d91c93af23a2d0347f800ba604eb8f45ff830",
       "headSha": "064f6852206c2880c401cc6ab6c0f5b20fbd897b",
       "owner": "Yeachan-Heo",
-      "expiresAt": "2026-10-21T00:00:00Z",
+      "expiresAt": "2026-10-21T00:00:00.000Z",
       "generatedDelta": {
         "count": 13,
         "sha256": "98529eb14a10f3ceec29fe33fd22a49b3e2e429e3661a3e55daef5a4be9a3f3d"
@@ -28341,6 +28341,86 @@
           "status": "modified",
           "filename": "dist/hooks/registry/registry.js.map",
           "sha": "6a2df90e946fc933b5afc4e9c4693a66658645cf",
+          "previousFilename": null
+        }
+      ]
+    },
+    {
+      "pullNumber": 4400,
+      "targetRef": "main",
+      "mergeBaseSha": "44c27308912cc4e95cc5f5d13543b64845ece432",
+      "headSha": "785165fe8fa6ae72b948ccc052273ac39439a64e",
+      "owner": "Yeachan-Heo",
+      "expiresAt": "2026-10-22T00:00:00.000Z",
+      "generatedDelta": {
+        "count": 11,
+        "sha256": "39b6b52fdc67b355f534f94d45fc0176d7eec98e28cc1ef6001730adac246b65"
+      },
+      "generatedFiles": [
+        {
+          "status": "modified",
+          "filename": "bridge/cli.cjs",
+          "sha": "a1c0a3bb34b450eeea27953a621bd34df507e5d4",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "bridge/mcp-server.cjs",
+          "sha": "3b4bb4187f6425f60b64618a5e5bb7e793cc6fd0",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "bridge/runtime-cli.cjs",
+          "sha": "61fec196798ad7190ded3d7071b218689c6b693d",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "bridge/team.js",
+          "sha": "ca946ba927716834c6f82a7f93cf99c1ce9339cf",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hud/stdin.d.ts",
+          "sha": "b6e7f8750a4208bad38e4e55083cee547a93f75d",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hud/stdin.js",
+          "sha": "664050ba8e8db4cb0cd431c457cb2d45d0e00c71",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/hud/types.d.ts",
+          "sha": "18178c52ecf7f21c138113a910ad42d98726f800",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/installer/index.js",
+          "sha": "384640963e72de52ccfc2cafbf40225dad18d2e2",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/lib/worktree-paths.d.ts",
+          "sha": "9c2f4966ff887cadd7901ece2fcf7ae66bb6b1f3",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/lib/worktree-paths.js",
+          "sha": "1b88af45da1fb23d8d197a7253f2f6dc32da5a82",
+          "previousFilename": null
+        },
+        {
+          "status": "modified",
+          "filename": "dist/team/runtime-v2.js",
+          "sha": "9631ae4da89122ca90d72713434dc579f30c4855",
           "previousFilename": null
         }
       ]
