@@ -2,7 +2,7 @@ import { execFileSync } from 'child_process';
 import { existsSync, realpathSync } from 'fs';
 import { readFile } from 'fs/promises';
 import { basename, join, relative, resolve } from 'path';
-import { stripLeadingUtf8Bom, unquoteYamlScalar } from '../utils/frontmatter.js';
+import { unquoteYamlScalar } from '../utils/frontmatter.js';
 function contractError(message) {
     return new Error(message);
 }
@@ -40,8 +40,7 @@ function ensurePathInside(parentPath, childPath) {
     throw contractError('mission-dir must be inside a git repository.');
 }
 function extractFrontmatter(content) {
-    // A UTF-8 BOM (Windows editors) would otherwise hide the opening `---`.
-    const match = stripLeadingUtf8Bom(content).match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
+    const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
     if (!match) {
         throw contractError('sandbox.md must start with YAML frontmatter containing evaluator.command and evaluator.format=json.');
     }

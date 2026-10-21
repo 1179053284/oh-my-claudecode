@@ -442,9 +442,8 @@ function output(value, asJson) {
     console.log(value);
 }
 function toInt(value, flag) {
-    const trimmed = value.trim();
-    const parsed = Number(trimmed);
-    if (!/^[+-]?\d+$/.test(trimmed) || !Number.isSafeInteger(parsed)) {
+    const parsed = Number.parseInt(value, 10);
+    if (!Number.isFinite(parsed)) {
         throw new Error(`Invalid ${flag} value: ${value}`);
     }
     return parsed;

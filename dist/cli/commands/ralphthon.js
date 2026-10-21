@@ -9,7 +9,6 @@
  *   omc ralphthon --poll-interval 60      Set poll interval in seconds
  */
 import chalk from "chalk";
-import { integerOption } from "../utils/integer-option.js";
 import { tmuxShell } from "../../cli/tmux-utils.js";
 import { existsSync } from "fs";
 import { readRalphthonPrd, readRalphthonState, writeRalphthonState, clearRalphthonState, initOrchestrator, startOrchestratorLoop, formatRalphthonStatus, getRalphthonPrdPath, initRalphthonPrd, sendKeysToPane, } from "../../ralphthon/index.js";
@@ -40,23 +39,8 @@ Examples:
 // ============================================================================
 // Argument Parsing
 // ============================================================================
-const parsePositiveInteger = integerOption(1);
-function parsePositiveIntegerFlag(flag, value) {
-    if (value === undefined) {
-        throw new Error(`${flag} requires a value`);
-    }
-    try {
-        return parsePositiveInteger(value);
-    }
-    catch (error) {
-        throw new Error(`${flag} ${error.message} (got "${value}")`);
-    }
-}
 /**
  * Parse ralphthon CLI arguments
- *
- * Throws when --max-waves or --poll-interval is not a positive whole number,
- * rather than silently using the default (`5x` would otherwise parse as 5).
  */
 export function parseRalphthonArgs(args) {
     const options = {
@@ -75,12 +59,18 @@ export function parseRalphthonArgs(args) {
             case "--skip-interview":
                 options.skipInterview = true;
                 break;
-            case "--max-waves":
-                options.maxWaves = parsePositiveIntegerFlag("--max-waves", args[++i]);
+            case "--max-waves": {
+                const val = parseInt(args[++i], 10);
+                if (!isNaN(val) && val > 0)
+                    options.maxWaves = val;
                 break;
-            case "--poll-interval":
-                options.pollInterval = parsePositiveIntegerFlag("--poll-interval", args[++i]);
+            }
+            case "--poll-interval": {
+                const val = parseInt(args[++i], 10);
+                if (!isNaN(val) && val > 0)
+                    options.pollInterval = val;
                 break;
+            }
             case "--help":
             case "-h":
                 console.log(RALPHTHON_HELP);
@@ -237,14 +227,7 @@ function isInsideTmux() {
  * Execute the ralphthon CLI command
  */
 export async function ralphthonCommand(args) {
-    let options;
-    try {
-        options = parseRalphthonArgs(args);
-    }
-    catch (error) {
-        console.error(chalk.red(error.message));
-        process.exit(1);
-    }
+    const options = parseRalphthonArgs(args);
     const cwd = process.cwd();
     // Resume mode
     if (options.resume) {

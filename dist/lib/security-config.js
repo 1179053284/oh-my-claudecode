@@ -15,6 +15,7 @@
  */
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
+import { z } from "zod";
 import { parseJsonc } from "../utils/jsonc.js";
 import { getConfigDir } from "../utils/paths.js";
 const DEFAULTS = {
@@ -37,24 +38,30 @@ const STRICT_OVERRIDES = {
 };
 /** Cached config to avoid re-reading files on every call */
 let cachedConfig = null;
-/** Ignore malformed fields individually; this module is loaded by the no-deps plugin HUD. */
+/**
+ * Per-field schema for the config-file security section. `.catch(undefined)`
+ * drops an invalid value for that field only, so the default/strict value stays
+ * in effect (e.g. `"restrictToolPaths": "false"` or `"hardMaxIterations": -1`
+ * would otherwise be applied verbatim). The mapped type ties the schema to
+ * `SecurityConfig`, so a new field cannot be added to one and not the other.
+ */
+const optionalBoolean = z.boolean().optional().catch(undefined);
+const securityOverrideShape = {
+    restrictToolPaths: optionalBoolean,
+    pythonSandbox: optionalBoolean,
+    disableProjectSkills: optionalBoolean,
+    disableAutoUpdate: optionalBoolean,
+    disableRemoteMcp: optionalBoolean,
+    disableExternalLLM: optionalBoolean,
+    hardMaxIterations: z.number().int().nonnegative().optional().catch(undefined),
+};
+const securityOverridesSchema = z.object(securityOverrideShape);
 function sanitizeSecurityOverrides(raw) {
+    const parsed = securityOverridesSchema.parse(raw);
     const result = {};
-    if (typeof raw.restrictToolPaths === "boolean")
-        result.restrictToolPaths = raw.restrictToolPaths;
-    if (typeof raw.pythonSandbox === "boolean")
-        result.pythonSandbox = raw.pythonSandbox;
-    if (typeof raw.disableProjectSkills === "boolean")
-        result.disableProjectSkills = raw.disableProjectSkills;
-    if (typeof raw.disableAutoUpdate === "boolean")
-        result.disableAutoUpdate = raw.disableAutoUpdate;
-    if (typeof raw.disableRemoteMcp === "boolean")
-        result.disableRemoteMcp = raw.disableRemoteMcp;
-    if (typeof raw.disableExternalLLM === "boolean")
-        result.disableExternalLLM = raw.disableExternalLLM;
-    const hardMaxIterations = raw.hardMaxIterations;
-    if (typeof hardMaxIterations === "number" && Number.isInteger(hardMaxIterations) && hardMaxIterations >= 0) {
-        result.hardMaxIterations = hardMaxIterations;
+    for (const [key, value] of Object.entries(parsed)) {
+        if (value !== undefined)
+            result[key] = value;
     }
     return result;
 }

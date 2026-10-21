@@ -219,7 +219,7 @@ export async function syncFeaturedContributorsReadme(options = {}) {
         readmePath,
     };
 }
-export function parseCliOptions(args) {
+function parseCliOptions(args) {
     const options = {
         dryRun: false,
         help: false,
@@ -243,14 +243,7 @@ export function parseCliOptions(args) {
             continue;
         }
         if (arg.startsWith('--min-stars=')) {
-            const raw = arg.slice('--min-stars='.length).trim();
-            const minStars = Number(raw);
-            // A NaN threshold makes `stars < minStars` always false, which would
-            // feature every contributor and write "NaN+ GitHub stars" into README.md.
-            if (!/^\d+$/.test(raw) || !Number.isSafeInteger(minStars)) {
-                throw new Error(`Invalid --min-stars value "${raw}": expected a non-negative integer`);
-            }
-            options.minStars = minStars;
+            options.minStars = Number(arg.slice('--min-stars='.length));
             continue;
         }
     }
