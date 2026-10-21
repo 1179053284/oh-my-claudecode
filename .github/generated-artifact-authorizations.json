@@ -31358,10 +31358,10 @@
     {
       "pullNumber": 4456,
       "targetRef": "main",
-      "mergeBaseSha": "6688a30e90d7285ff336af2dc5ab4b9709f1a8bc",
-      "headSha": "05a31886d553d5f396b819c9090d7a1f57ce4d8c",
+      "mergeBaseSha": "8bfd1befc369c054a21ababa5cc1ca20f1c91e7e",
+      "headSha": "77d916a9a2b74433c02f99582747a56fe482c7d2",
       "owner": "Yeachan-Heo",
-      "expiresAt": "2026-10-24T00:00:00.000Z",
+      "expiresAt": "2026-11-30T00:00:00.000Z",
       "generatedDelta": {
         "count": 50,
         "sha256": "93b32372d1ab04ef4ea0e7134199889bb66a02b0ee68ddacb57ff7084c0c6b06"
