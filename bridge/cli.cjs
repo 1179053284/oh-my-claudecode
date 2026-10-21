@@ -3886,13 +3886,23 @@ var init_paths = __esm({
   }
 });
 
+// scripts/lib/utf8-bom.mjs
+function stripLeadingUtf8Bom(content) {
+  return content.startsWith("\uFEFF") ? content.slice(1) : content;
+}
+var init_utf8_bom = __esm({
+  "scripts/lib/utf8-bom.mjs"() {
+    "use strict";
+  }
+});
+
 // src/utils/jsonc.ts
 function parseJsonc(content) {
   const cleaned = stripJsoncComments(content);
   return JSON.parse(cleaned);
 }
 function stripJsoncComments(content) {
-  return stripTrailingCommas(stripComments(content));
+  return stripTrailingCommas(stripComments(stripLeadingUtf8Bom(content)));
 }
 function stripComments(content) {
   let result = "";
@@ -3985,6 +3995,7 @@ function stripTrailingCommas(content) {
 var init_jsonc = __esm({
   "src/utils/jsonc.ts"() {
     "use strict";
+    init_utf8_bom();
   }
 });
 
@@ -5121,16 +5132,6 @@ var init_loader = __esm({
     ];
     OMC_STARTUP_GUIDANCE_MAX_CHARS = 8e3;
     OMC_CONTEXT_FILES_MAX_CHARS = 12e3;
-  }
-});
-
-// scripts/lib/utf8-bom.mjs
-function stripLeadingUtf8Bom(content) {
-  return content.startsWith("\uFEFF") ? content.slice(1) : content;
-}
-var init_utf8_bom = __esm({
-  "scripts/lib/utf8-bom.mjs"() {
-    "use strict";
   }
 });
 
@@ -59158,10 +59159,15 @@ function parseDiscordUserIds(envValue, configValue) {
   }
   return [];
 }
-function parseIntSafe(value) {
-  if (value == null || value === "") return void 0;
-  const parsed = parseInt(value, 10);
-  return Number.isFinite(parsed) ? parsed : void 0;
+function parsePositiveInt(value) {
+  if (typeof value === "number") {
+    return Number.isSafeInteger(value) && value >= 1 ? value : void 0;
+  }
+  if (typeof value !== "string") return void 0;
+  const trimmed = value.trim();
+  if (!/^\d+$/.test(trimmed)) return void 0;
+  const parsed = Number(trimmed);
+  return Number.isSafeInteger(parsed) && parsed >= 1 ? parsed : void 0;
 }
 function getReplyConfig() {
   const notifConfig = getNotificationConfig();
@@ -59198,9 +59204,9 @@ function getReplyConfig() {
   );
   return {
     enabled: true,
-    pollIntervalMs: parseIntSafe(process.env.OMC_REPLY_POLL_INTERVAL_MS) ?? replyRaw?.pollIntervalMs ?? 3e3,
+    pollIntervalMs: parsePositiveInt(process.env.OMC_REPLY_POLL_INTERVAL_MS) ?? parsePositiveInt(replyRaw?.pollIntervalMs) ?? 3e3,
     maxMessageLength: replyRaw?.maxMessageLength ?? 500,
-    rateLimitPerMinute: parseIntSafe(process.env.OMC_REPLY_RATE_LIMIT) ?? replyRaw?.rateLimitPerMinute ?? 10,
+    rateLimitPerMinute: parsePositiveInt(process.env.OMC_REPLY_RATE_LIMIT) ?? parsePositiveInt(replyRaw?.rateLimitPerMinute) ?? 10,
     includePrefix: process.env.OMC_REPLY_INCLUDE_PREFIX !== "false" && replyRaw?.includePrefix !== false,
     authorizedDiscordUserIds,
     authorizedSlackUserIds
