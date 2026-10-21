@@ -5,15 +5,15 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "761ecc60e413f9664fdfe36271ad21e743c7c218",
-    "sourceSha256": "ae8d5d0b1f919ab28ec842b9e8ba9dc474b0a116449440bfe452b7b35861e2cb",
+    "head": "9113143776b2fcf6b7d7194be72162998716427d",
+    "sourceSha256": "6400e91fb19b8f64067e9135b37031e801d0c93fc75d07e361bb6ea679318613",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "761ecc60e413f9664fdfe36271ad21e743c7c218",
-  "sourceSha256": "ae8d5d0b1f919ab28ec842b9e8ba9dc474b0a116449440bfe452b7b35861e2cb",
+  "head": "9113143776b2fcf6b7d7194be72162998716427d",
+  "sourceSha256": "6400e91fb19b8f64067e9135b37031e801d0c93fc75d07e361bb6ea679318613",
   "counts": {
     "public": {
       "skills": 48,
@@ -7193,6 +7193,21 @@
         "id": ".gitignore",
         "kind": "other",
         "path": ".gitignore"
+      },
+      {
+        "id": ".gjc/_session-deeb84ac-d834-4134-9ef0-db21fe005ee6/runtime/runtime-state.json",
+        "kind": "other",
+        "path": ".gjc/_session-deeb84ac-d834-4134-9ef0-db21fe005ee6/runtime/runtime-state.json"
+      },
+      {
+        "id": ".gjc/_session-deeb84ac-d834-4134-9ef0-db21fe005ee6/runtime/runtime-state.json.lock",
+        "kind": "other",
+        "path": ".gjc/_session-deeb84ac-d834-4134-9ef0-db21fe005ee6/runtime/runtime-state.json.lock"
+      },
+      {
+        "id": ".gjc/_session-deeb84ac-d834-4134-9ef0-db21fe005ee6/runtime/runtime-state.json.lock.transition.owner",
+        "kind": "other",
+        "path": ".gjc/_session-deeb84ac-d834-4134-9ef0-db21fe005ee6/runtime/runtime-state.json.lock.transition.owner"
       },
       {
         "id": ".mcp.json",
@@ -46833,6 +46848,11 @@
       },
       {
         "from": "scripts/keyword-detector.mjs",
+        "to": "scripts/lib/utf8-bom.mjs",
+        "kind": "imports"
+      },
+      {
+        "from": "scripts/keyword-detector.mjs",
         "to": "scripts/lib/workflow-profile-runtime.mjs",
         "kind": "imports"
       },
@@ -46849,6 +46869,11 @@
       {
         "from": "scripts/lib/agent-model-config.mjs",
         "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "scripts/lib/agent-model-config.mjs",
+        "to": "scripts/lib/utf8-bom.mjs",
         "kind": "imports"
       },
       {
@@ -47198,6 +47223,11 @@
       },
       {
         "from": "scripts/lib/workflow-profile-runtime.mjs",
+        "to": "scripts/lib/utf8-bom.mjs",
+        "kind": "imports"
+      },
+      {
+        "from": "scripts/lib/workflow-profile-runtime.mjs",
         "to": "scripts/lib/workflow-stage-prompts.mjs",
         "kind": "imports"
       },
@@ -47324,6 +47354,11 @@
       {
         "from": "scripts/persistent-mode.mjs",
         "to": "scripts/lib/jev-shadow.mjs",
+        "kind": "imports"
+      },
+      {
+        "from": "scripts/persistent-mode.mjs",
+        "to": "scripts/lib/utf8-bom.mjs",
         "kind": "imports"
       },
       {
@@ -86418,12 +86453,27 @@
       },
       {
         "from": "src/utils/__tests__/jsonc.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/__tests__/jsonc.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/__tests__/jsonc.test.ts",
         "to": "external:node:vm",
         "kind": "imports"
       },
       {
         "from": "src/utils/__tests__/jsonc.test.ts",
         "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/__tests__/jsonc.test.ts",
+        "to": "src/config/loader.ts",
         "kind": "imports"
       },
       {
@@ -86503,6 +86553,11 @@
       },
       {
         "from": "src/utils/frontmatter.ts",
+        "to": "scripts/lib/utf8-bom.mjs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/jsonc.ts",
         "to": "scripts/lib/utf8-bom.mjs",
         "kind": "imports"
       },
@@ -86817,6 +86872,11 @@
         "kind": "projects"
       },
       {
+        "from": "templates/hooks/keyword-detector.mjs",
+        "to": "templates/hooks/lib/utf8-bom.mjs",
+        "kind": "imports"
+      },
+      {
         "from": "templates/hooks/lib/atomic-write.mjs",
         "to": "external:crypto",
         "kind": "imports"
@@ -87103,6 +87163,11 @@
       },
       {
         "from": "templates/hooks/lib/workflow-profile-runtime.mjs",
+        "to": "templates/hooks/lib/utf8-bom.mjs",
+        "kind": "imports"
+      },
+      {
+        "from": "templates/hooks/lib/workflow-profile-runtime.mjs",
         "to": "templates/hooks/lib/workflow-stage-prompts.mjs",
         "kind": "imports"
       },
@@ -87150,6 +87215,11 @@
         "from": "templates/hooks/persistent-mode.mjs",
         "to": "src/hooks/bridge.ts",
         "kind": "projects"
+      },
+      {
+        "from": "templates/hooks/persistent-mode.mjs",
+        "to": "templates/hooks/lib/utf8-bom.mjs",
+        "kind": "imports"
       },
       {
         "from": "templates/hooks/post-tool-use-failure.mjs",
@@ -88513,12 +88583,12 @@
       }
     ],
     "stats": {
-      "nodeCount": 7726,
-      "edgeCount": 8558,
-      "importEdgeCount": 7118,
+      "nodeCount": 7729,
+      "edgeCount": 8569,
+      "importEdgeCount": 7129,
       "registerEdgeCount": 69
     }
   },
-  "inventorySha256": "6a586deacfc5713affb1719db7e321440a6193e0364af1ceec16329ba061967c",
-  "manifestSha256": "c173091ec472293b05b22b864ccb2b5494e09fe0ba7d026825f3474e2d0c3eac"
+  "inventorySha256": "1259984d82770db6d1d09f74a5811e1b0ea13e886f9a9db3d8d22115809e91a0",
+  "manifestSha256": "d35b32d7edd82d210275d7688384b2cc9a33dc73ad4566c6095456a8d45153cd"
 }
