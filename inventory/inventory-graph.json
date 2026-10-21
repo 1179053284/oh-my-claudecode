@@ -5,15 +5,15 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "fa0e76cdfbbfb3cd5fc6540e918c6166dfb0c88c",
-    "sourceSha256": "f4fe79b826e7a0104d2b6bdcc38daec4d8c26be6a1c30877bdaf5467b1a520d1",
+    "head": "9180b5ca9f33fbbeded9e55710bc4b85f2557306",
+    "sourceSha256": "15c3af5347e499600a66dd2d756188a2ce10d92b11e30e2320f311900309f87a",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "fa0e76cdfbbfb3cd5fc6540e918c6166dfb0c88c",
-  "sourceSha256": "f4fe79b826e7a0104d2b6bdcc38daec4d8c26be6a1c30877bdaf5467b1a520d1",
+  "head": "9180b5ca9f33fbbeded9e55710bc4b85f2557306",
+  "sourceSha256": "15c3af5347e499600a66dd2d756188a2ce10d92b11e30e2320f311900309f87a",
   "counts": {
     "public": {
       "skills": 48,
@@ -23,13 +23,13 @@
       "total": 97
     },
     "internal": {
-      "hookFiles": 332,
+      "hookFiles": 333,
       "featureFiles": 88,
       "toolFiles": 65,
       "libFiles": 48,
       "templateHooks": 24,
-      "srcFiles": 1468,
-      "total": 1492
+      "srcFiles": 1469,
+      "total": 1493
     },
     "generated": {
       "distFiles": 5593,
@@ -41,7 +41,7 @@
     },
     "skills": 48,
     "commands": 21,
-    "hookFiles": 332,
+    "hookFiles": 333,
     "workflows": 8,
     "agentDefinitions": 18,
     "promptLikeFiles": 61
@@ -157,6 +157,7 @@
     "hookFiles": [
       "src/hooks/AGENTS.md",
       "src/hooks/__tests__/askuserquestion-lifecycle.test.ts",
+      "src/hooks/__tests__/auto-slash-namespaced.test.ts",
       "src/hooks/__tests__/background-notifications.test.ts",
       "src/hooks/__tests__/background-process-guard.test.ts",
       "src/hooks/__tests__/bridge-openclaw.test.ts",
@@ -6523,6 +6524,7 @@
     "hookFiles": [
       "src/hooks/AGENTS.md",
       "src/hooks/__tests__/askuserquestion-lifecycle.test.ts",
+      "src/hooks/__tests__/auto-slash-namespaced.test.ts",
       "src/hooks/__tests__/background-notifications.test.ts",
       "src/hooks/__tests__/background-process-guard.test.ts",
       "src/hooks/__tests__/bridge-openclaw.test.ts",
@@ -40833,6 +40835,11 @@
         "path": "src/hooks/__tests__/askuserquestion-lifecycle.test.ts"
       },
       {
+        "id": "src/hooks/__tests__/auto-slash-namespaced.test.ts",
+        "kind": "hook",
+        "path": "src/hooks/__tests__/auto-slash-namespaced.test.ts"
+      },
+      {
         "id": "src/hooks/__tests__/background-notifications.test.ts",
         "kind": "hook",
         "path": "src/hooks/__tests__/background-notifications.test.ts"
@@ -45521,6 +45528,11 @@
         "id": "tests/integration/multirepo-workspace.test.ts",
         "kind": "other",
         "path": "tests/integration/multirepo-workspace.test.ts"
+      },
+      {
+        "id": "tests/integration/plugin-hud-node-modules-free.test.ts",
+        "kind": "other",
+        "path": "tests/integration/plugin-hud-node-modules-free.test.ts"
       },
       {
         "id": "tests/integration/runs-reconciler.test.ts",
@@ -56410,6 +56422,11 @@
         "kind": "type-imports"
       },
       {
+        "from": "src/agents/utils.ts",
+        "to": "src/utils/frontmatter.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/agents/writer.ts",
         "to": "src/agents/types.ts",
         "kind": "type-imports"
@@ -58292,6 +58309,11 @@
       {
         "from": "src/cli/commands/ralphthon.ts",
         "to": "src/cli/tmux-utils.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/cli/commands/ralphthon.ts",
+        "to": "src/cli/utils/integer-option.ts",
         "kind": "imports"
       },
       {
@@ -62393,6 +62415,16 @@
         "from": "src/hooks/__tests__/askuserquestion-lifecycle.test.ts",
         "to": "src/hooks/bridge.ts",
         "kind": "type-imports"
+      },
+      {
+        "from": "src/hooks/__tests__/auto-slash-namespaced.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hooks/__tests__/auto-slash-namespaced.test.ts",
+        "to": "src/hooks/auto-slash-command/detector.ts",
+        "kind": "imports"
       },
       {
         "from": "src/hooks/__tests__/background-notifications.test.ts",
@@ -74412,11 +74444,6 @@
       {
         "from": "src/lib/security-config.ts",
         "to": "external:path",
-        "kind": "imports"
-      },
-      {
-        "from": "src/lib/security-config.ts",
-        "to": "external:zod",
         "kind": "imports"
       },
       {
@@ -87680,6 +87707,36 @@
         "kind": "imports"
       },
       {
+        "from": "tests/integration/plugin-hud-node-modules-free.test.ts",
+        "to": "external:node:child_process",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/plugin-hud-node-modules-free.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/plugin-hud-node-modules-free.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/plugin-hud-node-modules-free.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/plugin-hud-node-modules-free.test.ts",
+        "to": "external:node:url",
+        "kind": "imports"
+      },
+      {
+        "from": "tests/integration/plugin-hud-node-modules-free.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
         "from": "tests/integration/runs-reconciler.test.ts",
         "to": "external:node:child_process",
         "kind": "imports"
@@ -88426,12 +88483,12 @@
       }
     ],
     "stats": {
-      "nodeCount": 7723,
-      "edgeCount": 8544,
-      "importEdgeCount": 7104,
+      "nodeCount": 7725,
+      "edgeCount": 8553,
+      "importEdgeCount": 7113,
       "registerEdgeCount": 69
     }
   },
-  "inventorySha256": "bc60efcf26c91fe25e3dcf72bd78ea0f55177cf5f9124a706ef05cb8a04a3973",
-  "manifestSha256": "52f1debedb457923761211decc3b104d5cfee2ec00f6e075de77be5d58c4830e"
+  "inventorySha256": "56ed15b99f83efd0887c014ccbee0a352b7aa5a10d62f51246c2392033beedff",
+  "manifestSha256": "a7db096e651308a2c7e97a62a06894c261927bafe6aa87e933440e125f2bb23e"
 }

@@ -1,3 +1,27 @@
+# oh-my-claudecode v5.7.6: Fix plugin-mode HUD loading and tighten input validation
+
+## Release Notes
+
+Hotfix for v5.7.5: the plugin HUD no longer imports Zod from the plugin cache, where `node_modules` is unavailable. This release also fixes HUD estimates, frontmatter handling, command parsing, and numeric option validation.
+
+### Bug Fixes
+
+- **fix(hud): remove the runtime Zod dependency from plugin security config** (#4454, PR #4455)
+- **fix(hud): exclude local API request records from the payload estimate** (#4437)
+- **fix(featured-contributors): reject invalid `--min-stars` values** (#4439)
+- **fix(session-end): prevent `OMC_DAILY_CHAIN_LIMIT` from flooring to zero** (#4440)
+- **fix(autoresearch): reject invalid `--max-waves` and `--poll-interval` values** (#4441)
+- **fix(team): reject non-integer numeric CLI flag values** (#4442)
+- **fix(auto-slash-command): keep the plugin namespace when parsing slash commands** (#4450)
+- **fix(agents): read frontmatter by line-anchored delimiters, including after a BOM** (#4451)
+- **fix(autoresearch): accept a leading UTF-8 BOM in `sandbox.md` frontmatter** (#4452)
+
+### Other Changes
+
+- **ci:** refresh generated-artifact authorizations and inventory metadata for the main-to-dev sync (#4444, #4445, #4449, #4453)
+
+---
+
 # oh-my-claudecode v5.7.5: More reliable frontmatter, glob matching, and worker startup
 
 ## Release Notes
