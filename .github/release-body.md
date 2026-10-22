@@ -1,31 +1,28 @@
-# oh-my-claudecode v5.7.6: Build artifact fixes and hook improvements
+# oh-my-claudecode v5.7.8: More reliable Windows workers and configuration handling
 
 ## Release Notes
 
-Maintenance release with **5 bug fixes** and **2 improvements** across **10 merged PRs**, syncing improvements from main.
-
-### Highlights
-
-- **fix: remove zod from plugin HUD security config** (#4455)
-- **fix(hooks): fall back from blank shell config directory overrides** (#4474)
-- **fix(hooks): honor trailing commas in agent model JSONC** (#4473)
+This release improves native Windows worker supervision, JSON and JSONC parsing, numeric configuration validation, think-mode matching, diagnostic environment handling, and prerelease update ordering. Thanks to @rudycelekli for contributions to #4493, #4494, #4497, #4499, #4508, #4510, and #4511.
 
 ### Bug Fixes
 
-- **fix(hud): preserve Node install global npm prefix** (#4471)
-- **fix(hud): sanitize project npm prefix environment** (#4471)
-- **fix(hud): restrict npm fallback to global prefix** (#4471)
-- **fix(autoresearch): accept a leading UTF-8 BOM in sandbox.md frontmatter** (#4452)
-- **fix(agents): read agent frontmatter by line-anchored delimiters and after a BOM** (#4451)
+- **fix(team): repair native Windows worker supervision and startup** (#4479, fixes #4386)
+- **fix(team): fit the source-bound Windows supervisor invocation and reject unresolved provider executables** (#4479)
+- **fix(team): submit tmux startup inboxes and shorten only overflowing Windows notifications** (#4479)
+- **fix(team): recognize Codex folder-trust prompts without sending task text or granting persistent trust** (#4479)
+- **fix(jsonc): accept a leading UTF-8 BOM in JSONC configuration files** (#4494)
+- **fix(notifications): reject non-positive reply polling intervals and rate limits** (#4497)
+- **fix(json): accept a leading UTF-8 BOM in hand-authored JSON files** (#4499)
+- **fix(think-mode): match multilingual think keywords as whole words** (#4493)
+- **fix(debug): read `OMC_DEBUG` through one shared convention** (#4508)
+- **fix(host-load-gate): reject malformed thresholds instead of silently truncating them** (#4510)
+- **fix(version): rank prereleases below their corresponding stable release** (#4511)
 
-### Improvements
+### Other Changes
 
-- **fix: remove zod from plugin HUD security config** (#4455) - Reduce plugin runtime security boundary
-- **fix(hooks): fall back from blank shell config directory overrides** (#4474) - Improved hook environment handling
-
-### Stats
-
-- **10 PRs merged** | **5 bug fixes** | **2 improvements**
+- **test(ci): make SessionStart timing tests deterministic** (#4514)
+- **ci:** canonicalize generated-artifact authorization timestamps and refresh authorization entries for release and sync PRs (#4480, #4504, #4507, #4509)
+- **chore(inventory): rebuild generated artifacts and inventory during the v5.7.7 main-to-dev sync** (#4506)
 
 ### Install / Update
 
@@ -34,7 +31,7 @@ The npm CLI and the Claude Code marketplace/plugin are separate install tracks, 
 **CLI / runtime:**
 
 ```bash
-npm install -g oh-my-claude-sisyphus@5.7.6
+npm install -g oh-my-claude-sisyphus@5.7.8
 ```
 
 **Claude Code plugin:**
@@ -43,4 +40,10 @@ npm install -g oh-my-claude-sisyphus@5.7.6
 /plugin marketplace update omc
 ```
 
-**Full Changelog**: https://github.com/Yeachan-Heo/oh-my-claudecode/compare/v5.7.5...v5.7.6
+**Full Changelog**: https://github.com/Yeachan-Heo/oh-my-claudecode/compare/v5.7.7...v5.7.8
+
+## Contributors
+
+Thank you to all contributors who made this release possible!
+
+@rudycelekli
