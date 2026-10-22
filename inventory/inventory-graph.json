@@ -5,15 +5,15 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "23aba1860b7d6640aa1811fd0fc85a8102c93645",
-    "sourceSha256": "e5b7e7f85a8b53e477a5c271f163dafc91b25f1497b86626a2ba9911b2d192d6",
+    "head": "ab61eb897a2d62f02c60da39200dbfa7bb5f6848",
+    "sourceSha256": "3b299377fc995aa492e03e8f627a923966e101a2445e9ee09083e6101743dea5",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "23aba1860b7d6640aa1811fd0fc85a8102c93645",
-  "sourceSha256": "e5b7e7f85a8b53e477a5c271f163dafc91b25f1497b86626a2ba9911b2d192d6",
+  "head": "ab61eb897a2d62f02c60da39200dbfa7bb5f6848",
+  "sourceSha256": "3b299377fc995aa492e03e8f627a923966e101a2445e9ee09083e6101743dea5",
   "counts": {
     "public": {
       "skills": 48,
@@ -32,9 +32,9 @@
       "total": 1503
     },
     "generated": {
-      "distFiles": 5735,
+      "distFiles": 5739,
       "bridgeFiles": 9,
-      "total": 5744
+      "total": 5748
     },
     "prompt": {
       "promptLikeFiles": 61
@@ -6567,6 +6567,8 @@
       "dist/utils/daemon-module-path.d.ts.map",
       "dist/utils/daemon-module-path.js",
       "dist/utils/daemon-module-path.js.map",
+      "dist/utils/debug-flag.d.ts",
+      "dist/utils/debug-flag.js",
       "dist/utils/encode-project-path.d.ts",
       "dist/utils/encode-project-path.d.ts.map",
       "dist/utils/encode-project-path.js",
@@ -6599,6 +6601,8 @@
       "dist/utils/resolve-node.d.ts.map",
       "dist/utils/resolve-node.js",
       "dist/utils/resolve-node.js.map",
+      "dist/utils/semver-compare.d.ts",
+      "dist/utils/semver-compare.js",
       "dist/utils/skill-pipeline.d.ts",
       "dist/utils/skill-pipeline.d.ts.map",
       "dist/utils/skill-pipeline.js",
@@ -36416,6 +36420,16 @@
         "path": "dist/utils/daemon-module-path.js.map"
       },
       {
+        "id": "dist/utils/debug-flag.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/utils/debug-flag.d.ts"
+      },
+      {
+        "id": "dist/utils/debug-flag.js",
+        "kind": "generated-dist",
+        "path": "dist/utils/debug-flag.js"
+      },
+      {
         "id": "dist/utils/encode-project-path.d.ts",
         "kind": "generated-dist",
         "path": "dist/utils/encode-project-path.d.ts"
@@ -36574,6 +36588,16 @@
         "id": "dist/utils/resolve-node.js.map",
         "kind": "generated-dist",
         "path": "dist/utils/resolve-node.js.map"
+      },
+      {
+        "id": "dist/utils/semver-compare.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/utils/semver-compare.d.ts"
+      },
+      {
+        "id": "dist/utils/semver-compare.js",
+        "kind": "generated-dist",
+        "path": "dist/utils/semver-compare.js"
       },
       {
         "id": "dist/utils/skill-pipeline.d.ts",
@@ -89729,12 +89753,12 @@
       }
     ],
     "stats": {
-      "nodeCount": 7882,
+      "nodeCount": 7886,
       "edgeCount": 8616,
       "importEdgeCount": 7175,
       "registerEdgeCount": 69
     }
   },
   "inventorySha256": "90005b8fd59d366d462088faf329f8fdb3042d94c6a906daaedb7fe185aadbf9",
-  "manifestSha256": "9cc9ea3da2a49f3ec6cd144352d3f4391fb53dd8bcbbaa3bcb212ec4e734e9ce"
+  "manifestSha256": "d065ea2ef41ec1331ec5e7a4f0a0de74f6017ff5fcdaed47f1dc84a32fb5cde9"
 }
