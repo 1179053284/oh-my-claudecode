@@ -5,15 +5,15 @@
   "provenance": {
     "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
     "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-    "head": "530cde48fde955efb58f79e9866ae991a12256eb",
-    "sourceSha256": "f2b89be1c283693e6cbd96e560904a40c721f83b43fbc13d1cf7d3af1e5da5f9",
+    "head": "7bd1371f8ceaaed4f7cb02c62a3b1c7e0a23dc60",
+    "sourceSha256": "f982f691ab19aa32743ec02a440499810514e19f3cec58b0da9ed08755001446",
     "generatedAt": null,
     "generator": "scripts/generate-inventory-graph.mjs"
   },
   "base": "05c800f40d1ad53b42a78609d2667ef4f726808b",
   "planningHead": "0a91273e61dbbd47eb0af4c02844409251e08398",
-  "head": "530cde48fde955efb58f79e9866ae991a12256eb",
-  "sourceSha256": "f2b89be1c283693e6cbd96e560904a40c721f83b43fbc13d1cf7d3af1e5da5f9",
+  "head": "7bd1371f8ceaaed4f7cb02c62a3b1c7e0a23dc60",
+  "sourceSha256": "f982f691ab19aa32743ec02a440499810514e19f3cec58b0da9ed08755001446",
   "counts": {
     "public": {
       "skills": 48,
@@ -23,25 +23,25 @@
       "total": 97
     },
     "internal": {
-      "hookFiles": 333,
+      "hookFiles": 335,
       "featureFiles": 88,
       "toolFiles": 65,
       "libFiles": 48,
       "templateHooks": 24,
-      "srcFiles": 1469,
-      "total": 1493
+      "srcFiles": 1479,
+      "total": 1503
     },
     "generated": {
-      "distFiles": 5593,
+      "distFiles": 5739,
       "bridgeFiles": 9,
-      "total": 5602
+      "total": 5748
     },
     "prompt": {
       "promptLikeFiles": 61
     },
     "skills": 48,
     "commands": 21,
-    "hookFiles": 333,
+    "hookFiles": 335,
     "workflows": 8,
     "agentDefinitions": 18,
     "promptLikeFiles": 61
@@ -355,6 +355,7 @@
       "src/hooks/prompt-prerequisites/index.ts",
       "src/hooks/ralph/__tests__/feedback-baseline.test.ts",
       "src/hooks/ralph/__tests__/jev-verdict-shadow.test.ts",
+      "src/hooks/ralph/__tests__/prd-read.test.ts",
       "src/hooks/ralph/feedback-baseline.ts",
       "src/hooks/ralph/index.ts",
       "src/hooks/ralph/jev-shadow.ts",
@@ -458,6 +459,7 @@
       "src/hooks/team-pipeline/transitions.ts",
       "src/hooks/team-pipeline/types.ts",
       "src/hooks/team-worker-hook.ts",
+      "src/hooks/think-mode/__tests__/detector-boundaries.test.ts",
       "src/hooks/think-mode/__tests__/index.test.ts",
       "src/hooks/think-mode/detector.ts",
       "src/hooks/think-mode/index.ts",
@@ -1014,6 +1016,10 @@
       "dist/__tests__/cli-win32-warning.test.d.ts.map",
       "dist/__tests__/cli-win32-warning.test.js",
       "dist/__tests__/cli-win32-warning.test.js.map",
+      "dist/__tests__/commands-frontmatter-crlf.test.d.ts",
+      "dist/__tests__/commands-frontmatter-crlf.test.d.ts.map",
+      "dist/__tests__/commands-frontmatter-crlf.test.js",
+      "dist/__tests__/commands-frontmatter-crlf.test.js.map",
       "dist/__tests__/compact-denylist.test.d.ts",
       "dist/__tests__/compact-denylist.test.d.ts.map",
       "dist/__tests__/compact-denylist.test.js",
@@ -1186,6 +1192,10 @@
       "dist/__tests__/hud/background-cleanup.test.d.ts.map",
       "dist/__tests__/hud/background-cleanup.test.js",
       "dist/__tests__/hud/background-cleanup.test.js.map",
+      "dist/__tests__/hud/background-history-cap.test.d.ts",
+      "dist/__tests__/hud/background-history-cap.test.d.ts.map",
+      "dist/__tests__/hud/background-history-cap.test.js",
+      "dist/__tests__/hud/background-history-cap.test.js.map",
       "dist/__tests__/hud/background-tasks.test.d.ts",
       "dist/__tests__/hud/background-tasks.test.d.ts.map",
       "dist/__tests__/hud/background-tasks.test.js",
@@ -1210,6 +1220,10 @@
       "dist/__tests__/hud/custom-rate-provider.test.d.ts.map",
       "dist/__tests__/hud/custom-rate-provider.test.js",
       "dist/__tests__/hud/custom-rate-provider.test.js.map",
+      "dist/__tests__/hud/cwd-hyperlink-boundary.test.d.ts",
+      "dist/__tests__/hud/cwd-hyperlink-boundary.test.d.ts.map",
+      "dist/__tests__/hud/cwd-hyperlink-boundary.test.js",
+      "dist/__tests__/hud/cwd-hyperlink-boundary.test.js.map",
       "dist/__tests__/hud/cwd.test.d.ts",
       "dist/__tests__/hud/cwd.test.d.ts.map",
       "dist/__tests__/hud/cwd.test.js",
@@ -1218,6 +1232,10 @@
       "dist/__tests__/hud/defaults.test.d.ts.map",
       "dist/__tests__/hud/defaults.test.js",
       "dist/__tests__/hud/defaults.test.js.map",
+      "dist/__tests__/hud/effort.test.d.ts",
+      "dist/__tests__/hud/effort.test.d.ts.map",
+      "dist/__tests__/hud/effort.test.js",
+      "dist/__tests__/hud/effort.test.js.map",
       "dist/__tests__/hud/extra-usage.test.d.ts",
       "dist/__tests__/hud/extra-usage.test.d.ts.map",
       "dist/__tests__/hud/extra-usage.test.js",
@@ -1322,6 +1340,10 @@
       "dist/__tests__/hud/transcript-agent-lifecycle.test.d.ts.map",
       "dist/__tests__/hud/transcript-agent-lifecycle.test.js",
       "dist/__tests__/hud/transcript-agent-lifecycle.test.js.map",
+      "dist/__tests__/hud/transcript-task-tools.test.d.ts",
+      "dist/__tests__/hud/transcript-task-tools.test.d.ts.map",
+      "dist/__tests__/hud/transcript-task-tools.test.js",
+      "dist/__tests__/hud/transcript-task-tools.test.js.map",
       "dist/__tests__/hud/update-hint.test.d.ts",
       "dist/__tests__/hud/update-hint.test.d.ts.map",
       "dist/__tests__/hud/update-hint.test.js",
@@ -1670,6 +1692,18 @@
       "dist/__tests__/psm-tmux-naming.test.d.ts.map",
       "dist/__tests__/psm-tmux-naming.test.js",
       "dist/__tests__/psm-tmux-naming.test.js.map",
+      "dist/__tests__/purge-stale-cache-relink.test.d.ts",
+      "dist/__tests__/purge-stale-cache-relink.test.d.ts.map",
+      "dist/__tests__/purge-stale-cache-relink.test.js",
+      "dist/__tests__/purge-stale-cache-relink.test.js.map",
+      "dist/__tests__/purge-stale-cache-symlink.integration.test.d.ts",
+      "dist/__tests__/purge-stale-cache-symlink.integration.test.d.ts.map",
+      "dist/__tests__/purge-stale-cache-symlink.integration.test.js",
+      "dist/__tests__/purge-stale-cache-symlink.integration.test.js.map",
+      "dist/__tests__/purge-stale-cache-validation.test.d.ts",
+      "dist/__tests__/purge-stale-cache-validation.test.d.ts.map",
+      "dist/__tests__/purge-stale-cache-validation.test.js",
+      "dist/__tests__/purge-stale-cache-validation.test.js.map",
       "dist/__tests__/purge-stale-cache.integration.test.d.ts",
       "dist/__tests__/purge-stale-cache.integration.test.d.ts.map",
       "dist/__tests__/purge-stale-cache.integration.test.js",
@@ -1718,6 +1752,10 @@
       "dist/__tests__/rate-limit-wait/pane-fresh-capture.test.d.ts.map",
       "dist/__tests__/rate-limit-wait/pane-fresh-capture.test.js",
       "dist/__tests__/rate-limit-wait/pane-fresh-capture.test.js.map",
+      "dist/__tests__/rate-limit-wait/quota-confirmation.test.d.ts",
+      "dist/__tests__/rate-limit-wait/quota-confirmation.test.d.ts.map",
+      "dist/__tests__/rate-limit-wait/quota-confirmation.test.js",
+      "dist/__tests__/rate-limit-wait/quota-confirmation.test.js.map",
       "dist/__tests__/rate-limit-wait/rate-limit-monitor.test.d.ts",
       "dist/__tests__/rate-limit-wait/rate-limit-monitor.test.d.ts.map",
       "dist/__tests__/rate-limit-wait/rate-limit-monitor.test.js",
@@ -2250,6 +2288,10 @@
       "dist/cli/__tests__/hud-watch.test.d.ts.map",
       "dist/cli/__tests__/hud-watch.test.js",
       "dist/cli/__tests__/hud-watch.test.js.map",
+      "dist/cli/__tests__/integer-option.test.d.ts",
+      "dist/cli/__tests__/integer-option.test.d.ts.map",
+      "dist/cli/__tests__/integer-option.test.js",
+      "dist/cli/__tests__/integer-option.test.js.map",
       "dist/cli/__tests__/launch-secure-transport.test.d.ts",
       "dist/cli/__tests__/launch-secure-transport.test.d.ts.map",
       "dist/cli/__tests__/launch-secure-transport.test.js",
@@ -2278,6 +2320,10 @@
       "dist/cli/__tests__/session-search-help.test.d.ts.map",
       "dist/cli/__tests__/session-search-help.test.js",
       "dist/cli/__tests__/session-search-help.test.js.map",
+      "dist/cli/__tests__/session-search-terminal.test.d.ts",
+      "dist/cli/__tests__/session-search-terminal.test.d.ts.map",
+      "dist/cli/__tests__/session-search-terminal.test.js",
+      "dist/cli/__tests__/session-search-terminal.test.js.map",
       "dist/cli/__tests__/session-search.test.d.ts",
       "dist/cli/__tests__/session-search.test.d.ts.map",
       "dist/cli/__tests__/session-search.test.js",
@@ -2366,6 +2412,10 @@
       "dist/cli/commands/__tests__/factory-init.test.d.ts.map",
       "dist/cli/commands/__tests__/factory-init.test.js",
       "dist/cli/commands/__tests__/factory-init.test.js.map",
+      "dist/cli/commands/__tests__/factory-listen-port.test.d.ts",
+      "dist/cli/commands/__tests__/factory-listen-port.test.d.ts.map",
+      "dist/cli/commands/__tests__/factory-listen-port.test.js",
+      "dist/cli/commands/__tests__/factory-listen-port.test.js.map",
       "dist/cli/commands/__tests__/intake-headless-flag.test.d.ts",
       "dist/cli/commands/__tests__/intake-headless-flag.test.d.ts.map",
       "dist/cli/commands/__tests__/intake-headless-flag.test.js",
@@ -2390,6 +2440,10 @@
       "dist/cli/commands/__tests__/ultragoal.test.d.ts.map",
       "dist/cli/commands/__tests__/ultragoal.test.js",
       "dist/cli/commands/__tests__/ultragoal.test.js.map",
+      "dist/cli/commands/__tests__/wait.test.d.ts",
+      "dist/cli/commands/__tests__/wait.test.d.ts.map",
+      "dist/cli/commands/__tests__/wait.test.js",
+      "dist/cli/commands/__tests__/wait.test.js.map",
       "dist/cli/commands/alias-retirement.d.ts",
       "dist/cli/commands/alias-retirement.d.ts.map",
       "dist/cli/commands/alias-retirement.js",
@@ -2844,7 +2898,9 @@
       "dist/features/notepad-wisdom/types.js",
       "dist/features/notepad-wisdom/types.js.map",
       "dist/features/rate-limit-wait/daemon-state.d.ts",
+      "dist/features/rate-limit-wait/daemon-state.d.ts.map",
       "dist/features/rate-limit-wait/daemon-state.js",
+      "dist/features/rate-limit-wait/daemon-state.js.map",
       "dist/features/rate-limit-wait/daemon.d.ts",
       "dist/features/rate-limit-wait/daemon.d.ts.map",
       "dist/features/rate-limit-wait/daemon.js",
@@ -2889,6 +2945,10 @@
       "dist/features/state-manager/__tests__/cache.test.d.ts.map",
       "dist/features/state-manager/__tests__/cache.test.js",
       "dist/features/state-manager/__tests__/cache.test.js.map",
+      "dist/features/state-manager/__tests__/glob-patterns.test.d.ts",
+      "dist/features/state-manager/__tests__/glob-patterns.test.d.ts.map",
+      "dist/features/state-manager/__tests__/glob-patterns.test.js",
+      "dist/features/state-manager/__tests__/glob-patterns.test.js.map",
       "dist/features/state-manager/index.d.ts",
       "dist/features/state-manager/index.d.ts.map",
       "dist/features/state-manager/index.js",
@@ -3089,6 +3149,10 @@
       "dist/hooks/__tests__/askuserquestion-lifecycle.test.d.ts.map",
       "dist/hooks/__tests__/askuserquestion-lifecycle.test.js",
       "dist/hooks/__tests__/askuserquestion-lifecycle.test.js.map",
+      "dist/hooks/__tests__/auto-slash-namespaced.test.d.ts",
+      "dist/hooks/__tests__/auto-slash-namespaced.test.d.ts.map",
+      "dist/hooks/__tests__/auto-slash-namespaced.test.js",
+      "dist/hooks/__tests__/auto-slash-namespaced.test.js.map",
       "dist/hooks/__tests__/background-notifications.test.d.ts",
       "dist/hooks/__tests__/background-notifications.test.d.ts.map",
       "dist/hooks/__tests__/background-notifications.test.js",
@@ -3433,6 +3497,10 @@
       "dist/hooks/factcheck/__tests__/sentinel.test.d.ts.map",
       "dist/hooks/factcheck/__tests__/sentinel.test.js",
       "dist/hooks/factcheck/__tests__/sentinel.test.js.map",
+      "dist/hooks/factcheck/__tests__/strict-mode-glob.test.d.ts",
+      "dist/hooks/factcheck/__tests__/strict-mode-glob.test.d.ts.map",
+      "dist/hooks/factcheck/__tests__/strict-mode-glob.test.js",
+      "dist/hooks/factcheck/__tests__/strict-mode-glob.test.js.map",
       "dist/hooks/factcheck/checks.d.ts",
       "dist/hooks/factcheck/checks.d.ts.map",
       "dist/hooks/factcheck/checks.js",
@@ -3677,6 +3745,10 @@
       "dist/hooks/persistent-mode/__tests__/prompt-truncation.test.d.ts.map",
       "dist/hooks/persistent-mode/__tests__/prompt-truncation.test.js",
       "dist/hooks/persistent-mode/__tests__/prompt-truncation.test.js.map",
+      "dist/hooks/persistent-mode/__tests__/ralph-hard-max-script.test.d.ts",
+      "dist/hooks/persistent-mode/__tests__/ralph-hard-max-script.test.d.ts.map",
+      "dist/hooks/persistent-mode/__tests__/ralph-hard-max-script.test.js",
+      "dist/hooks/persistent-mode/__tests__/ralph-hard-max-script.test.js.map",
       "dist/hooks/persistent-mode/__tests__/ralph-hard-max.test.d.ts",
       "dist/hooks/persistent-mode/__tests__/ralph-hard-max.test.d.ts.map",
       "dist/hooks/persistent-mode/__tests__/ralph-hard-max.test.js",
@@ -4093,6 +4165,10 @@
       "dist/hooks/session-end/__tests__/team-cleanup.test.d.ts.map",
       "dist/hooks/session-end/__tests__/team-cleanup.test.js",
       "dist/hooks/session-end/__tests__/team-cleanup.test.js.map",
+      "dist/hooks/session-end/__tests__/wiki-foreground-bootstrap.test.d.ts",
+      "dist/hooks/session-end/__tests__/wiki-foreground-bootstrap.test.d.ts.map",
+      "dist/hooks/session-end/__tests__/wiki-foreground-bootstrap.test.js",
+      "dist/hooks/session-end/__tests__/wiki-foreground-bootstrap.test.js.map",
       "dist/hooks/session-end/__tests__/worker.test.d.ts",
       "dist/hooks/session-end/__tests__/worker.test.d.ts.map",
       "dist/hooks/session-end/__tests__/worker.test.js",
@@ -4142,7 +4218,9 @@
       "dist/hooks/session-end/spawn-next.js",
       "dist/hooks/session-end/spawn-next.js.map",
       "dist/hooks/session-end/wiki-foreground-bootstrap.d.ts",
+      "dist/hooks/session-end/wiki-foreground-bootstrap.d.ts.map",
       "dist/hooks/session-end/wiki-foreground-bootstrap.js",
+      "dist/hooks/session-end/wiki-foreground-bootstrap.js.map",
       "dist/hooks/session-end/worker.d.ts",
       "dist/hooks/session-end/worker.d.ts.map",
       "dist/hooks/session-end/worker.js",
@@ -4396,6 +4474,10 @@
       "dist/hud/__tests__/autopilot-profile.test.d.ts.map",
       "dist/hud/__tests__/autopilot-profile.test.js",
       "dist/hud/__tests__/autopilot-profile.test.js.map",
+      "dist/hud/__tests__/custom-provider-cache-identity.test.d.ts",
+      "dist/hud/__tests__/custom-provider-cache-identity.test.d.ts.map",
+      "dist/hud/__tests__/custom-provider-cache-identity.test.js",
+      "dist/hud/__tests__/custom-provider-cache-identity.test.js.map",
       "dist/hud/__tests__/custom-rate-provider.test.d.ts",
       "dist/hud/__tests__/custom-rate-provider.test.d.ts.map",
       "dist/hud/__tests__/custom-rate-provider.test.js",
@@ -4469,7 +4551,9 @@
       "dist/hud/elements/cwd.js",
       "dist/hud/elements/cwd.js.map",
       "dist/hud/elements/effort.d.ts",
+      "dist/hud/elements/effort.d.ts.map",
       "dist/hud/elements/effort.js",
+      "dist/hud/elements/effort.js.map",
       "dist/hud/elements/enterprise-cost.d.ts",
       "dist/hud/elements/enterprise-cost.d.ts.map",
       "dist/hud/elements/enterprise-cost.js",
@@ -4807,6 +4891,10 @@
       "dist/lib/__tests__/worktree-paths-git-timeout.test.d.ts.map",
       "dist/lib/__tests__/worktree-paths-git-timeout.test.js",
       "dist/lib/__tests__/worktree-paths-git-timeout.test.js.map",
+      "dist/lib/__tests__/worktree-paths-issue-4254-win32.test.d.ts",
+      "dist/lib/__tests__/worktree-paths-issue-4254-win32.test.d.ts.map",
+      "dist/lib/__tests__/worktree-paths-issue-4254-win32.test.js",
+      "dist/lib/__tests__/worktree-paths-issue-4254-win32.test.js.map",
       "dist/lib/__tests__/worktree-paths-nongit-anchor.test.d.ts",
       "dist/lib/__tests__/worktree-paths-nongit-anchor.test.d.ts.map",
       "dist/lib/__tests__/worktree-paths-nongit-anchor.test.js",
@@ -4923,6 +5011,10 @@
       "dist/lib/worktree-paths.d.ts.map",
       "dist/lib/worktree-paths.js",
       "dist/lib/worktree-paths.js.map",
+      "dist/mcp/__tests__/omc-tools-server.test.d.ts",
+      "dist/mcp/__tests__/omc-tools-server.test.d.ts.map",
+      "dist/mcp/__tests__/omc-tools-server.test.js",
+      "dist/mcp/__tests__/omc-tools-server.test.js.map",
       "dist/mcp/__tests__/prompt-injection.test.d.ts",
       "dist/mcp/__tests__/prompt-injection.test.d.ts.map",
       "dist/mcp/__tests__/prompt-injection.test.js",
@@ -5011,10 +5103,18 @@
       "dist/notifications/__tests__/config.test.d.ts.map",
       "dist/notifications/__tests__/config.test.js",
       "dist/notifications/__tests__/config.test.js.map",
+      "dist/notifications/__tests__/custom-config-shapes.test.d.ts",
+      "dist/notifications/__tests__/custom-config-shapes.test.d.ts.map",
+      "dist/notifications/__tests__/custom-config-shapes.test.js",
+      "dist/notifications/__tests__/custom-config-shapes.test.js.map",
       "dist/notifications/__tests__/custom-integration.test.d.ts",
       "dist/notifications/__tests__/custom-integration.test.d.ts.map",
       "dist/notifications/__tests__/custom-integration.test.js",
       "dist/notifications/__tests__/custom-integration.test.js.map",
+      "dist/notifications/__tests__/custom-webhook-body.test.d.ts",
+      "dist/notifications/__tests__/custom-webhook-body.test.d.ts.map",
+      "dist/notifications/__tests__/custom-webhook-body.test.js",
+      "dist/notifications/__tests__/custom-webhook-body.test.js.map",
       "dist/notifications/__tests__/dispatcher.test.d.ts",
       "dist/notifications/__tests__/dispatcher.test.d.ts.map",
       "dist/notifications/__tests__/dispatcher.test.js",
@@ -5055,6 +5155,10 @@
       "dist/notifications/__tests__/reply-listener.test.d.ts.map",
       "dist/notifications/__tests__/reply-listener.test.js",
       "dist/notifications/__tests__/reply-listener.test.js.map",
+      "dist/notifications/__tests__/session-registry-durability.test.d.ts",
+      "dist/notifications/__tests__/session-registry-durability.test.d.ts.map",
+      "dist/notifications/__tests__/session-registry-durability.test.js",
+      "dist/notifications/__tests__/session-registry-durability.test.js.map",
       "dist/notifications/__tests__/session-registry.test.d.ts",
       "dist/notifications/__tests__/session-registry.test.d.ts.map",
       "dist/notifications/__tests__/session-registry.test.js",
@@ -5307,6 +5411,10 @@
       "dist/skills/__tests__/omc-doctor-skill.test.d.ts.map",
       "dist/skills/__tests__/omc-doctor-skill.test.js",
       "dist/skills/__tests__/omc-doctor-skill.test.js.map",
+      "dist/skills/__tests__/omc-setup-optout.test.d.ts",
+      "dist/skills/__tests__/omc-setup-optout.test.d.ts.map",
+      "dist/skills/__tests__/omc-setup-optout.test.js",
+      "dist/skills/__tests__/omc-setup-optout.test.js.map",
       "dist/skills/__tests__/skill-config-dir.test.d.ts",
       "dist/skills/__tests__/skill-config-dir.test.d.ts.map",
       "dist/skills/__tests__/skill-config-dir.test.js",
@@ -5459,6 +5567,14 @@
       "dist/team/__tests__/index.compat-exports.test.d.ts.map",
       "dist/team/__tests__/index.compat-exports.test.js",
       "dist/team/__tests__/index.compat-exports.test.js.map",
+      "dist/team/__tests__/issue-4261-cmux-team-failures.test.d.ts",
+      "dist/team/__tests__/issue-4261-cmux-team-failures.test.d.ts.map",
+      "dist/team/__tests__/issue-4261-cmux-team-failures.test.js",
+      "dist/team/__tests__/issue-4261-cmux-team-failures.test.js.map",
+      "dist/team/__tests__/issue-4412-cmux-startup.test.d.ts",
+      "dist/team/__tests__/issue-4412-cmux-startup.test.d.ts.map",
+      "dist/team/__tests__/issue-4412-cmux-startup.test.js",
+      "dist/team/__tests__/issue-4412-cmux-startup.test.js.map",
       "dist/team/__tests__/leader-inbox.test.d.ts",
       "dist/team/__tests__/leader-inbox.test.d.ts.map",
       "dist/team/__tests__/leader-inbox.test.js",
@@ -5795,10 +5911,18 @@
       "dist/team/__tests__/unified-team.test.d.ts.map",
       "dist/team/__tests__/unified-team.test.js",
       "dist/team/__tests__/unified-team.test.js.map",
+      "dist/team/__tests__/usage-record-shape.test.d.ts",
+      "dist/team/__tests__/usage-record-shape.test.d.ts.map",
+      "dist/team/__tests__/usage-record-shape.test.js",
+      "dist/team/__tests__/usage-record-shape.test.js.map",
       "dist/team/__tests__/usage-tracker.test.d.ts",
       "dist/team/__tests__/usage-tracker.test.d.ts.map",
       "dist/team/__tests__/usage-tracker.test.js",
       "dist/team/__tests__/usage-tracker.test.js.map",
+      "dist/team/__tests__/usage-unicode-counts.test.d.ts",
+      "dist/team/__tests__/usage-unicode-counts.test.d.ts.map",
+      "dist/team/__tests__/usage-unicode-counts.test.js",
+      "dist/team/__tests__/usage-unicode-counts.test.js.map",
       "dist/team/__tests__/worker-activation-gate.test.d.ts",
       "dist/team/__tests__/worker-activation-gate.test.d.ts.map",
       "dist/team/__tests__/worker-activation-gate.test.js",
@@ -6199,6 +6323,18 @@
       "dist/tools/diagnostics/__tests__/lsp-aggregator.test.d.ts.map",
       "dist/tools/diagnostics/__tests__/lsp-aggregator.test.js",
       "dist/tools/diagnostics/__tests__/lsp-aggregator.test.js.map",
+      "dist/tools/diagnostics/__tests__/tsc-project-failures.test.d.ts",
+      "dist/tools/diagnostics/__tests__/tsc-project-failures.test.d.ts.map",
+      "dist/tools/diagnostics/__tests__/tsc-project-failures.test.js",
+      "dist/tools/diagnostics/__tests__/tsc-project-failures.test.js.map",
+      "dist/tools/diagnostics/__tests__/tsc-runner-resolution.test.d.ts",
+      "dist/tools/diagnostics/__tests__/tsc-runner-resolution.test.d.ts.map",
+      "dist/tools/diagnostics/__tests__/tsc-runner-resolution.test.js",
+      "dist/tools/diagnostics/__tests__/tsc-runner-resolution.test.js.map",
+      "dist/tools/diagnostics/__tests__/tsc-runner.test.d.ts",
+      "dist/tools/diagnostics/__tests__/tsc-runner.test.d.ts.map",
+      "dist/tools/diagnostics/__tests__/tsc-runner.test.js",
+      "dist/tools/diagnostics/__tests__/tsc-runner.test.js.map",
       "dist/tools/diagnostics/index.d.ts",
       "dist/tools/diagnostics/index.d.ts.map",
       "dist/tools/diagnostics/index.js",
@@ -6259,6 +6395,10 @@
       "dist/tools/lsp/__tests__/devcontainer.test.d.ts.map",
       "dist/tools/lsp/__tests__/devcontainer.test.js",
       "dist/tools/lsp/__tests__/devcontainer.test.js.map",
+      "dist/tools/lsp/__tests__/utils-file-uri.test.d.ts",
+      "dist/tools/lsp/__tests__/utils-file-uri.test.d.ts.map",
+      "dist/tools/lsp/__tests__/utils-file-uri.test.js",
+      "dist/tools/lsp/__tests__/utils-file-uri.test.js.map",
       "dist/tools/lsp/client.d.ts",
       "dist/tools/lsp/client.d.ts.map",
       "dist/tools/lsp/client.js",
@@ -6427,6 +6567,8 @@
       "dist/utils/daemon-module-path.d.ts.map",
       "dist/utils/daemon-module-path.js",
       "dist/utils/daemon-module-path.js.map",
+      "dist/utils/debug-flag.d.ts",
+      "dist/utils/debug-flag.js",
       "dist/utils/encode-project-path.d.ts",
       "dist/utils/encode-project-path.d.ts.map",
       "dist/utils/encode-project-path.js",
@@ -6440,7 +6582,9 @@
       "dist/utils/jsonc.js",
       "dist/utils/jsonc.js.map",
       "dist/utils/node-version.d.ts",
+      "dist/utils/node-version.d.ts.map",
       "dist/utils/node-version.js",
+      "dist/utils/node-version.js.map",
       "dist/utils/omc-cli-rendering.d.ts",
       "dist/utils/omc-cli-rendering.d.ts.map",
       "dist/utils/omc-cli-rendering.js",
@@ -6450,11 +6594,15 @@
       "dist/utils/paths.js",
       "dist/utils/paths.js.map",
       "dist/utils/plugin-cache-validation.d.ts",
+      "dist/utils/plugin-cache-validation.d.ts.map",
       "dist/utils/plugin-cache-validation.js",
+      "dist/utils/plugin-cache-validation.js.map",
       "dist/utils/resolve-node.d.ts",
       "dist/utils/resolve-node.d.ts.map",
       "dist/utils/resolve-node.js",
       "dist/utils/resolve-node.js.map",
+      "dist/utils/semver-compare.d.ts",
+      "dist/utils/semver-compare.js",
       "dist/utils/skill-pipeline.d.ts",
       "dist/utils/skill-pipeline.d.ts.map",
       "dist/utils/skill-pipeline.js",
@@ -6722,6 +6870,7 @@
       "src/hooks/prompt-prerequisites/index.ts",
       "src/hooks/ralph/__tests__/feedback-baseline.test.ts",
       "src/hooks/ralph/__tests__/jev-verdict-shadow.test.ts",
+      "src/hooks/ralph/__tests__/prd-read.test.ts",
       "src/hooks/ralph/feedback-baseline.ts",
       "src/hooks/ralph/index.ts",
       "src/hooks/ralph/jev-shadow.ts",
@@ -6825,6 +6974,7 @@
       "src/hooks/team-pipeline/transitions.ts",
       "src/hooks/team-pipeline/types.ts",
       "src/hooks/team-worker-hook.ts",
+      "src/hooks/think-mode/__tests__/detector-boundaries.test.ts",
       "src/hooks/think-mode/__tests__/index.test.ts",
       "src/hooks/think-mode/detector.ts",
       "src/hooks/think-mode/index.ts",
@@ -7193,6 +7343,21 @@
         "id": ".gitignore",
         "kind": "other",
         "path": ".gitignore"
+      },
+      {
+        "id": ".gjc/_session-deeb84ac-d834-4134-9ef0-db21fe005ee6/runtime/runtime-state.json",
+        "kind": "other",
+        "path": ".gjc/_session-deeb84ac-d834-4134-9ef0-db21fe005ee6/runtime/runtime-state.json"
+      },
+      {
+        "id": ".gjc/_session-deeb84ac-d834-4134-9ef0-db21fe005ee6/runtime/runtime-state.json.lock",
+        "kind": "other",
+        "path": ".gjc/_session-deeb84ac-d834-4134-9ef0-db21fe005ee6/runtime/runtime-state.json.lock"
+      },
+      {
+        "id": ".gjc/_session-deeb84ac-d834-4134-9ef0-db21fe005ee6/runtime/runtime-state.json.lock.transition.owner",
+        "kind": "other",
+        "path": ".gjc/_session-deeb84ac-d834-4134-9ef0-db21fe005ee6/runtime/runtime-state.json.lock.transition.owner"
       },
       {
         "id": ".mcp.json",
@@ -8500,6 +8665,26 @@
         "path": "dist/__tests__/cli-win32-warning.test.js.map"
       },
       {
+        "id": "dist/__tests__/commands-frontmatter-crlf.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/commands-frontmatter-crlf.test.d.ts"
+      },
+      {
+        "id": "dist/__tests__/commands-frontmatter-crlf.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/commands-frontmatter-crlf.test.d.ts.map"
+      },
+      {
+        "id": "dist/__tests__/commands-frontmatter-crlf.test.js",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/commands-frontmatter-crlf.test.js"
+      },
+      {
+        "id": "dist/__tests__/commands-frontmatter-crlf.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/commands-frontmatter-crlf.test.js.map"
+      },
+      {
         "id": "dist/__tests__/compact-denylist.test.d.ts",
         "kind": "generated-dist",
         "path": "dist/__tests__/compact-denylist.test.d.ts"
@@ -9360,6 +9545,26 @@
         "path": "dist/__tests__/hud/background-cleanup.test.js.map"
       },
       {
+        "id": "dist/__tests__/hud/background-history-cap.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/hud/background-history-cap.test.d.ts"
+      },
+      {
+        "id": "dist/__tests__/hud/background-history-cap.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/hud/background-history-cap.test.d.ts.map"
+      },
+      {
+        "id": "dist/__tests__/hud/background-history-cap.test.js",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/hud/background-history-cap.test.js"
+      },
+      {
+        "id": "dist/__tests__/hud/background-history-cap.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/hud/background-history-cap.test.js.map"
+      },
+      {
         "id": "dist/__tests__/hud/background-tasks.test.d.ts",
         "kind": "generated-dist",
         "path": "dist/__tests__/hud/background-tasks.test.d.ts"
@@ -9480,6 +9685,26 @@
         "path": "dist/__tests__/hud/custom-rate-provider.test.js.map"
       },
       {
+        "id": "dist/__tests__/hud/cwd-hyperlink-boundary.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/hud/cwd-hyperlink-boundary.test.d.ts"
+      },
+      {
+        "id": "dist/__tests__/hud/cwd-hyperlink-boundary.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/hud/cwd-hyperlink-boundary.test.d.ts.map"
+      },
+      {
+        "id": "dist/__tests__/hud/cwd-hyperlink-boundary.test.js",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/hud/cwd-hyperlink-boundary.test.js"
+      },
+      {
+        "id": "dist/__tests__/hud/cwd-hyperlink-boundary.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/hud/cwd-hyperlink-boundary.test.js.map"
+      },
+      {
         "id": "dist/__tests__/hud/cwd.test.d.ts",
         "kind": "generated-dist",
         "path": "dist/__tests__/hud/cwd.test.d.ts"
@@ -9518,6 +9743,26 @@
         "id": "dist/__tests__/hud/defaults.test.js.map",
         "kind": "generated-dist",
         "path": "dist/__tests__/hud/defaults.test.js.map"
+      },
+      {
+        "id": "dist/__tests__/hud/effort.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/hud/effort.test.d.ts"
+      },
+      {
+        "id": "dist/__tests__/hud/effort.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/hud/effort.test.d.ts.map"
+      },
+      {
+        "id": "dist/__tests__/hud/effort.test.js",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/hud/effort.test.js"
+      },
+      {
+        "id": "dist/__tests__/hud/effort.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/hud/effort.test.js.map"
       },
       {
         "id": "dist/__tests__/hud/extra-usage.test.d.ts",
@@ -10038,6 +10283,26 @@
         "id": "dist/__tests__/hud/transcript-agent-lifecycle.test.js.map",
         "kind": "generated-dist",
         "path": "dist/__tests__/hud/transcript-agent-lifecycle.test.js.map"
+      },
+      {
+        "id": "dist/__tests__/hud/transcript-task-tools.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/hud/transcript-task-tools.test.d.ts"
+      },
+      {
+        "id": "dist/__tests__/hud/transcript-task-tools.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/hud/transcript-task-tools.test.d.ts.map"
+      },
+      {
+        "id": "dist/__tests__/hud/transcript-task-tools.test.js",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/hud/transcript-task-tools.test.js"
+      },
+      {
+        "id": "dist/__tests__/hud/transcript-task-tools.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/hud/transcript-task-tools.test.js.map"
       },
       {
         "id": "dist/__tests__/hud/update-hint.test.d.ts",
@@ -11780,6 +12045,66 @@
         "path": "dist/__tests__/psm-tmux-naming.test.js.map"
       },
       {
+        "id": "dist/__tests__/purge-stale-cache-relink.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/purge-stale-cache-relink.test.d.ts"
+      },
+      {
+        "id": "dist/__tests__/purge-stale-cache-relink.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/purge-stale-cache-relink.test.d.ts.map"
+      },
+      {
+        "id": "dist/__tests__/purge-stale-cache-relink.test.js",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/purge-stale-cache-relink.test.js"
+      },
+      {
+        "id": "dist/__tests__/purge-stale-cache-relink.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/purge-stale-cache-relink.test.js.map"
+      },
+      {
+        "id": "dist/__tests__/purge-stale-cache-symlink.integration.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/purge-stale-cache-symlink.integration.test.d.ts"
+      },
+      {
+        "id": "dist/__tests__/purge-stale-cache-symlink.integration.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/purge-stale-cache-symlink.integration.test.d.ts.map"
+      },
+      {
+        "id": "dist/__tests__/purge-stale-cache-symlink.integration.test.js",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/purge-stale-cache-symlink.integration.test.js"
+      },
+      {
+        "id": "dist/__tests__/purge-stale-cache-symlink.integration.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/purge-stale-cache-symlink.integration.test.js.map"
+      },
+      {
+        "id": "dist/__tests__/purge-stale-cache-validation.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/purge-stale-cache-validation.test.d.ts"
+      },
+      {
+        "id": "dist/__tests__/purge-stale-cache-validation.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/purge-stale-cache-validation.test.d.ts.map"
+      },
+      {
+        "id": "dist/__tests__/purge-stale-cache-validation.test.js",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/purge-stale-cache-validation.test.js"
+      },
+      {
+        "id": "dist/__tests__/purge-stale-cache-validation.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/purge-stale-cache-validation.test.js.map"
+      },
+      {
         "id": "dist/__tests__/purge-stale-cache.integration.test.d.ts",
         "kind": "generated-dist",
         "path": "dist/__tests__/purge-stale-cache.integration.test.d.ts"
@@ -12018,6 +12343,26 @@
         "id": "dist/__tests__/rate-limit-wait/pane-fresh-capture.test.js.map",
         "kind": "generated-dist",
         "path": "dist/__tests__/rate-limit-wait/pane-fresh-capture.test.js.map"
+      },
+      {
+        "id": "dist/__tests__/rate-limit-wait/quota-confirmation.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/rate-limit-wait/quota-confirmation.test.d.ts"
+      },
+      {
+        "id": "dist/__tests__/rate-limit-wait/quota-confirmation.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/rate-limit-wait/quota-confirmation.test.d.ts.map"
+      },
+      {
+        "id": "dist/__tests__/rate-limit-wait/quota-confirmation.test.js",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/rate-limit-wait/quota-confirmation.test.js"
+      },
+      {
+        "id": "dist/__tests__/rate-limit-wait/quota-confirmation.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/__tests__/rate-limit-wait/quota-confirmation.test.js.map"
       },
       {
         "id": "dist/__tests__/rate-limit-wait/rate-limit-monitor.test.d.ts",
@@ -14680,6 +15025,26 @@
         "path": "dist/cli/__tests__/hud-watch.test.js.map"
       },
       {
+        "id": "dist/cli/__tests__/integer-option.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/cli/__tests__/integer-option.test.d.ts"
+      },
+      {
+        "id": "dist/cli/__tests__/integer-option.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/cli/__tests__/integer-option.test.d.ts.map"
+      },
+      {
+        "id": "dist/cli/__tests__/integer-option.test.js",
+        "kind": "generated-dist",
+        "path": "dist/cli/__tests__/integer-option.test.js"
+      },
+      {
+        "id": "dist/cli/__tests__/integer-option.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/cli/__tests__/integer-option.test.js.map"
+      },
+      {
         "id": "dist/cli/__tests__/launch-secure-transport.test.d.ts",
         "kind": "generated-dist",
         "path": "dist/cli/__tests__/launch-secure-transport.test.d.ts"
@@ -14818,6 +15183,26 @@
         "id": "dist/cli/__tests__/session-search-help.test.js.map",
         "kind": "generated-dist",
         "path": "dist/cli/__tests__/session-search-help.test.js.map"
+      },
+      {
+        "id": "dist/cli/__tests__/session-search-terminal.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/cli/__tests__/session-search-terminal.test.d.ts"
+      },
+      {
+        "id": "dist/cli/__tests__/session-search-terminal.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/cli/__tests__/session-search-terminal.test.d.ts.map"
+      },
+      {
+        "id": "dist/cli/__tests__/session-search-terminal.test.js",
+        "kind": "generated-dist",
+        "path": "dist/cli/__tests__/session-search-terminal.test.js"
+      },
+      {
+        "id": "dist/cli/__tests__/session-search-terminal.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/cli/__tests__/session-search-terminal.test.js.map"
       },
       {
         "id": "dist/cli/__tests__/session-search.test.d.ts",
@@ -15260,6 +15645,26 @@
         "path": "dist/cli/commands/__tests__/factory-init.test.js.map"
       },
       {
+        "id": "dist/cli/commands/__tests__/factory-listen-port.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/cli/commands/__tests__/factory-listen-port.test.d.ts"
+      },
+      {
+        "id": "dist/cli/commands/__tests__/factory-listen-port.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/cli/commands/__tests__/factory-listen-port.test.d.ts.map"
+      },
+      {
+        "id": "dist/cli/commands/__tests__/factory-listen-port.test.js",
+        "kind": "generated-dist",
+        "path": "dist/cli/commands/__tests__/factory-listen-port.test.js"
+      },
+      {
+        "id": "dist/cli/commands/__tests__/factory-listen-port.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/cli/commands/__tests__/factory-listen-port.test.js.map"
+      },
+      {
         "id": "dist/cli/commands/__tests__/intake-headless-flag.test.d.ts",
         "kind": "generated-dist",
         "path": "dist/cli/commands/__tests__/intake-headless-flag.test.d.ts"
@@ -15378,6 +15783,26 @@
         "id": "dist/cli/commands/__tests__/ultragoal.test.js.map",
         "kind": "generated-dist",
         "path": "dist/cli/commands/__tests__/ultragoal.test.js.map"
+      },
+      {
+        "id": "dist/cli/commands/__tests__/wait.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/cli/commands/__tests__/wait.test.d.ts"
+      },
+      {
+        "id": "dist/cli/commands/__tests__/wait.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/cli/commands/__tests__/wait.test.d.ts.map"
+      },
+      {
+        "id": "dist/cli/commands/__tests__/wait.test.js",
+        "kind": "generated-dist",
+        "path": "dist/cli/commands/__tests__/wait.test.js"
+      },
+      {
+        "id": "dist/cli/commands/__tests__/wait.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/cli/commands/__tests__/wait.test.js.map"
       },
       {
         "id": "dist/cli/commands/alias-retirement.d.ts",
@@ -17650,9 +18075,19 @@
         "path": "dist/features/rate-limit-wait/daemon-state.d.ts"
       },
       {
+        "id": "dist/features/rate-limit-wait/daemon-state.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/features/rate-limit-wait/daemon-state.d.ts.map"
+      },
+      {
         "id": "dist/features/rate-limit-wait/daemon-state.js",
         "kind": "generated-dist",
         "path": "dist/features/rate-limit-wait/daemon-state.js"
+      },
+      {
+        "id": "dist/features/rate-limit-wait/daemon-state.js.map",
+        "kind": "generated-dist",
+        "path": "dist/features/rate-limit-wait/daemon-state.js.map"
       },
       {
         "id": "dist/features/rate-limit-wait/daemon.d.ts",
@@ -17873,6 +18308,26 @@
         "id": "dist/features/state-manager/__tests__/cache.test.js.map",
         "kind": "generated-dist",
         "path": "dist/features/state-manager/__tests__/cache.test.js.map"
+      },
+      {
+        "id": "dist/features/state-manager/__tests__/glob-patterns.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/features/state-manager/__tests__/glob-patterns.test.d.ts"
+      },
+      {
+        "id": "dist/features/state-manager/__tests__/glob-patterns.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/features/state-manager/__tests__/glob-patterns.test.d.ts.map"
+      },
+      {
+        "id": "dist/features/state-manager/__tests__/glob-patterns.test.js",
+        "kind": "generated-dist",
+        "path": "dist/features/state-manager/__tests__/glob-patterns.test.js"
+      },
+      {
+        "id": "dist/features/state-manager/__tests__/glob-patterns.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/features/state-manager/__tests__/glob-patterns.test.js.map"
       },
       {
         "id": "dist/features/state-manager/index.d.ts",
@@ -18873,6 +19328,26 @@
         "id": "dist/hooks/__tests__/askuserquestion-lifecycle.test.js.map",
         "kind": "generated-dist",
         "path": "dist/hooks/__tests__/askuserquestion-lifecycle.test.js.map"
+      },
+      {
+        "id": "dist/hooks/__tests__/auto-slash-namespaced.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/hooks/__tests__/auto-slash-namespaced.test.d.ts"
+      },
+      {
+        "id": "dist/hooks/__tests__/auto-slash-namespaced.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/hooks/__tests__/auto-slash-namespaced.test.d.ts.map"
+      },
+      {
+        "id": "dist/hooks/__tests__/auto-slash-namespaced.test.js",
+        "kind": "generated-dist",
+        "path": "dist/hooks/__tests__/auto-slash-namespaced.test.js"
+      },
+      {
+        "id": "dist/hooks/__tests__/auto-slash-namespaced.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/hooks/__tests__/auto-slash-namespaced.test.js.map"
       },
       {
         "id": "dist/hooks/__tests__/background-notifications.test.d.ts",
@@ -20595,6 +21070,26 @@
         "path": "dist/hooks/factcheck/__tests__/sentinel.test.js.map"
       },
       {
+        "id": "dist/hooks/factcheck/__tests__/strict-mode-glob.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/hooks/factcheck/__tests__/strict-mode-glob.test.d.ts"
+      },
+      {
+        "id": "dist/hooks/factcheck/__tests__/strict-mode-glob.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/hooks/factcheck/__tests__/strict-mode-glob.test.d.ts.map"
+      },
+      {
+        "id": "dist/hooks/factcheck/__tests__/strict-mode-glob.test.js",
+        "kind": "generated-dist",
+        "path": "dist/hooks/factcheck/__tests__/strict-mode-glob.test.js"
+      },
+      {
+        "id": "dist/hooks/factcheck/__tests__/strict-mode-glob.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/hooks/factcheck/__tests__/strict-mode-glob.test.js.map"
+      },
+      {
         "id": "dist/hooks/factcheck/checks.d.ts",
         "kind": "generated-dist",
         "path": "dist/hooks/factcheck/checks.d.ts"
@@ -21813,6 +22308,26 @@
         "id": "dist/hooks/persistent-mode/__tests__/prompt-truncation.test.js.map",
         "kind": "generated-dist",
         "path": "dist/hooks/persistent-mode/__tests__/prompt-truncation.test.js.map"
+      },
+      {
+        "id": "dist/hooks/persistent-mode/__tests__/ralph-hard-max-script.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/hooks/persistent-mode/__tests__/ralph-hard-max-script.test.d.ts"
+      },
+      {
+        "id": "dist/hooks/persistent-mode/__tests__/ralph-hard-max-script.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/hooks/persistent-mode/__tests__/ralph-hard-max-script.test.d.ts.map"
+      },
+      {
+        "id": "dist/hooks/persistent-mode/__tests__/ralph-hard-max-script.test.js",
+        "kind": "generated-dist",
+        "path": "dist/hooks/persistent-mode/__tests__/ralph-hard-max-script.test.js"
+      },
+      {
+        "id": "dist/hooks/persistent-mode/__tests__/ralph-hard-max-script.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/hooks/persistent-mode/__tests__/ralph-hard-max-script.test.js.map"
       },
       {
         "id": "dist/hooks/persistent-mode/__tests__/ralph-hard-max.test.d.ts",
@@ -23895,6 +24410,26 @@
         "path": "dist/hooks/session-end/__tests__/team-cleanup.test.js.map"
       },
       {
+        "id": "dist/hooks/session-end/__tests__/wiki-foreground-bootstrap.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/hooks/session-end/__tests__/wiki-foreground-bootstrap.test.d.ts"
+      },
+      {
+        "id": "dist/hooks/session-end/__tests__/wiki-foreground-bootstrap.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/hooks/session-end/__tests__/wiki-foreground-bootstrap.test.d.ts.map"
+      },
+      {
+        "id": "dist/hooks/session-end/__tests__/wiki-foreground-bootstrap.test.js",
+        "kind": "generated-dist",
+        "path": "dist/hooks/session-end/__tests__/wiki-foreground-bootstrap.test.js"
+      },
+      {
+        "id": "dist/hooks/session-end/__tests__/wiki-foreground-bootstrap.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/hooks/session-end/__tests__/wiki-foreground-bootstrap.test.js.map"
+      },
+      {
         "id": "dist/hooks/session-end/__tests__/worker.test.d.ts",
         "kind": "generated-dist",
         "path": "dist/hooks/session-end/__tests__/worker.test.d.ts"
@@ -24140,9 +24675,19 @@
         "path": "dist/hooks/session-end/wiki-foreground-bootstrap.d.ts"
       },
       {
+        "id": "dist/hooks/session-end/wiki-foreground-bootstrap.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/hooks/session-end/wiki-foreground-bootstrap.d.ts.map"
+      },
+      {
         "id": "dist/hooks/session-end/wiki-foreground-bootstrap.js",
         "kind": "generated-dist",
         "path": "dist/hooks/session-end/wiki-foreground-bootstrap.js"
+      },
+      {
+        "id": "dist/hooks/session-end/wiki-foreground-bootstrap.js.map",
+        "kind": "generated-dist",
+        "path": "dist/hooks/session-end/wiki-foreground-bootstrap.js.map"
       },
       {
         "id": "dist/hooks/session-end/worker.d.ts",
@@ -25410,6 +25955,26 @@
         "path": "dist/hud/__tests__/autopilot-profile.test.js.map"
       },
       {
+        "id": "dist/hud/__tests__/custom-provider-cache-identity.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/hud/__tests__/custom-provider-cache-identity.test.d.ts"
+      },
+      {
+        "id": "dist/hud/__tests__/custom-provider-cache-identity.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/hud/__tests__/custom-provider-cache-identity.test.d.ts.map"
+      },
+      {
+        "id": "dist/hud/__tests__/custom-provider-cache-identity.test.js",
+        "kind": "generated-dist",
+        "path": "dist/hud/__tests__/custom-provider-cache-identity.test.js"
+      },
+      {
+        "id": "dist/hud/__tests__/custom-provider-cache-identity.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/hud/__tests__/custom-provider-cache-identity.test.js.map"
+      },
+      {
         "id": "dist/hud/__tests__/custom-rate-provider.test.d.ts",
         "kind": "generated-dist",
         "path": "dist/hud/__tests__/custom-rate-provider.test.d.ts"
@@ -25775,9 +26340,19 @@
         "path": "dist/hud/elements/effort.d.ts"
       },
       {
+        "id": "dist/hud/elements/effort.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/hud/elements/effort.d.ts.map"
+      },
+      {
         "id": "dist/hud/elements/effort.js",
         "kind": "generated-dist",
         "path": "dist/hud/elements/effort.js"
+      },
+      {
+        "id": "dist/hud/elements/effort.js.map",
+        "kind": "generated-dist",
+        "path": "dist/hud/elements/effort.js.map"
       },
       {
         "id": "dist/hud/elements/enterprise-cost.d.ts",
@@ -27465,6 +28040,26 @@
         "path": "dist/lib/__tests__/worktree-paths-git-timeout.test.js.map"
       },
       {
+        "id": "dist/lib/__tests__/worktree-paths-issue-4254-win32.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/lib/__tests__/worktree-paths-issue-4254-win32.test.d.ts"
+      },
+      {
+        "id": "dist/lib/__tests__/worktree-paths-issue-4254-win32.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/lib/__tests__/worktree-paths-issue-4254-win32.test.d.ts.map"
+      },
+      {
+        "id": "dist/lib/__tests__/worktree-paths-issue-4254-win32.test.js",
+        "kind": "generated-dist",
+        "path": "dist/lib/__tests__/worktree-paths-issue-4254-win32.test.js"
+      },
+      {
+        "id": "dist/lib/__tests__/worktree-paths-issue-4254-win32.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/lib/__tests__/worktree-paths-issue-4254-win32.test.js.map"
+      },
+      {
         "id": "dist/lib/__tests__/worktree-paths-nongit-anchor.test.d.ts",
         "kind": "generated-dist",
         "path": "dist/lib/__tests__/worktree-paths-nongit-anchor.test.d.ts"
@@ -28045,6 +28640,26 @@
         "path": "dist/lib/worktree-paths.js.map"
       },
       {
+        "id": "dist/mcp/__tests__/omc-tools-server.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/mcp/__tests__/omc-tools-server.test.d.ts"
+      },
+      {
+        "id": "dist/mcp/__tests__/omc-tools-server.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/mcp/__tests__/omc-tools-server.test.d.ts.map"
+      },
+      {
+        "id": "dist/mcp/__tests__/omc-tools-server.test.js",
+        "kind": "generated-dist",
+        "path": "dist/mcp/__tests__/omc-tools-server.test.js"
+      },
+      {
+        "id": "dist/mcp/__tests__/omc-tools-server.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/mcp/__tests__/omc-tools-server.test.js.map"
+      },
+      {
         "id": "dist/mcp/__tests__/prompt-injection.test.d.ts",
         "kind": "generated-dist",
         "path": "dist/mcp/__tests__/prompt-injection.test.d.ts"
@@ -28485,6 +29100,26 @@
         "path": "dist/notifications/__tests__/config.test.js.map"
       },
       {
+        "id": "dist/notifications/__tests__/custom-config-shapes.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/notifications/__tests__/custom-config-shapes.test.d.ts"
+      },
+      {
+        "id": "dist/notifications/__tests__/custom-config-shapes.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/notifications/__tests__/custom-config-shapes.test.d.ts.map"
+      },
+      {
+        "id": "dist/notifications/__tests__/custom-config-shapes.test.js",
+        "kind": "generated-dist",
+        "path": "dist/notifications/__tests__/custom-config-shapes.test.js"
+      },
+      {
+        "id": "dist/notifications/__tests__/custom-config-shapes.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/notifications/__tests__/custom-config-shapes.test.js.map"
+      },
+      {
         "id": "dist/notifications/__tests__/custom-integration.test.d.ts",
         "kind": "generated-dist",
         "path": "dist/notifications/__tests__/custom-integration.test.d.ts"
@@ -28503,6 +29138,26 @@
         "id": "dist/notifications/__tests__/custom-integration.test.js.map",
         "kind": "generated-dist",
         "path": "dist/notifications/__tests__/custom-integration.test.js.map"
+      },
+      {
+        "id": "dist/notifications/__tests__/custom-webhook-body.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/notifications/__tests__/custom-webhook-body.test.d.ts"
+      },
+      {
+        "id": "dist/notifications/__tests__/custom-webhook-body.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/notifications/__tests__/custom-webhook-body.test.d.ts.map"
+      },
+      {
+        "id": "dist/notifications/__tests__/custom-webhook-body.test.js",
+        "kind": "generated-dist",
+        "path": "dist/notifications/__tests__/custom-webhook-body.test.js"
+      },
+      {
+        "id": "dist/notifications/__tests__/custom-webhook-body.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/notifications/__tests__/custom-webhook-body.test.js.map"
       },
       {
         "id": "dist/notifications/__tests__/dispatcher.test.d.ts",
@@ -28703,6 +29358,26 @@
         "id": "dist/notifications/__tests__/reply-listener.test.js.map",
         "kind": "generated-dist",
         "path": "dist/notifications/__tests__/reply-listener.test.js.map"
+      },
+      {
+        "id": "dist/notifications/__tests__/session-registry-durability.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/notifications/__tests__/session-registry-durability.test.d.ts"
+      },
+      {
+        "id": "dist/notifications/__tests__/session-registry-durability.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/notifications/__tests__/session-registry-durability.test.d.ts.map"
+      },
+      {
+        "id": "dist/notifications/__tests__/session-registry-durability.test.js",
+        "kind": "generated-dist",
+        "path": "dist/notifications/__tests__/session-registry-durability.test.js"
+      },
+      {
+        "id": "dist/notifications/__tests__/session-registry-durability.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/notifications/__tests__/session-registry-durability.test.js.map"
       },
       {
         "id": "dist/notifications/__tests__/session-registry.test.d.ts",
@@ -29965,6 +30640,26 @@
         "path": "dist/skills/__tests__/omc-doctor-skill.test.js.map"
       },
       {
+        "id": "dist/skills/__tests__/omc-setup-optout.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/skills/__tests__/omc-setup-optout.test.d.ts"
+      },
+      {
+        "id": "dist/skills/__tests__/omc-setup-optout.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/skills/__tests__/omc-setup-optout.test.d.ts.map"
+      },
+      {
+        "id": "dist/skills/__tests__/omc-setup-optout.test.js",
+        "kind": "generated-dist",
+        "path": "dist/skills/__tests__/omc-setup-optout.test.js"
+      },
+      {
+        "id": "dist/skills/__tests__/omc-setup-optout.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/skills/__tests__/omc-setup-optout.test.js.map"
+      },
+      {
         "id": "dist/skills/__tests__/skill-config-dir.test.d.ts",
         "kind": "generated-dist",
         "path": "dist/skills/__tests__/skill-config-dir.test.d.ts"
@@ -30723,6 +31418,46 @@
         "id": "dist/team/__tests__/index.compat-exports.test.js.map",
         "kind": "generated-dist",
         "path": "dist/team/__tests__/index.compat-exports.test.js.map"
+      },
+      {
+        "id": "dist/team/__tests__/issue-4261-cmux-team-failures.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/team/__tests__/issue-4261-cmux-team-failures.test.d.ts"
+      },
+      {
+        "id": "dist/team/__tests__/issue-4261-cmux-team-failures.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/team/__tests__/issue-4261-cmux-team-failures.test.d.ts.map"
+      },
+      {
+        "id": "dist/team/__tests__/issue-4261-cmux-team-failures.test.js",
+        "kind": "generated-dist",
+        "path": "dist/team/__tests__/issue-4261-cmux-team-failures.test.js"
+      },
+      {
+        "id": "dist/team/__tests__/issue-4261-cmux-team-failures.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/team/__tests__/issue-4261-cmux-team-failures.test.js.map"
+      },
+      {
+        "id": "dist/team/__tests__/issue-4412-cmux-startup.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/team/__tests__/issue-4412-cmux-startup.test.d.ts"
+      },
+      {
+        "id": "dist/team/__tests__/issue-4412-cmux-startup.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/team/__tests__/issue-4412-cmux-startup.test.d.ts.map"
+      },
+      {
+        "id": "dist/team/__tests__/issue-4412-cmux-startup.test.js",
+        "kind": "generated-dist",
+        "path": "dist/team/__tests__/issue-4412-cmux-startup.test.js"
+      },
+      {
+        "id": "dist/team/__tests__/issue-4412-cmux-startup.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/team/__tests__/issue-4412-cmux-startup.test.js.map"
       },
       {
         "id": "dist/team/__tests__/leader-inbox.test.d.ts",
@@ -32405,6 +33140,26 @@
         "path": "dist/team/__tests__/unified-team.test.js.map"
       },
       {
+        "id": "dist/team/__tests__/usage-record-shape.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/team/__tests__/usage-record-shape.test.d.ts"
+      },
+      {
+        "id": "dist/team/__tests__/usage-record-shape.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/team/__tests__/usage-record-shape.test.d.ts.map"
+      },
+      {
+        "id": "dist/team/__tests__/usage-record-shape.test.js",
+        "kind": "generated-dist",
+        "path": "dist/team/__tests__/usage-record-shape.test.js"
+      },
+      {
+        "id": "dist/team/__tests__/usage-record-shape.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/team/__tests__/usage-record-shape.test.js.map"
+      },
+      {
         "id": "dist/team/__tests__/usage-tracker.test.d.ts",
         "kind": "generated-dist",
         "path": "dist/team/__tests__/usage-tracker.test.d.ts"
@@ -32423,6 +33178,26 @@
         "id": "dist/team/__tests__/usage-tracker.test.js.map",
         "kind": "generated-dist",
         "path": "dist/team/__tests__/usage-tracker.test.js.map"
+      },
+      {
+        "id": "dist/team/__tests__/usage-unicode-counts.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/team/__tests__/usage-unicode-counts.test.d.ts"
+      },
+      {
+        "id": "dist/team/__tests__/usage-unicode-counts.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/team/__tests__/usage-unicode-counts.test.d.ts.map"
+      },
+      {
+        "id": "dist/team/__tests__/usage-unicode-counts.test.js",
+        "kind": "generated-dist",
+        "path": "dist/team/__tests__/usage-unicode-counts.test.js"
+      },
+      {
+        "id": "dist/team/__tests__/usage-unicode-counts.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/team/__tests__/usage-unicode-counts.test.js.map"
       },
       {
         "id": "dist/team/__tests__/worker-activation-gate.test.d.ts",
@@ -34425,6 +35200,66 @@
         "path": "dist/tools/diagnostics/__tests__/lsp-aggregator.test.js.map"
       },
       {
+        "id": "dist/tools/diagnostics/__tests__/tsc-project-failures.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/tools/diagnostics/__tests__/tsc-project-failures.test.d.ts"
+      },
+      {
+        "id": "dist/tools/diagnostics/__tests__/tsc-project-failures.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/tools/diagnostics/__tests__/tsc-project-failures.test.d.ts.map"
+      },
+      {
+        "id": "dist/tools/diagnostics/__tests__/tsc-project-failures.test.js",
+        "kind": "generated-dist",
+        "path": "dist/tools/diagnostics/__tests__/tsc-project-failures.test.js"
+      },
+      {
+        "id": "dist/tools/diagnostics/__tests__/tsc-project-failures.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/tools/diagnostics/__tests__/tsc-project-failures.test.js.map"
+      },
+      {
+        "id": "dist/tools/diagnostics/__tests__/tsc-runner-resolution.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/tools/diagnostics/__tests__/tsc-runner-resolution.test.d.ts"
+      },
+      {
+        "id": "dist/tools/diagnostics/__tests__/tsc-runner-resolution.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/tools/diagnostics/__tests__/tsc-runner-resolution.test.d.ts.map"
+      },
+      {
+        "id": "dist/tools/diagnostics/__tests__/tsc-runner-resolution.test.js",
+        "kind": "generated-dist",
+        "path": "dist/tools/diagnostics/__tests__/tsc-runner-resolution.test.js"
+      },
+      {
+        "id": "dist/tools/diagnostics/__tests__/tsc-runner-resolution.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/tools/diagnostics/__tests__/tsc-runner-resolution.test.js.map"
+      },
+      {
+        "id": "dist/tools/diagnostics/__tests__/tsc-runner.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/tools/diagnostics/__tests__/tsc-runner.test.d.ts"
+      },
+      {
+        "id": "dist/tools/diagnostics/__tests__/tsc-runner.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/tools/diagnostics/__tests__/tsc-runner.test.d.ts.map"
+      },
+      {
+        "id": "dist/tools/diagnostics/__tests__/tsc-runner.test.js",
+        "kind": "generated-dist",
+        "path": "dist/tools/diagnostics/__tests__/tsc-runner.test.js"
+      },
+      {
+        "id": "dist/tools/diagnostics/__tests__/tsc-runner.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/tools/diagnostics/__tests__/tsc-runner.test.js.map"
+      },
+      {
         "id": "dist/tools/diagnostics/index.d.ts",
         "kind": "generated-dist",
         "path": "dist/tools/diagnostics/index.d.ts"
@@ -34723,6 +35558,26 @@
         "id": "dist/tools/lsp/__tests__/devcontainer.test.js.map",
         "kind": "generated-dist",
         "path": "dist/tools/lsp/__tests__/devcontainer.test.js.map"
+      },
+      {
+        "id": "dist/tools/lsp/__tests__/utils-file-uri.test.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/tools/lsp/__tests__/utils-file-uri.test.d.ts"
+      },
+      {
+        "id": "dist/tools/lsp/__tests__/utils-file-uri.test.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/tools/lsp/__tests__/utils-file-uri.test.d.ts.map"
+      },
+      {
+        "id": "dist/tools/lsp/__tests__/utils-file-uri.test.js",
+        "kind": "generated-dist",
+        "path": "dist/tools/lsp/__tests__/utils-file-uri.test.js"
+      },
+      {
+        "id": "dist/tools/lsp/__tests__/utils-file-uri.test.js.map",
+        "kind": "generated-dist",
+        "path": "dist/tools/lsp/__tests__/utils-file-uri.test.js.map"
       },
       {
         "id": "dist/tools/lsp/client.d.ts",
@@ -35565,6 +36420,16 @@
         "path": "dist/utils/daemon-module-path.js.map"
       },
       {
+        "id": "dist/utils/debug-flag.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/utils/debug-flag.d.ts"
+      },
+      {
+        "id": "dist/utils/debug-flag.js",
+        "kind": "generated-dist",
+        "path": "dist/utils/debug-flag.js"
+      },
+      {
         "id": "dist/utils/encode-project-path.d.ts",
         "kind": "generated-dist",
         "path": "dist/utils/encode-project-path.d.ts"
@@ -35630,9 +36495,19 @@
         "path": "dist/utils/node-version.d.ts"
       },
       {
+        "id": "dist/utils/node-version.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/utils/node-version.d.ts.map"
+      },
+      {
         "id": "dist/utils/node-version.js",
         "kind": "generated-dist",
         "path": "dist/utils/node-version.js"
+      },
+      {
+        "id": "dist/utils/node-version.js.map",
+        "kind": "generated-dist",
+        "path": "dist/utils/node-version.js.map"
       },
       {
         "id": "dist/utils/omc-cli-rendering.d.ts",
@@ -35680,9 +36555,19 @@
         "path": "dist/utils/plugin-cache-validation.d.ts"
       },
       {
+        "id": "dist/utils/plugin-cache-validation.d.ts.map",
+        "kind": "generated-dist",
+        "path": "dist/utils/plugin-cache-validation.d.ts.map"
+      },
+      {
         "id": "dist/utils/plugin-cache-validation.js",
         "kind": "generated-dist",
         "path": "dist/utils/plugin-cache-validation.js"
+      },
+      {
+        "id": "dist/utils/plugin-cache-validation.js.map",
+        "kind": "generated-dist",
+        "path": "dist/utils/plugin-cache-validation.js.map"
       },
       {
         "id": "dist/utils/resolve-node.d.ts",
@@ -35703,6 +36588,16 @@
         "id": "dist/utils/resolve-node.js.map",
         "kind": "generated-dist",
         "path": "dist/utils/resolve-node.js.map"
+      },
+      {
+        "id": "dist/utils/semver-compare.d.ts",
+        "kind": "generated-dist",
+        "path": "dist/utils/semver-compare.d.ts"
+      },
+      {
+        "id": "dist/utils/semver-compare.js",
+        "kind": "generated-dist",
+        "path": "dist/utils/semver-compare.js"
       },
       {
         "id": "dist/utils/skill-pipeline.d.ts",
@@ -36498,6 +37393,11 @@
         "id": "external:node:string_decoder",
         "kind": "external",
         "path": "node:string_decoder"
+      },
+      {
+        "id": "external:node:timers",
+        "kind": "external",
+        "path": "node:timers"
       },
       {
         "id": "external:node:url",
@@ -41825,6 +42725,11 @@
         "path": "src/hooks/ralph/__tests__/jev-verdict-shadow.test.ts"
       },
       {
+        "id": "src/hooks/ralph/__tests__/prd-read.test.ts",
+        "kind": "hook",
+        "path": "src/hooks/ralph/__tests__/prd-read.test.ts"
+      },
+      {
         "id": "src/hooks/ralph/feedback-baseline.ts",
         "kind": "hook",
         "path": "src/hooks/ralph/feedback-baseline.ts"
@@ -42338,6 +43243,11 @@
         "id": "src/hooks/team-worker-hook.ts",
         "kind": "hook",
         "path": "src/hooks/team-worker-hook.ts"
+      },
+      {
+        "id": "src/hooks/think-mode/__tests__/detector-boundaries.test.ts",
+        "kind": "hook",
+        "path": "src/hooks/think-mode/__tests__/detector-boundaries.test.ts"
       },
       {
         "id": "src/hooks/think-mode/__tests__/index.test.ts",
@@ -43850,6 +44760,11 @@
         "path": "src/team/__tests__/events.swallowed-error.test.ts"
       },
       {
+        "id": "src/team/__tests__/fixtures/windows-supervisor-runtime.mjs",
+        "kind": "src",
+        "path": "src/team/__tests__/fixtures/windows-supervisor-runtime.mjs"
+      },
+      {
         "id": "src/team/__tests__/followup-planner.test.ts",
         "kind": "src",
         "path": "src/team/__tests__/followup-planner.test.ts"
@@ -44373,6 +45288,16 @@
         "id": "src/team/__tests__/worker-launch-posix-transport.test.ts",
         "kind": "src",
         "path": "src/team/__tests__/worker-launch-posix-transport.test.ts"
+      },
+      {
+        "id": "src/team/__tests__/worker-launch-windows-runtime.test.ts",
+        "kind": "src",
+        "path": "src/team/__tests__/worker-launch-windows-runtime.test.ts"
+      },
+      {
+        "id": "src/team/__tests__/worker-launch-windows-supervisor.test.ts",
+        "kind": "src",
+        "path": "src/team/__tests__/worker-launch-windows-supervisor.test.ts"
       },
       {
         "id": "src/team/__tests__/worker-launch-wrapper-posix.test.ts",
@@ -45120,6 +46045,16 @@
         "path": "src/utils/__tests__/cache-occupancy.test.ts"
       },
       {
+        "id": "src/utils/__tests__/debug-flag-call-sites.test.ts",
+        "kind": "src",
+        "path": "src/utils/__tests__/debug-flag-call-sites.test.ts"
+      },
+      {
+        "id": "src/utils/__tests__/debug-flag.test.ts",
+        "kind": "src",
+        "path": "src/utils/__tests__/debug-flag.test.ts"
+      },
+      {
         "id": "src/utils/__tests__/encode-project-path.test.ts",
         "kind": "src",
         "path": "src/utils/__tests__/encode-project-path.test.ts"
@@ -45140,6 +46075,11 @@
         "path": "src/utils/__tests__/paths.test.ts"
       },
       {
+        "id": "src/utils/__tests__/semver-compare.test.ts",
+        "kind": "src",
+        "path": "src/utils/__tests__/semver-compare.test.ts"
+      },
+      {
         "id": "src/utils/__tests__/string-width.test.ts",
         "kind": "src",
         "path": "src/utils/__tests__/string-width.test.ts"
@@ -45158,6 +46098,11 @@
         "id": "src/utils/daemon-module-path.ts",
         "kind": "src",
         "path": "src/utils/daemon-module-path.ts"
+      },
+      {
+        "id": "src/utils/debug-flag.ts",
+        "kind": "src",
+        "path": "src/utils/debug-flag.ts"
       },
       {
         "id": "src/utils/encode-project-path.ts",
@@ -45198,6 +46143,11 @@
         "id": "src/utils/resolve-node.ts",
         "kind": "src",
         "path": "src/utils/resolve-node.ts"
+      },
+      {
+        "id": "src/utils/semver-compare.ts",
+        "kind": "src",
+        "path": "src/utils/semver-compare.ts"
       },
       {
         "id": "src/utils/skill-pipeline.ts",
@@ -46833,6 +47783,11 @@
       },
       {
         "from": "scripts/keyword-detector.mjs",
+        "to": "scripts/lib/utf8-bom.mjs",
+        "kind": "imports"
+      },
+      {
+        "from": "scripts/keyword-detector.mjs",
         "to": "scripts/lib/workflow-profile-runtime.mjs",
         "kind": "imports"
       },
@@ -46849,6 +47804,11 @@
       {
         "from": "scripts/lib/agent-model-config.mjs",
         "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "scripts/lib/agent-model-config.mjs",
+        "to": "scripts/lib/utf8-bom.mjs",
         "kind": "imports"
       },
       {
@@ -47198,6 +48158,11 @@
       },
       {
         "from": "scripts/lib/workflow-profile-runtime.mjs",
+        "to": "scripts/lib/utf8-bom.mjs",
+        "kind": "imports"
+      },
+      {
+        "from": "scripts/lib/workflow-profile-runtime.mjs",
         "to": "scripts/lib/workflow-stage-prompts.mjs",
         "kind": "imports"
       },
@@ -47324,6 +48289,11 @@
       {
         "from": "scripts/persistent-mode.mjs",
         "to": "scripts/lib/jev-shadow.mjs",
+        "kind": "imports"
+      },
+      {
+        "from": "scripts/persistent-mode.mjs",
+        "to": "scripts/lib/utf8-bom.mjs",
         "kind": "imports"
       },
       {
@@ -49828,6 +50798,11 @@
       },
       {
         "from": "src/__tests__/fixtures/hung-hooks/success-parent-stdout-orphan.cjs",
+        "to": "external:node:child_process",
+        "kind": "imports"
+      },
+      {
+        "from": "src/__tests__/generated-artifact-authorization.test.ts",
         "to": "external:node:child_process",
         "kind": "imports"
       },
@@ -59857,6 +60832,11 @@
         "kind": "imports"
       },
       {
+        "from": "src/features/auto-update.ts",
+        "to": "src/utils/semver-compare.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/features/background-agent/concurrency.ts",
         "to": "src/features/background-agent/types.ts",
         "kind": "type-imports"
@@ -60185,6 +61165,11 @@
         "from": "src/features/delegation-enforcer.ts",
         "to": "src/shared/types.ts",
         "kind": "type-imports"
+      },
+      {
+        "from": "src/features/delegation-enforcer.ts",
+        "to": "src/utils/debug-flag.ts",
+        "kind": "imports"
       },
       {
         "from": "src/features/delegation-enforcer.ts",
@@ -65607,6 +66592,11 @@
         "kind": "imports"
       },
       {
+        "from": "src/hooks/learner/constants.ts",
+        "to": "src/utils/debug-flag.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/hooks/learner/detection-hook.ts",
         "to": "src/hooks/learner/detector.ts",
         "kind": "imports"
@@ -67797,6 +68787,31 @@
         "kind": "imports"
       },
       {
+        "from": "src/hooks/ralph/__tests__/prd-read.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hooks/ralph/__tests__/prd-read.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hooks/ralph/__tests__/prd-read.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hooks/ralph/__tests__/prd-read.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hooks/ralph/__tests__/prd-read.test.ts",
+        "to": "src/hooks/ralph/prd.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/hooks/ralph/feedback-baseline.ts",
         "to": "external:fs",
         "kind": "imports"
@@ -67929,6 +68944,11 @@
       {
         "from": "src/hooks/ralph/prd.ts",
         "to": "external:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hooks/ralph/prd.ts",
+        "to": "scripts/lib/utf8-bom.mjs",
         "kind": "imports"
       },
       {
@@ -70572,6 +71592,16 @@
         "kind": "imports"
       },
       {
+        "from": "src/hooks/think-mode/__tests__/detector-boundaries.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hooks/think-mode/__tests__/detector-boundaries.test.ts",
+        "to": "src/hooks/think-mode/index.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/hooks/think-mode/__tests__/index.test.ts",
         "to": "external:vitest",
         "kind": "imports"
@@ -70724,6 +71754,11 @@
       {
         "from": "src/hooks/todo-continuation/index.ts",
         "to": "src/utils/config-dir.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/hooks/todo-continuation/index.ts",
+        "to": "src/utils/debug-flag.ts",
         "kind": "imports"
       },
       {
@@ -73364,6 +74399,11 @@
       {
         "from": "src/installer/index.ts",
         "to": "src/utils/resolve-node.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/installer/index.ts",
+        "to": "src/utils/semver-compare.ts",
         "kind": "imports"
       },
       {
@@ -76313,6 +77353,11 @@
       },
       {
         "from": "src/openclaw/config.ts",
+        "to": "scripts/lib/utf8-bom.mjs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/openclaw/config.ts",
         "to": "src/openclaw/types.ts",
         "kind": "type-imports"
       },
@@ -77754,6 +78799,36 @@
       {
         "from": "src/team/__tests__/events.swallowed-error.test.ts",
         "to": "src/team/events.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/fixtures/windows-supervisor-runtime.mjs",
+        "to": "external:node:child_process",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/fixtures/windows-supervisor-runtime.mjs",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/fixtures/windows-supervisor-runtime.mjs",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/fixtures/windows-supervisor-runtime.mjs",
+        "to": "external:node:process",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/fixtures/windows-supervisor-runtime.mjs",
+        "to": "external:node:timers",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/fixtures/windows-supervisor-runtime.mjs",
+        "to": "external:node:url",
         "kind": "imports"
       },
       {
@@ -81277,6 +82352,81 @@
         "kind": "type-imports"
       },
       {
+        "from": "src/team/__tests__/worker-launch-windows-runtime.test.ts",
+        "to": "external:node:child_process",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/worker-launch-windows-runtime.test.ts",
+        "to": "external:node:crypto",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/worker-launch-windows-runtime.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/worker-launch-windows-runtime.test.ts",
+        "to": "external:node:fs/promises",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/worker-launch-windows-runtime.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/worker-launch-windows-runtime.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/worker-launch-windows-runtime.test.ts",
+        "to": "external:node:url",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/worker-launch-windows-runtime.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/worker-launch-windows-runtime.test.ts",
+        "to": "src/platform/process-utils.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/worker-launch-windows-runtime.test.ts",
+        "to": "src/team/worker-launch-ack.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/worker-launch-windows-runtime.test.ts",
+        "to": "src/team/worker-launch-ack.ts",
+        "kind": "type-imports"
+      },
+      {
+        "from": "src/team/__tests__/worker-launch-windows-supervisor.test.ts",
+        "to": "external:node:child_process",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/worker-launch-windows-supervisor.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/worker-launch-windows-supervisor.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/__tests__/worker-launch-windows-supervisor.test.ts",
+        "to": "src/team/worker-launch-ack.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/team/__tests__/worker-launch-wrapper-posix.test.ts",
         "to": "external:node:child_process",
         "kind": "imports"
@@ -84453,6 +85603,11 @@
       },
       {
         "from": "src/team/worker-launch-ack.ts",
+        "to": "external:node:zlib",
+        "kind": "imports"
+      },
+      {
+        "from": "src/team/worker-launch-ack.ts",
         "to": "src/lib/atomic-write.ts",
         "kind": "imports"
       },
@@ -86392,6 +87547,36 @@
         "kind": "imports"
       },
       {
+        "from": "src/utils/__tests__/debug-flag-call-sites.test.ts",
+        "to": "external:node:fs",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/__tests__/debug-flag-call-sites.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/__tests__/debug-flag-call-sites.test.ts",
+        "to": "src/hooks/learner/constants.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/__tests__/debug-flag-call-sites.test.ts",
+        "to": "src/utils/debug-flag.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/__tests__/debug-flag.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/__tests__/debug-flag.test.ts",
+        "to": "src/utils/debug-flag.ts",
+        "kind": "imports"
+      },
+      {
         "from": "src/utils/__tests__/encode-project-path.test.ts",
         "to": "external:vitest",
         "kind": "imports"
@@ -86418,12 +87603,27 @@
       },
       {
         "from": "src/utils/__tests__/jsonc.test.ts",
+        "to": "external:node:os",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/__tests__/jsonc.test.ts",
+        "to": "external:node:path",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/__tests__/jsonc.test.ts",
         "to": "external:node:vm",
         "kind": "imports"
       },
       {
         "from": "src/utils/__tests__/jsonc.test.ts",
         "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/__tests__/jsonc.test.ts",
+        "to": "src/config/loader.ts",
         "kind": "imports"
       },
       {
@@ -86439,6 +87639,16 @@
       {
         "from": "src/utils/__tests__/paths.test.ts",
         "to": "src/utils/paths.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/__tests__/semver-compare.test.ts",
+        "to": "external:vitest",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/__tests__/semver-compare.test.ts",
+        "to": "src/utils/semver-compare.ts",
         "kind": "imports"
       },
       {
@@ -86507,6 +87717,11 @@
         "kind": "imports"
       },
       {
+        "from": "src/utils/jsonc.ts",
+        "to": "scripts/lib/utf8-bom.mjs",
+        "kind": "imports"
+      },
+      {
         "from": "src/utils/omc-cli-rendering.ts",
         "to": "external:child_process",
         "kind": "imports"
@@ -86539,6 +87754,11 @@
       {
         "from": "src/utils/paths.ts",
         "to": "src/utils/plugin-cache-validation.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/paths.ts",
+        "to": "src/utils/semver-compare.ts",
         "kind": "imports"
       },
       {
@@ -86579,6 +87799,11 @@
       {
         "from": "src/utils/resolve-node.ts",
         "to": "src/utils/node-version.ts",
+        "kind": "imports"
+      },
+      {
+        "from": "src/utils/resolve-node.ts",
+        "to": "src/utils/semver-compare.ts",
         "kind": "imports"
       },
       {
@@ -86815,6 +88040,11 @@
         "from": "templates/hooks/keyword-detector.mjs",
         "to": "src/hooks/bridge.ts",
         "kind": "projects"
+      },
+      {
+        "from": "templates/hooks/keyword-detector.mjs",
+        "to": "templates/hooks/lib/utf8-bom.mjs",
+        "kind": "imports"
       },
       {
         "from": "templates/hooks/lib/atomic-write.mjs",
@@ -87103,6 +88333,11 @@
       },
       {
         "from": "templates/hooks/lib/workflow-profile-runtime.mjs",
+        "to": "templates/hooks/lib/utf8-bom.mjs",
+        "kind": "imports"
+      },
+      {
+        "from": "templates/hooks/lib/workflow-profile-runtime.mjs",
         "to": "templates/hooks/lib/workflow-stage-prompts.mjs",
         "kind": "imports"
       },
@@ -87150,6 +88385,11 @@
         "from": "templates/hooks/persistent-mode.mjs",
         "to": "src/hooks/bridge.ts",
         "kind": "projects"
+      },
+      {
+        "from": "templates/hooks/persistent-mode.mjs",
+        "to": "templates/hooks/lib/utf8-bom.mjs",
+        "kind": "imports"
       },
       {
         "from": "templates/hooks/post-tool-use-failure.mjs",
@@ -88513,12 +89753,12 @@
       }
     ],
     "stats": {
-      "nodeCount": 7726,
-      "edgeCount": 8558,
-      "importEdgeCount": 7118,
+      "nodeCount": 7886,
+      "edgeCount": 8616,
+      "importEdgeCount": 7175,
       "registerEdgeCount": 69
     }
   },
-  "inventorySha256": "6a586deacfc5713affb1719db7e321440a6193e0364af1ceec16329ba061967c",
-  "manifestSha256": "2bff5ec0159b8d8df2a29855138c44a0848e17b1ce2652d66ce462389d7272d6"
+  "inventorySha256": "90005b8fd59d366d462088faf329f8fdb3042d94c6a906daaedb7fe185aadbf9",
+  "manifestSha256": "e03bff199275e61e4ef3a392f78550aabffab04c6e39a6106aead68c5b9b6f76"
 }

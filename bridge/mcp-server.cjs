@@ -18355,13 +18355,18 @@ function validatePathSegment(segment, name) {
 var import_fs4 = require("fs");
 var import_path5 = require("path");
 
+// scripts/lib/utf8-bom.mjs
+function stripLeadingUtf8Bom(content) {
+  return content.startsWith("\uFEFF") ? content.slice(1) : content;
+}
+
 // src/utils/jsonc.ts
 function parseJsonc(content) {
   const cleaned = stripJsoncComments(content);
   return JSON.parse(cleaned);
 }
 function stripJsoncComments(content) {
-  return stripTrailingCommas(stripComments(content));
+  return stripTrailingCommas(stripComments(stripLeadingUtf8Bom(content)));
 }
 function stripComments(content) {
   let result = "";
@@ -32605,11 +32610,6 @@ var DEFAULT_WIKI_CONFIG = {
 var import_fs35 = require("fs");
 var import_path44 = require("path");
 
-// scripts/lib/utf8-bom.mjs
-function stripLeadingUtf8Bom(content) {
-  return content.startsWith("\uFEFF") ? content.slice(1) : content;
-}
-
 // src/utils/frontmatter.ts
 function unquoteYamlScalar(value) {
   if (value.startsWith('"') && value.endsWith('"')) return value.slice(1, -1);
@@ -33631,13 +33631,28 @@ var import_path46 = require("path");
 // src/hooks/learner/constants.ts
 var import_path45 = require("path");
 var import_os6 = require("os");
+
+// src/utils/debug-flag.ts
+var DISABLED_VALUES = /* @__PURE__ */ new Set(["", "0", "false"]);
+function isDebugEnabled(scope) {
+  const raw = process.env.OMC_DEBUG;
+  if (raw === void 0) return false;
+  const value = raw.trim().toLowerCase();
+  if (DISABLED_VALUES.has(value)) return false;
+  if (value === "1" || value === "true") return true;
+  if (!scope) return false;
+  const wanted = scope.trim().toLowerCase();
+  return value.split(",").some((entry) => entry.trim() === wanted);
+}
+
+// src/hooks/learner/constants.ts
 var USER_SKILLS_DIR = (0, import_path45.join)(getClaudeConfigDir(), "skills", "omc-learned");
 var GLOBAL_SKILLS_DIR = (0, import_path45.join)((0, import_os6.homedir)(), ".omc", "skills");
 var PROJECT_SKILLS_SUBDIR = OmcPaths.SKILLS;
 var PROJECT_AGENT_SKILLS_SUBDIR = (0, import_path45.join)(".agents", "skills");
 var MAX_RECURSION_DEPTH = 10;
 var SKILL_EXTENSION = ".md";
-var DEBUG_ENABLED = process.env.OMC_DEBUG === "1";
+var DEBUG_ENABLED = isDebugEnabled("learner");
 
 // src/hooks/learner/finder.ts
 function findSkillFilesRecursive(dir, results, depth = 0) {
