@@ -1139,7 +1139,7 @@ describe('sendToWorker implementation guards', () => {
     });
     it('supports env-gated adaptive interrupt retry', () => {
         expect(source).toContain('OMC_TEAM_AUTO_INTERRUPT_RETRY');
-        expect(source).toContain("await sendKey('C-u')");
+        expect(source).toContain("sendSubmitKey('C-u')");
     });
     it('re-checks copy-mode before adaptive and final fallback keys', () => {
         expect(source).toContain('Safety gate: copy-mode can turn on while we retry');
