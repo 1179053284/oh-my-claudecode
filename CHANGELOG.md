@@ -1,3 +1,22 @@
+# oh-my-claudecode v5.7.9: Safer Windows startup, Codex TOML output, and aligned Jev timeouts
+
+## Release Notes
+
+This release fixes Windows startup trust-prompt handling, escaping unpaired surrogates in Codex MCP TOML output, and aligning Jev active parent timeouts with resolver behavior. Thanks to @rudycelekli and @alw51307 for their contributions.
+
+### Bug Fixes
+
+- **fix(team): guard Windows startup trust prompts** (#4502)
+- **fix(mcp-registry): escape unpaired surrogates in Codex TOML output** (#4512, @rudycelekli)
+- **fix(jev): align active parent timeout with resolver** (#4515, @alw51307)
+
+### Other Changes
+
+- **chore(sync): merge v5.7.8 main release into dev and rebuild the inventory** (#4519)
+- **ci: authorize generated artifacts for the v5.7.8 main-to-dev sync** (#4520)
+
+---
+
 # oh-my-claudecode v5.7.8: More reliable Windows workers and configuration handling
 
 ## Release Notes
