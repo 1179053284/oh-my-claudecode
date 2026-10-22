@@ -1,28 +1,19 @@
-# oh-my-claudecode v5.7.8: More reliable Windows workers and configuration handling
+# oh-my-claudecode v5.7.9: Safer Windows startup, Codex TOML output, and aligned Jev timeouts
 
 ## Release Notes
 
-This release improves native Windows worker supervision, JSON and JSONC parsing, numeric configuration validation, think-mode matching, diagnostic environment handling, and prerelease update ordering. Thanks to @rudycelekli for contributions to #4493, #4494, #4497, #4499, #4508, #4510, and #4511.
+This release fixes Windows startup trust-prompt handling, escaping unpaired surrogates in Codex MCP TOML output, and aligning Jev active parent timeouts with resolver behavior. Thanks to @rudycelekli and @alw51307 for their contributions.
 
 ### Bug Fixes
 
-- **fix(team): repair native Windows worker supervision and startup** (#4479, fixes #4386)
-- **fix(team): fit the source-bound Windows supervisor invocation and reject unresolved provider executables** (#4479)
-- **fix(team): submit tmux startup inboxes and shorten only overflowing Windows notifications** (#4479)
-- **fix(team): recognize Codex folder-trust prompts without sending task text or granting persistent trust** (#4479)
-- **fix(jsonc): accept a leading UTF-8 BOM in JSONC configuration files** (#4494)
-- **fix(notifications): reject non-positive reply polling intervals and rate limits** (#4497)
-- **fix(json): accept a leading UTF-8 BOM in hand-authored JSON files** (#4499)
-- **fix(think-mode): match multilingual think keywords as whole words** (#4493)
-- **fix(debug): read `OMC_DEBUG` through one shared convention** (#4508)
-- **fix(host-load-gate): reject malformed thresholds instead of silently truncating them** (#4510)
-- **fix(version): rank prereleases below their corresponding stable release** (#4511)
+- **fix(team): guard Windows startup trust prompts** (#4502)
+- **fix(mcp-registry): escape unpaired surrogates in Codex TOML output** (#4512, @rudycelekli)
+- **fix(jev): align active parent timeout with resolver** (#4515, @alw51307)
 
 ### Other Changes
 
-- **test(ci): make SessionStart timing tests deterministic** (#4514)
-- **ci:** canonicalize generated-artifact authorization timestamps and refresh authorization entries for release and sync PRs (#4480, #4504, #4507, #4509)
-- **chore(inventory): rebuild generated artifacts and inventory during the v5.7.7 main-to-dev sync** (#4506)
+- **chore(sync): merge v5.7.8 main release into dev and rebuild the inventory** (#4519)
+- **ci: authorize generated artifacts for the v5.7.8 main-to-dev sync** (#4520)
 
 ### Install / Update
 
@@ -31,7 +22,7 @@ The npm CLI and the Claude Code marketplace/plugin are separate install tracks, 
 **CLI / runtime:**
 
 ```bash
-npm install -g oh-my-claude-sisyphus@5.7.8
+npm install -g oh-my-claude-sisyphus@5.7.9
 ```
 
 **Claude Code plugin:**
@@ -40,10 +31,10 @@ npm install -g oh-my-claude-sisyphus@5.7.8
 /plugin marketplace update omc
 ```
 
-**Full Changelog**: https://github.com/Yeachan-Heo/oh-my-claudecode/compare/v5.7.7...v5.7.8
+**Full Changelog**: https://github.com/Yeachan-Heo/oh-my-claudecode/compare/v5.7.8...v5.7.9
 
 ## Contributors
 
 Thank you to all contributors who made this release possible!
 
-@rudycelekli
+@rudycelekli @alw51307
