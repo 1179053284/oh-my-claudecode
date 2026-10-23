@@ -1,3 +1,20 @@
+# oh-my-claudecode v5.7.10: Fail-closed Ralph PRD verification
+
+## Release Notes
+
+This release makes `omc ralph verify` fail closed when an existing PRD is invalid or unreadable, instead of incorrectly reporting that no feedback commands exist. Thanks to Get-bot for reporting #4526.
+
+### Bug Fixes
+
+- **fix(ralph): fail closed for invalid PRDs** (#4527, fixes #4526; reported by Get-bot)
+
+### Other Changes
+
+- **chore(sync): merge the v5.7.9 main release into dev** (#4524)
+- **ci: authorize generated artifacts for sync PR #4524** (#4525)
+
+---
+
 # oh-my-claudecode v5.7.9: Safer Windows startup, Codex TOML output, and aligned Jev timeouts
 
 ## Release Notes
