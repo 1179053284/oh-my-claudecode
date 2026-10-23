@@ -124913,7 +124913,7 @@ ${gate.blocked.map((b) => `  #${b.ticket}: ${b.reason}`).join("\n")}`);
       process.exitCode = 1;
       return;
     }
-    const feedbackCommands = resolveFeedbackCommands(process.cwd());
+    const { commands: feedbackCommands } = resolveFeedbackCommands(process.cwd());
     const composed = composeMapPrd(process.cwd(), sessionId, plan, records, { feedbackCommands });
     if (!composed.written) {
       report(`launch refused \u2014 PRD not composed: ${composed.error ?? "unknown"}`);
@@ -124943,19 +124943,24 @@ function resolveFeedbackCommands(directory, sessionId) {
   if (afk !== void 0) {
     try {
       const parsed = JSON.parse(afk);
-      return Array.isArray(parsed) ? afkFeedbackCommands(parsed.filter((c) => typeof c === "string")) : [];
+      return { commands: Array.isArray(parsed) ? afkFeedbackCommands(parsed.filter((c) => typeof c === "string")) : [] };
     } catch {
-      return [];
+      return { commands: [] };
     }
   }
-  const declared = readPrd(directory, sessionId)?.feedbackCommands;
-  if (declared && declared.length > 0) return [...declared];
+  const prdPath = findPrdPath(directory, sessionId);
+  if (prdPath) {
+    const { prd, error: error2 } = readPrdFromPath(prdPath);
+    if (error2) return { commands: [], prdError: error2 };
+    if (prd?.feedbackCommands?.length) return { commands: [...prd.feedbackCommands] };
+  }
   try {
     const pkg = JSON.parse((0, import_fs128.readFileSync)((0, import_path154.join)(directory, "package.json"), "utf8"));
     const scripts = pkg.scripts ?? {};
-    return ["build", "typecheck", "lint", "test", "test:run"].filter((name) => typeof scripts[name] === "string").map((name) => `npm run ${name}`);
+    const commands = ["build", "typecheck", "lint", "test", "test:run"].filter((name) => typeof scripts[name] === "string").map((name) => `npm run ${name}`);
+    return { commands };
   } catch {
-    return [];
+    return { commands: [] };
   }
 }
 var SHELL_MISSING_COMMAND_PATTERN = /^(?:[^:\r\n]*\/)?(?:sh|bash):\s*(?:(?:line\s+)?\d+:\s*)?[^:\r\n]+:\s*(?:command not found|not found)\s*$|^(?:zsh:\s*)?(?:(?:line\s+)?\d+:\s*)?command not found:\s*\S+\s*$|^['"][^'"\r\n]+['"] is not recognized as an internal or external command\b/im;
@@ -125009,10 +125014,19 @@ function ralphVerify(options, directory = process.cwd(), now = /* @__PURE__ */ n
     }
   }
   const path30 = sessionId ? baselinePath(stateRoot2, sessionId) : "";
-  const commands = resolveFeedbackCommands(directory, sessionId || void 0);
+  const baseline = path30 ? readBaseline(path30) : null;
+  const resolution = resolveFeedbackCommands(directory, sessionId || void 0);
+  if (resolution.prdError) {
+    console.error(`omc ralph verify: ${resolution.prdError}`);
+    if (options.json) {
+      console.log(JSON.stringify({ sessionId: sessionId || null, baselinePresent: Boolean(baseline), commands: [], newFailures: [], resolvedFailures: [], unrunnableCommands: [], error: resolution.prdError }));
+    }
+    return 1;
+  }
+  const commands = resolution.commands;
   if (commands.length === 0) {
     const message2 = "no feedback commands: declare feedbackCommands in the PRD or add package.json build/lint/test scripts";
-    if (options.json) console.log(JSON.stringify({ sessionId: sessionId || null, baselinePresent: false, commands: [], newFailures: [], resolvedFailures: [], unrunnableCommands: [], note: message2 }));
+    if (options.json) console.log(JSON.stringify({ sessionId: sessionId || null, baselinePresent: Boolean(baseline), commands: [], newFailures: [], resolvedFailures: [], unrunnableCommands: [], note: message2 }));
     else console.log(`ralph verify: ${message2}`);
     return 0;
   }
@@ -125026,7 +125040,6 @@ function ralphVerify(options, directory = process.cwd(), now = /* @__PURE__ */ n
     else console.log(`ralph verify: ${note2}`);
     return written ? 0 : 1;
   }
-  const baseline = path30 ? readBaseline(path30) : null;
   const diff = diffAgainstBaseline(baseline, current);
   if (options.json) {
     console.log(JSON.stringify({ sessionId: sessionId || null, baselinePresent: Boolean(baseline), commands, newFailures: diff.newSignatures, resolvedFailures: diff.resolvedSignatures, unrunnableCommands }));
